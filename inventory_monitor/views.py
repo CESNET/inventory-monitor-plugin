@@ -8,9 +8,11 @@ from django.views.generic import View
 from netbox.views import generic
 
 from . import filtersets, forms, models, tables
+from .helpers import get_content_type
 
 try:
     from netbox_attachments.models import NetBoxAttachment
+
     attachments_model_exists = True
 except ModuleNotFoundError:
     attachments_model_exists = False
@@ -22,25 +24,39 @@ class ProbeView(generic.ObjectView):
     queryset = models.Probe.objects.all()
 
     def get_extra_context(self, request, instance):
-        probes_sub_count_serial = models.Probe.objects.filter(serial=OuterRef(
-            'serial')).values('serial').annotate(changes_count=Count('*'))
-        probe_table = tables.ProbeTable(models.Probe.objects.filter(serial=instance.serial).annotate(
-            changes_count=Subquery(probes_sub_count_serial.values("changes_count"))))
+        probes_sub_count_serial = (
+            models.Probe.objects.filter(serial=OuterRef("serial"))
+            .values("serial")
+            .annotate(changes_count=Count("*"))
+        )
+        probe_table = tables.ProbeTable(
+            models.Probe.objects.filter(serial=instance.serial).annotate(
+                changes_count=Subquery(probes_sub_count_serial.values("changes_count"))
+            )
+        )
         probe_table.configure(request)
 
         inventory_items = InventoryItem.objects.filter(
-            custom_field_data__inventory_monitor_probe=instance.id)
+            custom_field_data__inventory_monitor_probe=instance.id
+        )
         inventory_items_table = InventoryItemTable(inventory_items)
         inventory_items_table.configure(request)
 
-        return {'probe_table': probe_table, 'inventory_items_table': inventory_items_table}
+        return {
+            "probe_table": probe_table,
+            "inventory_items_table": inventory_items_table,
+        }
 
 
 class ProbeListView(generic.ObjectListView):
-    sub_count_serial = models.Probe.objects.filter(serial=OuterRef(
-        'serial')).values('serial').annotate(changes_count=Count('*'))
-    queryset = models.Probe.objects.prefetch_related('tags', 'device').annotate(
-        changes_count=Subquery(sub_count_serial.values("changes_count")))
+    sub_count_serial = (
+        models.Probe.objects.filter(serial=OuterRef("serial"))
+        .values("serial")
+        .annotate(changes_count=Count("*"))
+    )
+    queryset = models.Probe.objects.prefetch_related("tags", "device").annotate(
+        changes_count=Subquery(sub_count_serial.values("changes_count"))
+    )
 
     table = tables.ProbeTable
     filterset = filtersets.ProbeFilterSet
@@ -69,12 +85,26 @@ class ContractorView(generic.ObjectView):
     def get_extra_context(self, request, instance):
         if attachments_model_exists:
             try:
-                contract_content_type = ContentType.objects.get(
-                    app_label='inventory_monitor', model='contract')
-                subquery_attachments_count = NetBoxAttachment.objects.filter(object_id=OuterRef(
-                    'id'), content_type=contract_content_type).values('object_id').annotate(attachments_count=Count('*'))
-                contracts = models.Contract.objects.filter(contractor=instance).annotate(subcontracts_count=Count('subcontracts', distinct=True)).annotate(invoices_count=Count(
-                    'invoices', distinct=True)).annotate(attachments_count=Subquery(subquery_attachments_count.values("attachments_count")))
+                contract_content_type = get_content_type(
+                    app_label="inventory_monitor", model="contract"
+                )
+                subquery_attachments_count = (
+                    NetBoxAttachment.objects.filter(
+                        object_id=OuterRef("id"), content_type=contract_content_type
+                    )
+                    .values("object_id")
+                    .annotate(attachments_count=Count("*"))
+                )
+                contracts = (
+                    models.Contract.objects.filter(contractor=instance)
+                    .annotate(subcontracts_count=Count("subcontracts", distinct=True))
+                    .annotate(invoices_count=Count("invoices", distinct=True))
+                    .annotate(
+                        attachments_count=Subquery(
+                            subquery_attachments_count.values("attachments_count")
+                        )
+                    )
+                )
             except ContentType.DoesNotExist as e:
                 contracts = models.Contract.objects.filter(contractor=instance)
         else:
@@ -83,12 +113,13 @@ class ContractorView(generic.ObjectView):
         contracts_table = tables.ContractTable(contracts)
         contracts_table.configure(request)
 
-        return {'contracts_table': contracts_table}
+        return {"contracts_table": contracts_table}
 
 
 class ContractorListView(generic.ObjectListView):
-    queryset = models.Contractor.objects.prefetch_related(
-        'tags').annotate(contracts_count=Count('contracts'))
+    queryset = models.Contractor.objects.prefetch_related("tags").annotate(
+        contracts_count=Count("contracts")
+    )
 
     filterset = filtersets.ContractorFilterSet
     filterset_form = forms.ContractorFilterForm
@@ -108,59 +139,100 @@ class ContractorDeleteView(generic.ObjectDeleteView):
 class ContractView(generic.ObjectView):
     if attachments_model_exists:
         try:
-            contract_content_type = ContentType.objects.get(
-                app_label='inventory_monitor', model='contract')
-            subquery_attachments_count = NetBoxAttachment.objects.filter(object_id=OuterRef(
-                'id'), content_type=contract_content_type).values('object_id').annotate(attachments_count=Count('*'))
-            queryset = models.Contract.objects.all().annotate(subcontracts_count=Count('subcontracts', distinct=True)).annotate(invoices_count=Count(
-                'invoices', distinct=True)).annotate(attachments_count=Subquery(subquery_attachments_count.values("attachments_count")))
+            contract_content_type = get_content_type(
+                app_label="inventory_monitor", model="contract"
+            )
+            subquery_attachments_count = (
+                NetBoxAttachment.objects.filter(
+                    object_id=OuterRef("id"), content_type=contract_content_type
+                )
+                .values("object_id")
+                .annotate(attachments_count=Count("*"))
+            )
+            queryset = (
+                models.Contract.objects.all()
+                .annotate(subcontracts_count=Count("subcontracts", distinct=True))
+                .annotate(invoices_count=Count("invoices", distinct=True))
+                .annotate(
+                    attachments_count=Subquery(
+                        subquery_attachments_count.values("attachments_count")
+                    )
+                )
+            )
         except ContentType.DoesNotExist as e:
-            models.Contract.objects.all().annotate(subcontracts_count=Count('subcontracts', distinct=True)
-                                                   ).annotate(invoices_count=Count('invoices', distinct=True)).annotate(attachments_count=Value(0))
+            models.Contract.objects.all().annotate(
+                subcontracts_count=Count("subcontracts", distinct=True)
+            ).annotate(invoices_count=Count("invoices", distinct=True)).annotate(
+                attachments_count=Value(0)
+            )
     else:
-        queryset = models.Contract.objects.all().annotate(subcontracts_count=Count('subcontracts', distinct=True)
-                                                          ).annotate(invoices_count=Count('invoices', distinct=True)).annotate(attachments_count=Value(0))
+        queryset = (
+            models.Contract.objects.all()
+            .annotate(subcontracts_count=Count("subcontracts", distinct=True))
+            .annotate(invoices_count=Count("invoices", distinct=True))
+            .annotate(attachments_count=Value(0))
+        )
 
     def get_extra_context(self, request, instance):
         if attachments_model_exists:
             try:
-                contract_content_type = ContentType.objects \
-                    .get(app_label='inventory_monitor', model='contract')
+                contract_content_type = get_content_type(
+                    app_label="inventory_monitor", model="contract"
+                )
+                subquery_contract_attachments_count = (
+                    NetBoxAttachment.objects.filter(
+                        object_id=OuterRef("id"), content_type=contract_content_type
+                    )
+                    .values("object_id")
+                    .annotate(attachments_count=Count("*"))
+                )
 
-                subquery_contract_attachments_count = NetBoxAttachment.objects \
-                    .filter(object_id=OuterRef('id'), content_type=contract_content_type) \
-                    .values('object_id') \
-                    .annotate(attachments_count=Count('*'))
+                subcontracts = (
+                    models.Contract.objects.filter(parent=instance)
+                    .annotate(subcontracts_count=Count("subcontracts", distinct=True))
+                    .annotate(invoices_count=Count("invoices", distinct=True))
+                    .annotate(
+                        attachments_count=Subquery(
+                            subquery_contract_attachments_count.values(
+                                "attachments_count"
+                            )
+                        )
+                    )
+                )
 
-                subcontracts = models.Contract.objects \
-                    .filter(parent=instance) \
-                    .annotate(subcontracts_count=Count('subcontracts', distinct=True)) \
-                    .annotate(invoices_count=Count('invoices', distinct=True)) \
-                    .annotate(attachments_count=Subquery(subquery_contract_attachments_count.values("attachments_count")))
+                invoice_content_type = get_content_type(
+                    app_label="inventory_monitor", model="invoice"
+                )
 
-                invoice_content_type = ContentType.objects.get(
-                    app_label='inventory_monitor', model='invoice')
+                subquery_attachments_count = (
+                    NetBoxAttachment.objects.filter(
+                        object_id=OuterRef("id"), content_type=invoice_content_type
+                    )
+                    .values("object_id")
+                    .annotate(attachments_count=Count("*"))
+                )
 
-                subquery_attachments_count = NetBoxAttachment.objects \
-                    .filter(object_id=OuterRef('id'), content_type=invoice_content_type).values('object_id') \
-                    .annotate(attachments_count=Count('*'))
-
-                invoices = instance.invoices.all() \
-                    .annotate(attachments_count=Subquery(subquery_attachments_count.values("attachments_count")))
+                invoices = instance.invoices.all().annotate(
+                    attachments_count=Subquery(
+                        subquery_attachments_count.values("attachments_count")
+                    )
+                )
             except ContentType.DoesNotExist as e:
-                subcontracts = models.Contract.objects \
-                    .filter(parent=instance) \
-                    .annotate(subcontracts_count=Count('subcontracts', distinct=True)) \
-                    .annotate(invoices_count=Count('invoices', distinct=True)) \
+                subcontracts = (
+                    models.Contract.objects.filter(parent=instance)
+                    .annotate(subcontracts_count=Count("subcontracts", distinct=True))
+                    .annotate(invoices_count=Count("invoices", distinct=True))
                     .annotate(attachments_count=Value(0))
+                )
 
                 invoices = instance.invoices.all().annotate(attachments_count=Value(0))
         else:
-            subcontracts = models.Contract.objects \
-                .filter(parent=instance) \
-                .annotate(subcontracts_count=Count('subcontracts', distinct=True)) \
-                .annotate(invoices_count=Count('invoices', distinct=True)) \
+            subcontracts = (
+                models.Contract.objects.filter(parent=instance)
+                .annotate(subcontracts_count=Count("subcontracts", distinct=True))
+                .annotate(invoices_count=Count("invoices", distinct=True))
                 .annotate(attachments_count=Value(0))
+            )
 
             invoices = instance.invoices.all().annotate(attachments_count=Value(0))
 
@@ -169,25 +241,49 @@ class ContractView(generic.ObjectView):
         invoices_table = tables.InvoiceTable(invoices)
         invoices_table.configure(request)
 
-        return {'subcontracts_table': subcontracts_table,
-                'invoices_table': invoices_table}
+        return {
+            "subcontracts_table": subcontracts_table,
+            "invoices_table": invoices_table,
+        }
 
 
 class ContractListView(generic.ObjectListView):
     if attachments_model_exists:
         try:
-            contract_content_type = ContentType.objects.get(
-                app_label='inventory_monitor', model='contract')
-            subquery_attachments_count = NetBoxAttachment.objects.filter(object_id=OuterRef(
-                'id'), content_type=contract_content_type).values('object_id').annotate(attachments_count=Count('*'))
-            queryset = models.Contract.objects.all().annotate(subcontracts_count=Count('subcontracts', distinct=True)).annotate(invoices_count=Count(
-                'invoices', distinct=True)).annotate(attachments_count=Subquery(subquery_attachments_count.values("attachments_count")))
+            contract_content_type = get_content_type(
+                app_label="inventory_monitor", model="contract"
+            )
+            subquery_attachments_count = (
+                NetBoxAttachment.objects.filter(
+                    object_id=OuterRef("id"), content_type=contract_content_type
+                )
+                .values("object_id")
+                .annotate(attachments_count=Count("*"))
+            )
+            queryset = (
+                models.Contract.objects.all()
+                .annotate(subcontracts_count=Count("subcontracts", distinct=True))
+                .annotate(invoices_count=Count("invoices", distinct=True))
+                .annotate(
+                    attachments_count=Subquery(
+                        subquery_attachments_count.values("attachments_count")
+                    )
+                )
+            )
         except ContentType.DoesNotExist as e:
-            queryset = models.Contract.objects.all().annotate(subcontracts_count=Count('subcontracts', distinct=True)
-                                                              ).annotate(invoices_count=Count('invoices', distinct=True)).annotate(attachments_count=Value(0))
+            queryset = (
+                models.Contract.objects.all()
+                .annotate(subcontracts_count=Count("subcontracts", distinct=True))
+                .annotate(invoices_count=Count("invoices", distinct=True))
+                .annotate(attachments_count=Value(0))
+            )
     else:
-        queryset = models.Contract.objects.all().annotate(subcontracts_count=Count('subcontracts', distinct=True)
-                                                          ).annotate(invoices_count=Count('invoices', distinct=True)).annotate(attachments_count=Value(0))
+        queryset = (
+            models.Contract.objects.all()
+            .annotate(subcontracts_count=Count("subcontracts", distinct=True))
+            .annotate(invoices_count=Count("invoices", distinct=True))
+            .annotate(attachments_count=Value(0))
+        )
 
     filterset = filtersets.ContractFilterSet
     filterset_form = forms.ContractFilterForm
@@ -196,7 +292,8 @@ class ContractListView(generic.ObjectListView):
 
 class ContractEditView(generic.ObjectEditView):
     queryset = models.Contract.objects.all().annotate(
-        subcontracts_count=Count('subcontracts'))
+        subcontracts_count=Count("subcontracts")
+    )
     form = forms.ContractForm
 
 
@@ -212,12 +309,21 @@ class InvoiceView(generic.ObjectView):
 class InvoiceListView(generic.ObjectListView):
     if attachments_model_exists:
         try:
-            invoice_content_type = ContentType.objects.get(
-                app_label='inventory_monitor', model='invoice')
-            subquery_attachments_count = NetBoxAttachment.objects.filter(object_id=OuterRef(
-                'id'), content_type=invoice_content_type).values('object_id').annotate(attachments_count=Count('*'))
-            queryset = models.Invoice.objects.all().annotate(attachments_count=Subquery(
-                subquery_attachments_count.values("attachments_count")))
+            invoice_content_type = get_content_type(
+                app_label="inventory_monitor", model="invoice"
+            )
+            subquery_attachments_count = (
+                NetBoxAttachment.objects.filter(
+                    object_id=OuterRef("id"), content_type=invoice_content_type
+                )
+                .values("object_id")
+                .annotate(attachments_count=Count("*"))
+            )
+            queryset = models.Invoice.objects.all().annotate(
+                attachments_count=Subquery(
+                    subquery_attachments_count.values("attachments_count")
+                )
+            )
         except ContentType.DoesNotExist as e:
             queryset = models.Invoice.objects.all().annotate(attachments_count=Value(0))
     else:
@@ -246,17 +352,19 @@ class ComponentView(generic.ObjectView):
         table.configure(request)
 
         return {
-            'component_services_table': table,
+            "component_services_table": table,
         }
 
 
 class ComponentListView(generic.ObjectListView):
-    queryset = models.Component.objects.all() \
-        .prefetch_related('services') \
-        .prefetch_related('tags') \
-        .annotate(services_count=Count('services')) \
-        .annotate(services_to=ArrayAgg('services__service_end'))\
-        .annotate(services_contracts=ArrayAgg('services__contract__name'))
+    queryset = (
+        models.Component.objects.all()
+        .prefetch_related("services")
+        .prefetch_related("tags")
+        .annotate(services_count=Count("services"))
+        .annotate(services_to=ArrayAgg("services__service_end"))
+        .annotate(services_contracts=ArrayAgg("services__contract__name"))
+    )
     filterset = filtersets.ComponentFilterSet
     filterset_form = forms.ComponentFilterForm
     table = tables.ComponentTable
@@ -293,17 +401,20 @@ class ComponentServiceDeleteView(generic.ObjectDeleteView):
 
 
 class ProbeDiffView(View):
-
     def post(self, request):
         # load from, to and device_id from request
-        date_from = request.POST.get('date_from')
-        date_to = request.POST.get('date_to')
-        device_id = request.POST.get('device')
+        date_from = request.POST.get("date_from")
+        date_to = request.POST.get("date_to")
+        device_id = request.POST.get("device")
 
         probes_added = models.Probe.objects.filter(
-            device_id=device_id, creation_time__gte=date_from, creation_time__lte=date_to)
+            device_id=device_id,
+            creation_time__gte=date_from,
+            creation_time__lte=date_to,
+        )
         probes_removed = models.Probe.objects.filter(
-            device_id=device_id, time__gte=date_from, time__lte=date_to)
+            device_id=device_id, time__gte=date_from, time__lte=date_to
+        )
 
         form = forms.ProbeDiffForm(
             initial={
@@ -317,9 +428,9 @@ class ProbeDiffView(View):
             request,
             "./inventory_monitor/probe_diff.html",
             {
-                'probes_added': probes_added,
-                'probes_removed': probes_removed,
-                'form': form
+                "probes_added": probes_added,
+                "probes_removed": probes_removed,
+                "form": form,
             },
         )
 
