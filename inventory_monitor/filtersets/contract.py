@@ -131,7 +131,7 @@ class ContractFilterSet(NetBoxModelFilterSet):
         from inventory_monitor.helpers import get_currency_choices
 
         # Set currency choices dynamically from plugin config
-        self.filters["currency"].extra["choices"] = get_currency_choices()
+        self.filters["currency"].field.choices = get_currency_choices()
 
     class Meta:
         model = Contract

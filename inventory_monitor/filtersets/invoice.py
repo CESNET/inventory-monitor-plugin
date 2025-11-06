@@ -77,7 +77,7 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Set currency choices from config
-        self.filters["currency"].extra["choices"] = get_currency_choices()
+        self.filters["currency"].field.choices = get_currency_choices()
 
     invoicing_start__gte = django_filters.DateFilter(field_name="invoicing_start", lookup_expr="gte")
     invoicing_start__lte = django_filters.DateFilter(field_name="invoicing_start", lookup_expr="lte")

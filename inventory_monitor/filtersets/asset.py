@@ -119,7 +119,7 @@ class AssetFilterSet(NetBoxModelFilterSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Set currency choices from config
-        self.filters["currency"].extra["choices"] = get_currency_choices()
+        self.filters["currency"].field.choices = get_currency_choices()
 
     # Quantity range filters
     quantity = django_filters.NumberFilter(

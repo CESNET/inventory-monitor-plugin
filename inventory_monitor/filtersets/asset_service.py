@@ -96,7 +96,7 @@ class AssetServiceFilterSet(NetBoxModelFilterSet):
         from inventory_monitor.helpers import get_currency_choices
 
         # Set currency choices dynamically from plugin config
-        self.filters["service_currency"].extra["choices"] = get_currency_choices()
+        self.filters["service_currency"].field.choices = get_currency_choices()
 
     class Meta:
         model = AssetService

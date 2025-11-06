@@ -4,7 +4,6 @@ from dcim.models import Device, Location, Site
 from django import forms
 from django.utils.translation import gettext as _
 from netbox.forms import NetBoxModelFilterSetForm, NetBoxModelForm
-from utilities.forms.constants import BOOLEAN_WITH_BLANK_CHOICES
 from utilities.forms.fields import (
     CommentField,
     DynamicModelChoiceField,
@@ -62,15 +61,15 @@ class ProbeFilterForm(NetBoxModelFilterSetForm):
     description = forms.CharField(required=False)
     time__gte = forms.DateTimeField(required=False, label=("Time From"), widget=DateTimePicker())
     time__lte = forms.DateTimeField(required=False, label=("Time Till"), widget=DateTimePicker())
-    latest_only_per_device = forms.NullBooleanField(
+    latest_only_per_device = forms.BooleanField(
         required=False,
         label="Latest inventory only (per device)",
-        widget=forms.Select(choices=BOOLEAN_WITH_BLANK_CHOICES),
+        widget=forms.NullBooleanSelect()
     )
-    latest_only = forms.NullBooleanField(
+    latest_only = forms.BooleanField(
         required=False,
         label="Latest inventory only",
-        widget=forms.Select(choices=BOOLEAN_WITH_BLANK_CHOICES),
+        widget=forms.NullBooleanSelect()
     )
 
 

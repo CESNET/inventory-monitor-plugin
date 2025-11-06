@@ -375,14 +375,14 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label=("Price: Till"),
     )
-    price__isnull = forms.NullBooleanField(
+    price__isnull = forms.ChoiceField(
         required=False,
         label=("Price is not set"),
-        widget=forms.Select(choices=(
-            ('', '---------'),
+        choices=(
+            ('', 'Any'),
             ('true', 'Yes'),
             ('false', 'No'),
-        ))
+        ),
     )
     currency = forms.MultipleChoiceField(required=False)
     

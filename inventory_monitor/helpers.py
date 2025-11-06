@@ -8,10 +8,16 @@ def get_currency_choices():
     """Get currency choices from plugin configuration.
 
     Returns list of tuples: (code, name) for form choices.
+    Validates each entry to prevent errors from malformed config.
     """
     currencies = get_plugin_config("inventory_monitor", "currencies", [])
-    # Return tuples of (code, name) - strip symbol if present
-    return [(c[0], c[1]) for c in currencies]
+    # Return tuples of (code, name) - validate and strip symbol if present
+    choices = []
+    for c in currencies:
+        # Validate entry format: must be list/tuple with at least 2 non-empty elements
+        if isinstance(c, (list, tuple)) and len(c) >= 2 and c[0] and c[1]:
+            choices.append((c[0], c[1]))
+    return choices
 
 
 def get_default_currency():
@@ -28,13 +34,20 @@ def get_currency_symbol(currency_code):
     Returns:
         Currency symbol if configured, otherwise the currency code itself
     """
+    if not currency_code:
+        return ""
+    
     currencies = get_plugin_config("inventory_monitor", "currencies", [])
 
     # Look for currency in config
     for currency in currencies:
+        # Validate entry format before accessing
+        if not isinstance(currency, (list, tuple)) or len(currency) < 2:
+            continue
+        
         if currency[0] == currency_code:
-            # Return symbol if it's a 3-tuple (code, name, symbol)
-            if len(currency) >= 3:
+            # Return symbol if it's a 3-tuple (code, name, symbol) and symbol is not empty
+            if len(currency) >= 3 and currency[2]:
                 return currency[2]
             # Otherwise return the code
             return currency_code
@@ -92,17 +105,7 @@ class CurrencyColumn(django_tables2.Column):
     def render(self, value, record):
         price = getattr(record, self.price_field, None)
         currency = getattr(record, self.currency_field, None)
-
-        if price is not None:
-            res = price.to_integral() if price == price.to_integral() else price.normalize()
-            formatted_number = f"{res:,}".replace(",", " ")
-            currency_symbol = get_currency_symbol(currency) if currency else ""
-            if currency_symbol:
-                return f"{formatted_number} {currency_symbol}"
-            else:
-                return str(formatted_number)
-        else:
-            return "---"
+        return format_price_with_currency(price, currency)
 
 
 TEMPLATE_SERVICES_END = """

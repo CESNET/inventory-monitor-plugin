@@ -150,7 +150,6 @@ class InventoryMonitorAssetServiceFilter(NetBoxModelFilterMixin):
     service_currency: FilterLookup[str] | None = strawberry_django.filter_field()
     service_category: FilterLookup[str] | None = strawberry_django.filter_field()
     service_category_vendor: FilterLookup[str] | None = strawberry_django.filter_field()
-    service_category_vendor: FilterLookup[str] | None = strawberry_django.filter_field()
 
     # Related object filters
     asset: Annotated["InventoryMonitorAssetFilter", strawberry.lazy("inventory_monitor.graphql.filters")] | None = (

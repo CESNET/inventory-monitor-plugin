@@ -136,14 +136,14 @@ class AssetServiceFilterForm(NetBoxModelFilterSetForm):
         min_value=0,
         decimal_places=2,
     )
-    service_price__isnull = forms.NullBooleanField(
+    service_price__isnull = forms.ChoiceField(
         required=False,
         label=("Service Price is not set"),
-        widget=forms.Select(choices=(
-            ('', '---------'),
+        choices=(
+            ('', 'Any'),
             ('true', 'Yes'),
             ('false', 'No'),
-        ))
+        ),
     )
     service_currency = forms.MultipleChoiceField(required=False)
     service_category = forms.CharField(
