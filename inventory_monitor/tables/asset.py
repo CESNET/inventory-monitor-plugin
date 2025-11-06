@@ -3,9 +3,9 @@ from netbox.tables import NetBoxTable, columns
 
 # Helper imports for custom columns and templates
 from inventory_monitor.helpers import (
+    CurrencyColumn,
     TEMPLATE_SERVICES_CONTRACTS,
     TEMPLATE_SERVICES_END,
-    NumberColumn,
 )
 from inventory_monitor.models import Asset
 
@@ -143,7 +143,7 @@ class AssetTable(NetBoxTable):
     project = tables.Column()
     vendor = tables.Column()
     quantity = tables.Column()
-    price = NumberColumn()  # Custom column for proper price formatting
+    price = CurrencyColumn(price_field="price", currency_field="currency")
 
     #
     # Service information columns
@@ -191,6 +191,7 @@ class AssetTable(NetBoxTable):
             "vendor",
             "quantity",
             "price",
+            "currency",
             # Related objects
             "order_contract",
             # Warranty information

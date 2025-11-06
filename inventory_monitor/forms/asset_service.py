@@ -7,9 +7,11 @@ from utilities.forms.fields import (
     DynamicModelMultipleChoiceField,
     TagFilterField,
 )
-from utilities.forms.rendering import FieldSet
+from utilities.forms.rendering import FieldSet, InlineFields
+from utilities.forms.utils import add_blank_choice
 from utilities.forms.widgets.datetime import DatePicker
 
+from inventory_monitor.helpers import get_currency_choices, get_default_currency
 from inventory_monitor.models import Asset, AssetService, Contract
 
 
@@ -18,12 +20,12 @@ class AssetServiceForm(NetBoxModelForm):
         FieldSet("contract", "asset", name=_("Linked")),
         FieldSet("service_start", "service_end", name=_("Dates")),
         FieldSet(
-            "service_price",
+            InlineFields("service_price", "service_currency", label=_("Service Price")),
             "service_category",
             "service_category_vendor",
             name=_("Service Params"),
         ),
-        FieldSet("tags", name=_("Tag")),
+        FieldSet("comments", "tags", name=_("Additional Information")),
     )
 
     comments = CommentField(label="Comments")
@@ -35,6 +37,11 @@ class AssetServiceForm(NetBoxModelForm):
         initial=0,
         min_value=0,
         decimal_places=2,
+    )
+    service_currency = forms.ChoiceField(
+        required=False,
+        label=_("Currency"),
+        help_text=_("Required if service price is set"),
     )
     service_category = forms.CharField(
         required=False,
@@ -55,12 +62,21 @@ class AssetServiceForm(NetBoxModelForm):
         label="Service Contract",
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set currency choices from config with blank option
+        self.fields["service_currency"].choices = add_blank_choice(get_currency_choices())
+        # Set default currency for new services if no initial value
+        if not self.instance.pk and not self.initial.get("service_currency"):
+            self.fields["service_currency"].initial = get_default_currency()
+
     class Meta:
         model = AssetService
         fields = (
             "service_start",
             "service_end",
             "service_price",
+            "service_currency",
             "service_category",
             "service_category_vendor",
             "asset",
@@ -87,6 +103,10 @@ class AssetServiceFilterForm(NetBoxModelFilterSetForm):
         ),
         FieldSet(
             "service_price",
+            "service_price__gte",
+            "service_price__lte",
+            "service_price__isnull",
+            "service_currency",
             "service_category",
             "service_category_vendor",
             name=_("Service"),
@@ -103,10 +123,31 @@ class AssetServiceFilterForm(NetBoxModelFilterSetForm):
     service_price = forms.DecimalField(
         required=False,
         label="Service Price",
-        initial=0,
         min_value=0,
         decimal_places=2,
     )
+    service_price__gte = forms.DecimalField(
+        required=False,
+        label="Service Price (min)",
+        min_value=0,
+        decimal_places=2,
+    )
+    service_price__lte = forms.DecimalField(
+        required=False,
+        label="Service Price (max)",
+        min_value=0,
+        decimal_places=2,
+    )
+    service_price__isnull = forms.NullBooleanField(
+        required=False,
+        label=("Service Price is not set"),
+        widget=forms.Select(choices=(
+            ('', '---------'),
+            ('true', 'Yes'),
+            ('false', 'No'),
+        ))
+    )
+    service_currency = forms.MultipleChoiceField(required=False)
     service_category = forms.CharField(
         required=False,
         label="Service Category",
@@ -115,6 +156,11 @@ class AssetServiceFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label="Service Category Vendor",
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set currency choices from config
+        self.fields["service_currency"].choices = get_currency_choices()
 
     asset = DynamicModelMultipleChoiceField(queryset=Asset.objects.all(), required=False, label=_("Asset"))
     contract = DynamicModelMultipleChoiceField(queryset=Contract.objects.all(), required=False, label=_("Contract"))
@@ -129,6 +175,7 @@ class AssetServiceBulkEditForm(NetBoxModelBulkEditForm):
         min_value=0,
         decimal_places=2,
     )
+    service_currency = forms.ChoiceField(required=False)
     service_category = forms.CharField(
         required=False,
         label="Service Category",
@@ -148,11 +195,17 @@ class AssetServiceBulkEditForm(NetBoxModelBulkEditForm):
         label="Service Contract",
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set currency choices from config with blank option
+        self.fields["service_currency"].choices = add_blank_choice(get_currency_choices())
+
     model = AssetService
     fieldsets = (
         FieldSet("service_start", "service_end", name=_("Dates")),
         FieldSet(
             "service_price",
+            "service_currency",
             "service_category",
             "service_category_vendor",
             name=_("Service Params"),
@@ -163,6 +216,7 @@ class AssetServiceBulkEditForm(NetBoxModelBulkEditForm):
         "service_start",
         "service_end",
         "service_price",
+        "service_currency",
         "service_category",
         "service_category_vendor",
     )

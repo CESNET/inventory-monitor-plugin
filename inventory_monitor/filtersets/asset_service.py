@@ -52,6 +52,10 @@ class AssetServiceFilterSet(NetBoxModelFilterSet):
         field_name="service_price",
         lookup_expr="exact",
     )
+    service_price = django_filters.NumberFilter(
+        field_name="service_price",
+        label="Service Price",
+    )
     service_price__gte = django_filters.NumberFilter(
         required=False,
         field_name="service_price",
@@ -62,8 +66,17 @@ class AssetServiceFilterSet(NetBoxModelFilterSet):
         field_name="service_price",
         lookup_expr="lte",
     )
+    service_price__isnull = django_filters.BooleanFilter(
+        field_name="service_price",
+        lookup_expr="isnull",
+        label="Service Price is not set",
+    )
     service_category = django_filters.CharFilter(lookup_expr="icontains", field_name="service_category")
     service_category_vendor = django_filters.CharFilter(lookup_expr="icontains", field_name="service_category_vendor")
+    service_currency = django_filters.MultipleChoiceFilter(
+        choices=[],
+        label="Service Currency",
+    )
     asset = django_filters.ModelMultipleChoiceFilter(
         field_name="asset__id",
         queryset=Asset.objects.all(),
@@ -77,6 +90,14 @@ class AssetServiceFilterSet(NetBoxModelFilterSet):
         label="Contract (ID)",
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Import here to avoid circular imports
+        from inventory_monitor.helpers import get_currency_choices
+
+        # Set currency choices dynamically from plugin config
+        self.filters["service_currency"].extra["choices"] = get_currency_choices()
+
     class Meta:
         model = AssetService
         fields = (
@@ -84,6 +105,7 @@ class AssetServiceFilterSet(NetBoxModelFilterSet):
             "service_start",
             "service_end",
             "service_price",
+            "service_currency",
             "service_category",
             "service_category_vendor",
             "asset",

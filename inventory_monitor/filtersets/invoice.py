@@ -4,6 +4,7 @@ from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
 
 from inventory_monitor.models import Contract, Invoice
+from inventory_monitor.helpers import get_currency_choices
 
 
 class InvoiceFilterSet(NetBoxModelFilterSet):
@@ -54,8 +55,29 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
         label="Contract (name)",
     )
 
-    # TODO: forms.DecimalField
+    # Price filters
     price = django_filters.NumberFilter(required=False)
+    price__gte = django_filters.NumberFilter(
+        field_name="price",
+        lookup_expr="gte",
+        label="Price (min)",
+    )
+    price__lte = django_filters.NumberFilter(
+        field_name="price",
+        lookup_expr="lte",
+        label="Price (max)",
+    )
+    price__isnull = django_filters.BooleanFilter(
+        field_name="price",
+        lookup_expr="isnull",
+        label="Price is not set",
+    )
+    currency = django_filters.MultipleChoiceFilter(choices=[])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set currency choices from config
+        self.filters["currency"].extra["choices"] = get_currency_choices()
 
     invoicing_start__gte = django_filters.DateFilter(field_name="invoicing_start", lookup_expr="gte")
     invoicing_start__lte = django_filters.DateFilter(field_name="invoicing_start", lookup_expr="lte")
@@ -73,6 +95,7 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
             "project",
             "contract",
             "price",
+            "currency",
             "invoicing_start",
             "invoicing_end",
         )

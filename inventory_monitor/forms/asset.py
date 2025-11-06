@@ -15,10 +15,12 @@ from utilities.forms.fields import (
     DynamicModelMultipleChoiceField,
     TagFilterField,
 )
-from utilities.forms.rendering import FieldSet, TabbedGroups
+from utilities.forms.rendering import FieldSet, InlineFields, TabbedGroups
+from utilities.forms.utils import add_blank_choice
 from utilities.forms.widgets.datetime import DatePicker
 
 # Local application imports
+from inventory_monitor.helpers import get_currency_choices, get_default_currency
 from inventory_monitor.models import Asset, AssetType, Contract, ExternalInventory
 from inventory_monitor.models.asset import (
     ASSIGNED_OBJECT_MODELS_QUERY,
@@ -106,11 +108,16 @@ class AssetForm(NetBoxModelForm):
     )
     quantity = forms.IntegerField(required=True, label="Items", initial=1, min_value=1)
     price = forms.DecimalField(
-        required=True,
+        required=False,
         label="Price",
-        initial=0,
         min_value=0,
         decimal_places=2,
+    )
+    currency = forms.ChoiceField(
+        required=False,
+        label=_("Currency"),
+        help_text=_("Required if price is set"),
+        choices=[],
     )
 
     # Warranty information
@@ -135,7 +142,7 @@ class AssetForm(NetBoxModelForm):
             "description",
             "type",
             "project",
-            "price",
+            InlineFields("price", "currency", label=_("Price")),
             "vendor",
             "quantity",
             name=_("Asset"),
@@ -189,6 +196,7 @@ class AssetForm(NetBoxModelForm):
             "vendor",
             "quantity",
             "price",
+            "currency",
             # Warranty information
             "warranty_start",
             "warranty_end",
@@ -225,6 +233,11 @@ class AssetForm(NetBoxModelForm):
 
         kwargs["initial"] = initial
         super().__init__(*args, **kwargs)
+        
+        # Set currency choices and default value
+        self.fields["currency"].choices = get_currency_choices()
+        if not self.instance.pk:  # Only set default for new assets
+            self.fields["currency"].initial = get_default_currency()
 
     def clean(self):
         """
@@ -299,7 +312,7 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
         ),
         # Numeric range filters
         FieldSet("quantity", "quantity__gte", "quantity__lte", name=_("Quantity")),
-        FieldSet("price", "price__gte", "price__lte", name=_("Price")),
+        FieldSet("price", "price__gte", "price__lte", "price__isnull", "currency", name=_("Price")),
         FieldSet("has_external_inventory_items", name=_("External Inventory")),
     )
 
@@ -363,6 +376,21 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label=("Price: Till"),
     )
+    price__isnull = forms.NullBooleanField(
+        required=False,
+        label=("Price is not set"),
+        widget=forms.Select(choices=(
+            ('', '---------'),
+            ('true', 'Yes'),
+            ('false', 'No'),
+        ))
+    )
+    currency = forms.MultipleChoiceField(required=False)
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set currency choices from config
+        self.fields["currency"].choices = get_currency_choices()
 
     # Warranty date filters (exact and range)
     warranty_start = forms.DateField(required=False, label=("Warranty Start"), widget=DatePicker())
@@ -402,6 +430,10 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
 
     order_contract = DynamicModelChoiceField(queryset=Contract.objects.all(), required=False)
 
+    price = forms.DecimalField(required=False, decimal_places=2)
+    
+    currency = forms.ChoiceField(required=False, choices=[])
+
     warranty_start = forms.DateField(required=False, widget=DatePicker())
 
     warranty_end = forms.DateField(required=False, widget=DatePicker())
@@ -417,10 +449,26 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
         "project",
         "vendor",
         "order_contract",
+        "price",
+        "currency",
         "warranty_start",
         "warranty_end",
         "comments",
     )
+    
+    fieldsets = (
+        FieldSet("description", "type", name=_("Asset")),
+        FieldSet("assignment_status", "lifecycle_status", name=_("Status")),
+        FieldSet("project", "vendor", "order_contract", name=_("Details")),
+        FieldSet("price", "currency", name=_("Financial")),
+        FieldSet("warranty_start", "warranty_end", name=_("Warranty")),
+        FieldSet("comments", name=_("Comments")),
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add blank choice for currency in bulk edit
+        self.fields["currency"].choices = add_blank_choice(get_currency_choices())
 
 
 class AssetBulkImportForm(NetBoxModelImportForm):
@@ -443,7 +491,8 @@ class AssetBulkImportForm(NetBoxModelImportForm):
         to_field_name="name",  # Assuming you want to match by contract name
     )
     quantity = forms.IntegerField(required=False, initial=1)
-    price = forms.DecimalField(required=False, initial=0, decimal_places=2)
+    price = forms.DecimalField(required=False, decimal_places=2)
+    currency = forms.CharField(required=False)
     warranty_start = forms.DateField(required=False)
     warranty_end = forms.DateField(required=False)
     comments = forms.CharField(required=False)
@@ -462,6 +511,7 @@ class AssetBulkImportForm(NetBoxModelImportForm):
             "order_contract",
             "quantity",
             "price",
+            "currency",
             "warranty_start",
             "warranty_end",
             "comments",

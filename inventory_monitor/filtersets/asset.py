@@ -11,6 +11,7 @@ from utilities.filters import (
     MultiValueNumberFilter,
 )
 
+from inventory_monitor.helpers import get_currency_choices
 from inventory_monitor.models import Asset, AssetType, Contract, ExternalInventory
 
 
@@ -107,6 +108,18 @@ class AssetFilterSet(NetBoxModelFilterSet):
         field_name="price",
         lookup_expr="lte",
     )
+    price__isnull = django_filters.BooleanFilter(
+        field_name="price",
+        lookup_expr="isnull",
+        label="Price is not set",
+    )
+    
+    currency = django_filters.MultipleChoiceFilter(choices=[])
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set currency choices from config
+        self.filters["currency"].extra["choices"] = get_currency_choices()
 
     # Quantity range filters
     quantity = django_filters.NumberFilter(
@@ -147,6 +160,7 @@ class AssetFilterSet(NetBoxModelFilterSet):
             "project",
             "vendor",
             "price",
+            "currency",
             "order_contract",
             "warranty_start",
             "warranty_end",

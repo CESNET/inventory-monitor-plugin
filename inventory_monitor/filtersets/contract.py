@@ -69,6 +69,25 @@ class ContractFilterSet(NetBoxModelFilterSet):
     type = django_filters.MultipleChoiceFilter(choices=ContractTypeChoices, required=False)
 
     price = django_filters.NumberFilter(required=False)
+    price__gte = django_filters.NumberFilter(
+        field_name="price",
+        lookup_expr="gte",
+        label="Price (min)",
+    )
+    price__lte = django_filters.NumberFilter(
+        field_name="price",
+        lookup_expr="lte",
+        label="Price (max)",
+    )
+    price__isnull = django_filters.BooleanFilter(
+        field_name="price",
+        lookup_expr="isnull",
+        label="Price is not set",
+    )
+    currency = django_filters.MultipleChoiceFilter(
+        choices=[],
+        label="Currency",
+    )
     signed__gte = django_filters.DateFilter(field_name="signed", lookup_expr="gte")
     signed__lte = django_filters.DateFilter(field_name="signed", lookup_expr="lte")
     signed = django_filters.DateFilter(field_name="signed", lookup_expr="contains")
@@ -106,6 +125,14 @@ class ContractFilterSet(NetBoxModelFilterSet):
 
     master_contracts = django_filters.BooleanFilter(method="_master_contracts", label="Master contracts only")
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Import here to avoid circular imports
+        from inventory_monitor.helpers import get_currency_choices
+
+        # Set currency choices dynamically from plugin config
+        self.filters["currency"].extra["choices"] = get_currency_choices()
+
     class Meta:
         model = Contract
         fields = (
@@ -115,6 +142,7 @@ class ContractFilterSet(NetBoxModelFilterSet):
             "contractor",
             "type",
             "price",
+            "currency",
             "signed",
             "accepted",
             "invoicing_start",
