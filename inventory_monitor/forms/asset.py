@@ -20,7 +20,7 @@ from utilities.forms.utils import add_blank_choice
 from utilities.forms.widgets.datetime import DatePicker
 
 # Local application imports
-from inventory_monitor.helpers import get_currency_choices, get_default_currency
+from inventory_monitor.helpers import get_currency_choices
 from inventory_monitor.models import Asset, AssetType, Contract, ExternalInventory
 from inventory_monitor.models.asset import (
     ASSIGNED_OBJECT_MODELS_QUERY,
@@ -234,10 +234,9 @@ class AssetForm(NetBoxModelForm):
         kwargs["initial"] = initial
         super().__init__(*args, **kwargs)
         
-        # Set currency choices and default value
-        self.fields["currency"].choices = get_currency_choices()
-        if not self.instance.pk:  # Only set default for new assets
-            self.fields["currency"].initial = get_default_currency()
+        # Set currency choices with blank option
+        self.fields["currency"].choices = add_blank_choice(get_currency_choices())
+        # Don't set default - let currency be blank until user adds a price
 
     def clean(self):
         """

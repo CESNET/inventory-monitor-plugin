@@ -11,7 +11,7 @@ from utilities.forms.rendering import FieldSet, InlineFields
 from utilities.forms.utils import add_blank_choice
 from utilities.forms.widgets.datetime import DatePicker
 
-from inventory_monitor.helpers import get_currency_choices, get_default_currency
+from inventory_monitor.helpers import get_currency_choices
 from inventory_monitor.models import Asset, AssetService, Contract
 
 
@@ -64,11 +64,9 @@ class AssetServiceForm(NetBoxModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set currency choices from config with blank option
+        # Set currency choices with blank option
         self.fields["service_currency"].choices = add_blank_choice(get_currency_choices())
-        # Set default currency for new services if no initial value
-        if not self.instance.pk and not self.initial.get("service_currency"):
-            self.fields["service_currency"].initial = get_default_currency()
+        # Don't set default - let currency be blank until user adds a service price
 
     class Meta:
         model = AssetService
