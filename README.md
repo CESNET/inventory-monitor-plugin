@@ -60,6 +60,7 @@ classDiagram
         +CharField project
         +CharField vendor
         +DecimalField price
+        +CharField currency
         +DateField warranty_start
         +DateField warranty_end
         +is_recently_probed()
@@ -69,6 +70,7 @@ classDiagram
         +DateField service_start
         +DateField service_end
         +DecimalField service_price
+        +CharField service_currency
         +CharField service_category
         +CharField service_category_vendor
         +ForeignKey asset
@@ -81,6 +83,7 @@ classDiagram
         +ForeignKey contractor
         +CharField type
         +DecimalField price
+        +CharField currency
         +DateField signed
         +DateField invoicing_start
         +DateField invoicing_end
@@ -99,6 +102,7 @@ classDiagram
         +CharField project
         +ForeignKey contract
         +DecimalField price
+        +CharField currency
         +DateField invoicing_start
         +DateField invoicing_end
     }
@@ -168,12 +172,15 @@ The central model representing physical or logical inventory items.
 - `assigned_object`: Generic foreign key to NetBox objects (Device, Site, Location, etc.)
 - `type`: Link to AssetType for categorization
 - `order_contract`: Associated purchase contract
+- `price`: Asset purchase price (nullable, 0 = free)
+- `currency`: Price currency (required only when price is set)
 - `warranty_start/end`: Warranty period tracking
 
 **Special Features:**
 - Probe status integration with `is_recently_probed()` method
 - Generic assignment to any NetBox object
 - Integration with External Inventory systems
+- Multi-currency support with configurable currency symbols
 
 #### **Probe**
 Discovery and monitoring data collection points populated by external scripts (e.g., SNMP discovery tools).
@@ -195,6 +202,8 @@ Business relationship management.
 - Invoice tracking
 - Service associations
 - Asset procurement tracking
+- Multi-currency pricing support with configurable currencies
+- Currency required only when price is set (price can be None, 0, or > 0)
 
 #### **RMA (Return Merchandise Authorization)**
 Complete RMA workflow management.
@@ -209,8 +218,10 @@ Service and maintenance contract tracking.
 
 **Features:**
 - Service period management
-- Pricing and category tracking
+- Pricing with multi-currency support (service_price, service_currency)
+- Category tracking (service_category, service_category_vendor)
 - Links to both Assets and Contracts
+- Currency required only when service price is set
 
 #### **ExternalInventory**
 Integration with external inventory management systems.
@@ -279,6 +290,16 @@ PLUGINS_CONFIG = {
         # Probe Status Settings
         "probe_recent_days": 7,  # Days to consider probe "recent"
         
+        # Currency Settings
+        "currencies": [
+            ("CZK", "Czech Koruna", "Kč"),
+            ("EUR", "Euro", "€"),
+            ("USD", "US Dollar", "$"),
+            ("GBP", "British Pound", "£"),
+            ("JPY", "Japanese Yen", "¥"),
+        ],
+        "default_currency": "EUR",  # Default currency for new contracts
+        
         # External Inventory Status Configuration
         "external_inventory_status_config": {
             "1": {"label": "Active", "color": "success"},
@@ -296,6 +317,20 @@ PLUGINS_CONFIG = {
 
 #### Probe Status Settings
 - **`probe_recent_days`** (default: 7): Number of days to consider a probe "recent". Affects visual indicators and status badges.
+
+#### Currency Settings
+- **`currencies`** (default: see example above): List of available currencies for all financial models (Assets, Contracts, Invoices, AssetServices). Each item is a tuple of `(currency_code, display_name, symbol)`. The symbol is optional - if not provided, the currency code will be used for display.
+  - `currency_code`: Currency identifier with no length restriction (e.g., "EUR", "USD", "CZK", or custom codes)
+  - `display_name`: Human-readable name shown in forms
+  - `symbol`: Currency symbol for display (e.g., "€", "$", "Kč") - optional
+- **`default_currency`** (default: "EUR"): Default currency code used when creating new records. Must match one of the codes in the `currencies` list.
+
+**Price and Currency Logic:**
+- **`price = None`**: No pricing information (not applicable/unknown)
+- **`price = 0`**: Free/no charge (explicitly zero) - currency optional
+- **`price > 0`**: Actual cost - currency **required** and validated
+- Currency is validated only when price is set and non-zero
+- All price fields are nullable with no defaults
 
 #### External Inventory Status Configuration
 - **`external_inventory_status_config`**: Maps status codes to display labels and Bootstrap colors

@@ -28,7 +28,11 @@
                         </tr>
                         <tr>
                             <th scope="row">Price</th>
-                            <td>{{ object.price|to_czech_crown }}</td>
+                            <td>{{ object.price|format_price_with_currency:object.currency }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Currency</th>
+                            <td>{{ object.currency|default:"---" }}</td>
                         </tr>
                         <tr>
                             <th scope="row">Invoicing Start</th>

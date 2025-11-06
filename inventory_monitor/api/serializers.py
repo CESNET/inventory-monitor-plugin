@@ -104,6 +104,7 @@ class ContractSerializer(NetBoxModelSerializer):
             "type",
             "contract_type",
             "price",
+            "currency",
             "signed",
             "accepted",
             "invoicing_start",
@@ -178,6 +179,7 @@ class AssetSerializer(NetBoxModelSerializer):
             "vendor",
             "quantity",
             "price",
+            "currency",
             # Warranty information
             "warranty_start",
             "warranty_end",
@@ -312,6 +314,7 @@ class AssetServiceSerializer(NetBoxModelSerializer):
             "service_start",
             "service_end",
             "service_price",
+            "service_currency",
             "service_category",
             "service_category_vendor",
             "asset",
