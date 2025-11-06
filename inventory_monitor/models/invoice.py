@@ -63,6 +63,10 @@ class Invoice(NetBoxModel):
         # Validate - currency is required if price is set
         if self.price is not None and self.price != 0 and not self.currency:
             raise ValidationError({"currency": "Currency is required when price is set"})
+        
+        # If currency is set, price must also be set
+        if self.currency and self.price is None:
+            raise ValidationError({"price": "Price is required when currency is set"})
 
         # Validate invoicing_start and invoicing_end
         if self.invoicing_start and self.invoicing_end and self.invoicing_start > self.invoicing_end:

@@ -288,6 +288,12 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
                 raise ValidationError({
                     "currency": _("Currency is required when price is set.")
                 })
+        
+        # If currency is set, price must also be set
+        if self.currency and self.price is None:
+            raise ValidationError({
+                "price": _("Price is required when currency is set.")
+            })
 
     def get_assignment_status_color(self):
         return AssignmentStatusChoices.colors.get(self.assignment_status, "gray")
