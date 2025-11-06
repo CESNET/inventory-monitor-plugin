@@ -21,10 +21,14 @@ class Invoice(NetBoxModel):
     price = models.DecimalField(
         max_digits=19,
         decimal_places=2,
-        blank=False,
-        null=False,
+        blank=True,
+        null=True,
         validators=[MinValueValidator(0)],
-        default=0,
+    )
+    currency = models.CharField(
+        blank=True,
+        null=True,
+        help_text="Currency for the invoice price (required if price is set)",
     )
     invoicing_start = models.DateField(
         blank=True,
@@ -42,6 +46,7 @@ class Invoice(NetBoxModel):
             "name_internal",
             "contract",
             "price",
+            "currency",
             "invoicing_start",
             "invoicing_end",
         )
@@ -54,6 +59,10 @@ class Invoice(NetBoxModel):
 
     def clean(self):
         super().clean()
+
+        # Validate - currency is required if price is set
+        if self.price is not None and self.price != 0 and not self.currency:
+            raise ValidationError({"currency": "Currency is required when price is set"})
 
         # Validate invoicing_start and invoicing_end
         if self.invoicing_start and self.invoicing_end and self.invoicing_start > self.invoicing_end:

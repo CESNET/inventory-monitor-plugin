@@ -1,5 +1,4 @@
-from decimal import Decimal
-
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
@@ -25,7 +24,11 @@ class AssetService(NetBoxModel, DateStatusMixin):
         blank=True,
         null=True,
         validators=[MinValueValidator(0)],
-        default=Decimal("0"),
+    )
+    service_currency = models.CharField(
+        blank=True,
+        null=True,
+        help_text="Currency for the service price (required if service_price is set)",
     )
     service_category = models.CharField(max_length=255, blank=True, null=True)
     service_category_vendor = models.CharField(max_length=255, blank=True, null=True)
@@ -50,6 +53,7 @@ class AssetService(NetBoxModel, DateStatusMixin):
             "service_start",
             "service_end",
             "service_price",
+            "service_currency",
             "service_category",
             "service_category_vendor",
             "asset",
@@ -61,6 +65,13 @@ class AssetService(NetBoxModel, DateStatusMixin):
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:assetservice", args=[self.pk])
+
+    def clean(self):
+        super().clean()
+
+        # Validate - service_currency is required if service_price is set
+        if self.service_price is not None and self.service_price != 0 and not self.service_currency:
+            raise ValidationError({"service_currency": "Currency is required when service price is set"})
 
     def get_service_status(self):
         """Returns the service status and color for progress bar"""

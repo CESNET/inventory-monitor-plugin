@@ -1,9 +1,11 @@
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from netbox.models import ImageAttachmentsMixin, NetBoxModel
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
@@ -136,7 +138,11 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
         blank=True,
         null=True,
         validators=[MinValueValidator(0)],
-        default=0,
+    )
+    currency = models.CharField(
+        blank=True,
+        null=True,
+        help_text="Currency code (e.g., USD, EUR, CZK). Required if price is set.",
     )
 
     #
@@ -166,6 +172,7 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
             "vendor",
             "quantity",
             "price",
+            "currency",
             "order_contract",
             "warranty_start",
             "warranty_end",
@@ -274,6 +281,13 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
 
     def clean(self):
         super().clean()
+        
+        # Validate price and currency relationship
+        if self.price is not None and self.price != 0:
+            if not self.currency:
+                raise ValidationError({
+                    "currency": _("Currency is required when price is set.")
+                })
 
     def get_assignment_status_color(self):
         return AssignmentStatusChoices.colors.get(self.assignment_status, "gray")

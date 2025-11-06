@@ -7,6 +7,7 @@ from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
 
 
+
 class ContractTypeChoices(ChoiceSet):
     key = "Contract.type"
 
@@ -36,6 +37,11 @@ class Contract(NetBoxModel):
         blank=True,
         null=True,
         validators=[MinValueValidator(0)],
+    )
+    currency = models.CharField(
+        blank=True,
+        null=True,
+        help_text="Currency for the contract price (required if price is set)",
     )
     signed = models.DateField(
         blank=True,
@@ -97,6 +103,10 @@ class Contract(NetBoxModel):
 
     def clean(self):
         super().clean()
+
+        # Validate - currency is required if price is set and non-zero
+        if self.price is not None and self.price != 0 and not self.currency:
+            raise ValidationError({"currency": "Currency is required when price is set"})
 
         # Validate - subcontract cannot set parent which is subcontract
         if self.parent and self.parent.parent:
