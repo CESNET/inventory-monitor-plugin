@@ -42,6 +42,18 @@ class ExternalInventoryTable(NetBoxTable):
     serial_number = tables.Column()
     person_name = tables.Column()
     location = tables.Column()
+    status = tables.TemplateColumn(
+        template_code="""
+        {% if record.status %}
+            <span class="badge text-bg-{{ record.get_status_color }}">
+                {{ record.get_status_display }}
+            </span>
+        {% else %}
+            {{ ''|placeholder }}
+        {% endif %}
+        """,
+        verbose_name="Status"
+    )
     assets = tables.TemplateColumn(template_code=ASSOCIATED_ASSETS, orderable=False, verbose_name="Assets")
     tags = columns.TagColumn()
 
