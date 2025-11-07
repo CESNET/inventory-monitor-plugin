@@ -158,7 +158,7 @@ class ContractBulkEditForm(NetBoxModelBulkEditForm):
     name = forms.CharField(max_length=100, required=False)
     name_internal = forms.CharField(max_length=100, required=False)
     contractor = DynamicModelChoiceField(queryset=Contractor.objects.all(), required=False)
-    type = forms.ChoiceField(required=False)
+    type = forms.ChoiceField(required=False, choices=add_blank_choice(ContractTypeChoices))
     price = forms.DecimalField(required=False)
     currency = forms.ChoiceField(required=False)
     signed = forms.DateField(required=False, widget=DatePicker())
@@ -168,8 +168,6 @@ class ContractBulkEditForm(NetBoxModelBulkEditForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set type choices with blank option
-        self.fields["type"].choices = add_blank_choice(ContractTypeChoices)
         # Set currency choices from config with blank option
         self.fields["currency"].choices = add_blank_choice(get_currency_choices())
 

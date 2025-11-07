@@ -425,9 +425,9 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
     )
     type = DynamicModelChoiceField(queryset=AssetType.objects.all(), required=False)
 
-    assignment_status = forms.ChoiceField(choices=AssignmentStatusChoices, required=False)
+    assignment_status = forms.ChoiceField(choices=add_blank_choice(AssignmentStatusChoices), required=False)
 
-    lifecycle_status = forms.ChoiceField(choices=LifecycleStatusChoices, required=False)
+    lifecycle_status = forms.ChoiceField(choices=add_blank_choice(LifecycleStatusChoices), required=False)
 
     project = forms.CharField(required=False)
 
@@ -437,7 +437,7 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
 
     price = forms.DecimalField(required=False, decimal_places=2)
     
-    currency = forms.ChoiceField(required=False, choices=[])
+    currency = forms.ChoiceField(required=False, choices=add_blank_choice(get_currency_choices()))
 
     warranty_start = forms.DateField(required=False, widget=DatePicker())
 
@@ -469,11 +469,6 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
         FieldSet("warranty_start", "warranty_end", name=_("Warranty")),
         FieldSet("comments", name=_("Comments")),
     )
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Add blank choice for currency in bulk edit
-        self.fields["currency"].choices = add_blank_choice(get_currency_choices())
 
 
 class AssetBulkImportForm(NetBoxModelImportForm):
@@ -495,7 +490,7 @@ class AssetBulkImportForm(NetBoxModelImportForm):
         required=False,
         to_field_name="name",  # Assuming you want to match by contract name
     )
-    quantity = forms.IntegerField(required=False, initial=1)
+    quantity = forms.IntegerField(required=False)
     price = forms.DecimalField(required=False, decimal_places=2)
     currency = forms.CharField(required=False)
     warranty_start = forms.DateField(required=False)
