@@ -106,7 +106,13 @@ class AssetForm(NetBoxModelForm):
         required=False,
         label="Vendor",
     )
-    quantity = forms.IntegerField(required=True, label="Items", initial=1, min_value=1)
+    quantity = forms.IntegerField(
+        required=True,
+        label="Items",
+        initial=1,
+        min_value=1,
+        help_text="Number of identical items (e.g., 5 servers with same specifications)",
+    )
     price = forms.DecimalField(
         required=False,
         label="Price",
@@ -377,11 +383,11 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
     )
     price__isnull = forms.ChoiceField(
         required=False,
-        label=("Price is not set"),
+        label=("Has Price"),
         choices=(
             ('', 'Any'),
-            ('true', 'Yes'),
-            ('false', 'No'),
+            ('false', 'Yes'),
+            ('true', 'No'),
         ),
     )
     currency = forms.MultipleChoiceField(required=False)

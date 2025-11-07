@@ -22,6 +22,11 @@ class ExternalInventoryForm(NetBoxModelForm):
         required=False,
         label="Associated Assets",
     )
+    split_asset = forms.CharField(
+        required=False,
+        label="Split Asset",
+        help_text="Whether this is a split/shared asset: A = Yes (shared), N = No (dedicated)",
+    )
 
     fieldsets = (
         FieldSet(

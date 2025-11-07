@@ -34,9 +34,9 @@ class AssetServiceForm(NetBoxModelForm):
     service_price = forms.DecimalField(
         required=False,
         label="Service Price",
-        initial=0,
         min_value=0,
         decimal_places=2,
+        widget=forms.NumberInput(attrs={'placeholder': 'Enter price'}),
     )
     service_currency = forms.ChoiceField(
         required=False,
@@ -138,11 +138,11 @@ class AssetServiceFilterForm(NetBoxModelFilterSetForm):
     )
     service_price__isnull = forms.ChoiceField(
         required=False,
-        label=("Service Price is not set"),
+        label=("Has Service Price"),
         choices=(
             ('', 'Any'),
-            ('true', 'Yes'),
-            ('false', 'No'),
+            ('false', 'Yes'),
+            ('true', 'No'),
         ),
     )
     service_currency = forms.MultipleChoiceField(required=False)

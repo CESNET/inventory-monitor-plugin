@@ -44,15 +44,9 @@ class ContractTable(NetBoxTable):
         default_columns = (
             "id",
             "name",
-            "name_internal",
             "contractor",
             "type",
-            "contract_type",
             "price",
-            "signed",
-            "accepted",
             "invoicing_start",
             "invoicing_end",
-            "parent",
-            "attachments_count",
         )

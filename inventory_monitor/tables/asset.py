@@ -211,14 +211,11 @@ class AssetTable(NetBoxTable):
         # Define the default columns that are shown when the table first loads
         default_columns = (
             "id",
-            "partnumber",
             "serial",
             "description",
             "type",
-            "assigned_object",
             "assignment_status",
             "lifecycle_status",
-            "external_inventory_asset_numbers",
         )
 
 

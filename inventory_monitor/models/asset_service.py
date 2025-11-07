@@ -69,13 +69,13 @@ class AssetService(NetBoxModel, DateStatusMixin):
     def clean(self):
         super().clean()
 
-        # Validate - service_currency is required if service_price is set
+        # Validate - currency is required if price is set
         if self.service_price is not None and self.service_price != 0 and not self.service_currency:
-            raise ValidationError({"service_currency": "Currency is required when service price is set"})
+            raise ValidationError({"service_currency": "Currency is required when service price is set."})
         
-        # If service_currency is set, service_price must also be set
+        # If currency is set, price must also be set
         if self.service_currency and self.service_price is None:
-            raise ValidationError({"service_price": "Service price is required when currency is set"})
+            raise ValidationError({"service_price": "Service price is required when currency is set."})
 
     def get_service_status(self):
         """Returns the service status and color for progress bar"""

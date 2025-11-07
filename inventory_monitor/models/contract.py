@@ -104,13 +104,13 @@ class Contract(NetBoxModel):
     def clean(self):
         super().clean()
 
-        # Validate - currency is required if price is set and non-zero
+        # Validate - currency is required if price is set
         if self.price is not None and self.price != 0 and not self.currency:
-            raise ValidationError({"currency": "Currency is required when price is set"})
+            raise ValidationError({"currency": "Currency is required when price is set."})
         
         # If currency is set, price must also be set
         if self.currency and self.price is None:
-            raise ValidationError({"price": "Price is required when currency is set"})
+            raise ValidationError({"price": "Price is required when currency is set."})
 
         # Validate - subcontract cannot set parent which is subcontract
         if self.parent and self.parent.parent:

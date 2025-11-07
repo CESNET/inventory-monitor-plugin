@@ -84,11 +84,11 @@ class InvoiceFilterForm(NetBoxModelFilterSetForm):
     price__lte = forms.DecimalField(required=False, label=("Price (max)"))
     price__isnull = forms.ChoiceField(
         required=False,
-        label=("Price is not set"),
+        label=("Has Price"),
         choices=(
             ('', 'Any'),
-            ('true', 'Yes'),
-            ('false', 'No'),
+            ('false', 'Yes'),
+            ('true', 'No'),
         ),
     )
     currency = forms.MultipleChoiceField(required=False)
