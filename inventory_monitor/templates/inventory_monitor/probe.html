@@ -62,6 +62,16 @@
                                 {% endif %}
                             </td>
                         </tr>
+                        <tr>
+                            <th scope="row">First Discovery</th>
+                            <td>
+                                {% if object.creation_time %}
+                                    {{ object.creation_time|date:"Y-m-d H:i:s" }}
+                                {% else %}
+                                    {{ ''|placeholder }}
+                                {% endif %}
+                            </td>
+                        </tr>
                     </table>
                 </div>
             </div>
