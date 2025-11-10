@@ -28,7 +28,7 @@ class AssetService(NetBoxModel, DateStatusMixin):
     service_currency = models.CharField(
         blank=True,
         null=True,
-        help_text="Currency for the service price (required if service_price is set)",
+        help_text="Currency for the service price (required if service_price is set, including 0)",
     )
     service_category = models.CharField(max_length=255, blank=True, null=True)
     service_category_vendor = models.CharField(max_length=255, blank=True, null=True)
@@ -69,8 +69,8 @@ class AssetService(NetBoxModel, DateStatusMixin):
     def clean(self):
         super().clean()
 
-        # Validate - currency is required if price is set
-        if self.service_price is not None and self.service_price != 0 and not self.service_currency:
+        # Validate - currency is required if price is set (including 0)
+        if self.service_price is not None and not self.service_currency:
             raise ValidationError({"service_currency": "Currency is required when service price is set."})
         
         # If currency is set, price must also be set

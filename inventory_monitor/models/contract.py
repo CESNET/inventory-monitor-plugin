@@ -41,7 +41,7 @@ class Contract(NetBoxModel):
     currency = models.CharField(
         blank=True,
         null=True,
-        help_text="Currency for the contract price (required if price is set)",
+        help_text="Currency for the contract price (required if price is set, including 0)",
     )
     signed = models.DateField(
         blank=True,
@@ -104,8 +104,8 @@ class Contract(NetBoxModel):
     def clean(self):
         super().clean()
 
-        # Validate - currency is required if price is set
-        if self.price is not None and self.price != 0 and not self.currency:
+        # Validate - currency is required if price is set (including 0)
+        if self.price is not None and not self.currency:
             raise ValidationError({"currency": "Currency is required when price is set."})
         
         # If currency is set, price must also be set

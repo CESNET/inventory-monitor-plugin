@@ -142,7 +142,7 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
     currency = models.CharField(
         blank=True,
         null=True,
-        help_text="Currency code (e.g., USD, EUR, CZK). Required if price is set.",
+        help_text="Currency code (e.g., USD, EUR, CZK). Required if price is set, including 0.",
     )
 
     #
@@ -283,7 +283,7 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
         super().clean()
         
         # Validate price and currency relationship
-        if self.price is not None and self.price != 0:
+        if self.price is not None:
             if not self.currency:
                 raise ValidationError({
                     "currency": _("Currency is required when price is set.")
