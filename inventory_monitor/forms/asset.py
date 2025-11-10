@@ -1,6 +1,7 @@
 from dcim.models import Device, Location, Module, Rack, Site
 from django import forms
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from netbox.forms import (
     NetBoxModelBulkEditForm,
@@ -93,10 +94,7 @@ class AssetForm(NetBoxModelForm):
 
     # Related object fields
     order_contract = DynamicModelChoiceField(
-        queryset=Contract.objects.all(),
-        required=False,
-        label="Order Contract",
-        selector=True
+        queryset=Contract.objects.all(), required=False, label="Order Contract", selector=True
     )
     # Additional information fields
     project = forms.CharField(
@@ -240,7 +238,7 @@ class AssetForm(NetBoxModelForm):
 
         kwargs["initial"] = initial
         super().__init__(*args, **kwargs)
-        
+
         # Set currency choices with blank option
         self.fields["currency"].choices = add_blank_choice(get_currency_choices())
         # Don't set default - let currency be blank until user adds a price
@@ -386,13 +384,13 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label=("Has Price"),
         choices=(
-            ('', 'Any'),
-            ('false', 'Yes'),
-            ('true', 'No'),
+            ("", "Any"),
+            ("false", "Yes"),
+            ("true", "No"),
         ),
     )
     currency = forms.MultipleChoiceField(required=False)
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Set currency choices from config
@@ -437,7 +435,7 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
     order_contract = DynamicModelChoiceField(queryset=Contract.objects.all(), required=False)
 
     price = forms.DecimalField(required=False, decimal_places=2)
-    
+
     currency = forms.ChoiceField(required=False, choices=add_blank_choice(get_currency_choices()))
 
     warranty_start = forms.DateField(required=False, widget=DatePicker())
@@ -461,7 +459,7 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
         "warranty_end",
         "comments",
     )
-    
+
     fieldsets = (
         FieldSet("description", "type", name=_("Asset")),
         FieldSet("assignment_status", "lifecycle_status", name=_("Status")),
@@ -530,6 +528,7 @@ class AssetExternalInventoryAssignmentForm(NetBoxModelForm):
         required=False,
         label="External Inventory Items",
         help_text="Add or Remove External Inventory items to this Asset",
+        selector=True,
     )
 
     fieldsets = (
@@ -555,6 +554,27 @@ class AssetExternalInventoryAssignmentForm(NetBoxModelForm):
             self.fields.pop(cf_name, None)
         self.custom_fields = {}
         self.custom_fields_groups = {}
+
+    def _post_clean(self):
+        """
+        Override _post_clean to skip model-level validation entirely.
+
+        Since this form only manages the external_inventory_items many-to-many relationship
+        and doesn't modify any other Asset fields, we don't need to run the model's clean()
+        method which validates price/currency relationships that this form doesn't touch.
+
+        We still perform field-level validation for the fields in this form.
+        """
+        # Get validation exclusions - this validates form fields
+        exclude = self._get_validation_exclusions()
+
+        # Validate field values but skip model.clean() by not calling full_clean()
+        # This prevents the price/currency validation in Asset.clean()
+        try:
+            # Only validate fields, not the model's clean() method
+            self.instance.clean_fields(exclude=exclude)
+        except ValidationError as e:
+            self._update_errors(e)
 
     def save(self, commit=True):
         instance = super().save(commit=False)
