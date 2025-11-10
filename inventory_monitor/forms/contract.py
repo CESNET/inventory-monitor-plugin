@@ -17,12 +17,13 @@ from inventory_monitor.models import Contract, Contractor, ContractTypeChoices
 
 class ContractForm(NetBoxModelForm):
     comments = CommentField(label="Comments")
-    contractor = DynamicModelChoiceField(queryset=Contractor.objects.all(), required=True)
+    contractor = DynamicModelChoiceField(queryset=Contractor.objects.all(), required=True, selector=True)
     parent = DynamicModelChoiceField(
         queryset=Contract.objects.all(),
         query_params={"parent_id": "null"},
         required=False,
         label=("Parent Contract"),
+        selector=True,
     )
     currency = forms.ChoiceField(
         required=False,
@@ -45,7 +46,7 @@ class ContractForm(NetBoxModelForm):
             name=_("Dates"),
         ),
         FieldSet("parent", name=_("Hierarchy")),
-        FieldSet("comments", "tags", name=_("Additional Information")),
+        FieldSet("tags", name=_("Additional Information")),
     )
 
     def __init__(self, *args, **kwargs):
@@ -133,9 +134,9 @@ class ContractFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label=("Has Price"),
         choices=(
-            ('', 'Any'),
-            ('false', 'Yes'),
-            ('true', 'No'),
+            ("", "Any"),
+            ("false", "Yes"),
+            ("true", "No"),
         ),
     )
     currency = forms.MultipleChoiceField(required=False)

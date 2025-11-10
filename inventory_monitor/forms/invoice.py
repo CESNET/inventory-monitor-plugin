@@ -1,6 +1,6 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelBulkEditForm
+from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm
 from utilities.forms.fields import (
     CommentField,
     DynamicModelChoiceField,
@@ -17,7 +17,7 @@ from inventory_monitor.models import Contract, Invoice
 
 class InvoiceForm(NetBoxModelForm):
     comments = CommentField(label="Comments")
-    contract = DynamicModelChoiceField(queryset=Contract.objects.all(), required=True)
+    contract = DynamicModelChoiceField(queryset=Contract.objects.all(), required=True, selector=True)
     currency = forms.ChoiceField(
         required=False,
         label=_("Currency"),
@@ -30,7 +30,7 @@ class InvoiceForm(NetBoxModelForm):
         FieldSet("name", "name_internal", "project", "contract", name=_("Invoice Details")),
         FieldSet(InlineFields("price", "currency", label=_("Price")), name=_("Financial")),
         FieldSet("invoicing_start", "invoicing_end", name=_("Dates")),
-        FieldSet("comments", "tags", name=_("Additional Information")),
+        FieldSet("tags", name=_("Additional Information")),
     )
 
     def __init__(self, *args, **kwargs):
@@ -86,13 +86,13 @@ class InvoiceFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label=("Has Price"),
         choices=(
-            ('', 'Any'),
-            ('false', 'Yes'),
-            ('true', 'No'),
+            ("", "Any"),
+            ("false", "Yes"),
+            ("true", "No"),
         ),
     )
     currency = forms.MultipleChoiceField(required=False)
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Set currency choices from config
@@ -119,13 +119,13 @@ class InvoiceBulkEditForm(NetBoxModelBulkEditForm):
 
     model = Invoice
     nullable_fields = ("name_internal", "project", "price", "currency", "invoicing_start", "invoicing_end")
-    
+
     fieldsets = (
         FieldSet("name", "name_internal", "project", "contract", name=_("Common")),
         FieldSet("price", "currency", name=_("Financial")),
         FieldSet("invoicing_start", "invoicing_end", name=_("Dates")),
     )
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Add blank choice for currency in bulk edit

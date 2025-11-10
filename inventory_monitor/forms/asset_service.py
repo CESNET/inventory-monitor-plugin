@@ -25,7 +25,7 @@ class AssetServiceForm(NetBoxModelForm):
             "service_category_vendor",
             name=_("Service Params"),
         ),
-        FieldSet("comments", "tags", name=_("Additional Information")),
+        FieldSet("tags", name=_("Additional Information")),
     )
 
     comments = CommentField(label="Comments")
@@ -55,11 +55,13 @@ class AssetServiceForm(NetBoxModelForm):
         queryset=Asset.objects.all(),
         required=True,
         label="Service Asset",
+        selector=True
     )
     contract = DynamicModelChoiceField(
         queryset=Contract.objects.all(),
         required=True,
         label="Service Contract",
+        selector=True
     )
 
     def __init__(self, *args, **kwargs):

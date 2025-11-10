@@ -31,7 +31,7 @@ class RMAForm(NetBoxModelForm):
         FieldSet("tags", name="Tags"),
     )
 
-    asset = DynamicModelChoiceField(queryset=Asset.objects.all())
+    asset = DynamicModelChoiceField(queryset=Asset.objects.all(), selector=True, required=True)
     status = forms.ChoiceField(
         choices=RMAStatusChoices,
         help_text="Status will automatically update asset serial when set to 'Completed' with a replacement serial",

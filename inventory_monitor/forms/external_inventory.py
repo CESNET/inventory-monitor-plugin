@@ -22,6 +22,7 @@ class ExternalInventoryForm(NetBoxModelForm):
         queryset=Asset.objects.all(),
         required=False,
         label="Associated Assets",
+        selector=True,
     )
     split_asset = forms.CharField(
         required=False,

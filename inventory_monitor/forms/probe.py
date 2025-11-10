@@ -216,6 +216,7 @@ class ProbeDiffForm(NetBoxModelForm):
         required=True,
         label=_("Target Device"),
         help_text=_("Select the device to analyze probe differences for"),
+        selector=True
     )
 
     # Hidden field for tags

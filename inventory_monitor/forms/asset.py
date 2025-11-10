@@ -96,6 +96,7 @@ class AssetForm(NetBoxModelForm):
         queryset=Contract.objects.all(),
         required=False,
         label="Order Contract",
+        selector=True
     )
     # Additional information fields
     project = forms.CharField(
