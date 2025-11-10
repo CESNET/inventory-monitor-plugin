@@ -19,9 +19,9 @@ from netbox.plugins import PluginTemplateExtension
 from netbox.views import generic
 from utilities.views import ViewTab, register_model_view
 
-from inventory_monitor.filtersets import AssetFilterSet, ProbeFilterSet
-from inventory_monitor.models import Asset, Contract, Contractor, Probe
-from inventory_monitor.tables import EnhancedAssetTable, EnhancedProbeTable
+from inventory_monitor.filtersets import AssetFilterSet, AssetServiceFilterSet, ProbeFilterSet
+from inventory_monitor.models import Asset, AssetService, Contract, Contractor, Probe
+from inventory_monitor.tables import AssetServiceTable, EnhancedAssetTable, EnhancedProbeTable
 
 # Load plugin configuration settings
 plugin_settings = settings.PLUGINS_CONFIG.get("inventory_monitor", {})
@@ -327,7 +327,7 @@ class ContractAssetsView(generic.ObjectChildrenView):
     template_name = "generic/object_children.html"
     hide_if_empty = False
     tab = ViewTab(
-        label="Assets",
+        label="Assets (Order Contract)",
         badge=lambda obj: obj.assets.count(),
         permission="inventory_monitor.view_asset",
     )
@@ -335,6 +335,27 @@ class ContractAssetsView(generic.ObjectChildrenView):
     def get_children(self, request: HttpRequest, parent: Contract) -> QuerySet[Asset]:
         """Get assets where this contract is the order_contract."""
         return parent.assets.all()
+
+
+@register_model_view(Contract, name="services", path="services")
+class ContractServicesView(generic.ObjectChildrenView):
+    """View to display asset services linked to this contract."""
+
+    queryset = Contract.objects.all()
+    child_model = AssetService
+    filterset = AssetServiceFilterSet
+    table = AssetServiceTable
+    template_name = "generic/object_children.html"
+    hide_if_empty = False
+    tab = ViewTab(
+        label="Services",
+        badge=lambda obj: obj.services.count(),
+        permission="inventory_monitor.view_assetservice",
+    )
+
+    def get_children(self, request: HttpRequest, parent: Contract) -> QuerySet[AssetService]:
+        """Get asset services where this contract is linked."""
+        return parent.services.all()
 
 
 class AssignedAssetsView(generic.ObjectChildrenView):
