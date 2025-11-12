@@ -14,7 +14,7 @@ class ProbeListView(generic.ObjectListView):
     sub_count_serial = (
         models.Probe.objects.filter(serial=OuterRef("serial")).values("serial").annotate(changes_count=Count("*"))
     )
-    queryset = models.Probe.objects.prefetch_related("tags", "device").annotate(
+    queryset = models.Probe.objects.select_related("device", "site", "location").prefetch_related("tags").annotate(
         changes_count=Subquery(sub_count_serial.values("changes_count"))
     )
 

@@ -22,12 +22,11 @@ class AssetView(generic.ObjectView):
 class AssetListView(generic.ObjectListView):
     queryset = (
         models.Asset.objects.all()
+        .select_related("type", "order_contract", "assigned_object_type")  # Use select_related for FK fields
         .prefetch_related("services")
         .prefetch_related("tags")
         .prefetch_related("external_inventory_items")
         .prefetch_related("rmas")  # Prefetch RMAs to avoid N+1 queries in get_related_probes
-        .prefetch_related("type")  # Prefetch asset types for table display
-        .select_related("assigned_object_type")  # Optimize generic foreign key queries
         .annotate(services_count=Count("services"))
         .annotate(services_to=ArrayAgg("services__service_end"))
         .annotate(services_contracts=ArrayAgg("services__contract__name"))
