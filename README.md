@@ -466,6 +466,121 @@ For file attachments, install and configure [netbox-attachments](https://github.
 pip install netbox-attachments
 ```
 
+### Customizing Field Choices
+
+The plugin provides several configurable choice fields that can be customized via NetBox's `FIELD_CHOICES` configuration. This allows you to replace default choices or extend them with additional options.
+
+#### Available Choice Fields
+
+**Asset Model:**
+- `inventory_monitor.Asset.assignment_status`: Assignment status (Reserved, Deployed, Loaned, Stocked)
+- `inventory_monitor.Asset.lifecycle_status`: Lifecycle status (New, In Stock, In Use, In Maintenance, Retired, Disposed)
+
+**Contract Model:**
+- `inventory_monitor.Contract.type`: Contract type (Supply, Order, Service, Other)
+
+**RMA Model:**
+- `inventory_monitor.RMA.status`: RMA status (Pending, Shipped to Vendor, Received by Vendor, Under Investigation, Approved, Rejected, Completed)
+
+#### Default Choices Reference
+
+**Asset Assignment Status** (`inventory_monitor.Asset.assignment_status`):
+```python
+[
+    ('reserved', 'Reserved', 'cyan'),
+    ('deployed', 'Deployed', 'green'),
+    ('loaned', 'Loaned', 'blue'),
+    ('stocked', 'Stocked', 'gray'),
+]
+```
+
+**Asset Lifecycle Status** (`inventory_monitor.Asset.lifecycle_status`):
+```python
+[
+    ('new', 'New', 'green'),
+    ('in_stock', 'In Stock', 'blue'),
+    ('in_use', 'In Use', 'cyan'),
+    ('in_maintenance', 'In Maintenance', 'orange'),
+    ('retired', 'Retired', 'red'),
+    ('disposed', 'Disposed', 'gray'),
+]
+```
+
+**Contract Type** (`inventory_monitor.Contract.type`):
+```python
+[
+    ('supply', 'Supply Contract', 'green'),
+    ('order', 'Order', 'red'),
+    ('service', 'Service Contract', 'orange'),
+    ('other', 'Other', 'blue'),
+]
+```
+
+**RMA Status** (`inventory_monitor.RMA.status`):
+```python
+[
+    ('pending', 'Pending', 'yellow'),
+    ('shipped', 'Shipped to Vendor', 'blue'),
+    ('received', 'Received by Vendor', 'blue'),
+    ('investigating', 'Under Investigation', 'blue'),
+    ('approved', 'Approved', 'green'),
+    ('rejected', 'Rejected', 'red'),
+    ('completed', 'Completed', 'green'),
+]
+```
+
+#### Customization Examples
+
+**Replace Asset Assignment Status choices** (in `configuration.py`):
+```python
+FIELD_CHOICES = {
+    'inventory_monitor.Asset.assignment_status': (
+        ('reserved', 'Reserved for Order', 'info'),
+        ('active', 'Active/Deployed', 'success'),
+        ('storage', 'In Storage', 'warning'),
+        ('disposal', 'Pending Disposal', 'danger'),
+    )
+}
+```
+
+**Extend (append to) Asset Lifecycle Status choices**:
+```python
+FIELD_CHOICES = {
+    'inventory_monitor.Asset.lifecycle_status+': (
+        ('quarantine', 'Quarantine', 'dark'),
+        ('damaged', 'Damaged', 'danger'),
+    )
+}
+```
+
+**Replace Contract Type choices**:
+```python
+FIELD_CHOICES = {
+    'inventory_monitor.Contract.type': (
+        ('purchase', 'Purchase Agreement', 'success'),
+        ('maintenance', 'Maintenance Contract', 'info'),
+        ('warranty', 'Warranty', 'primary'),
+        ('lease', 'Lease Agreement', 'warning'),
+    )
+}
+```
+
+**Extend RMA Status choices**:
+```python
+FIELD_CHOICES = {
+    'inventory_monitor.RMA.status+': (
+        ('refund', 'Refunded', 'success'),
+        ('warranty_claim', 'Warranty Claim', 'info'),
+    )
+}
+```
+
+**Available Colors**: `blue`, `indigo`, `purple`, `pink`, `red`, `orange`, `yellow`, `green`, `teal`, `cyan`, `gray`, `black`, `white`
+
+Alternatively, Bootstrap semantic colors are also supported: `primary`, `secondary`, `success`, `danger`, `warning`, `info`, `light`, `dark`
+
+For more information on NetBox field choice configuration, see the [NetBox documentation](https://netboxlabs.com/docs/netbox/configuration/data-validation/#field_choices).
+
 ---
 
 ## Usage
