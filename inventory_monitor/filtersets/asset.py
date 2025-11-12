@@ -1,8 +1,8 @@
 import django_filters
+from core.models import ObjectType
 
 # NetBox model imports
-from dcim.models import Device, Location, Rack, Site
-from django.contrib.contenttypes.models import ContentType
+from dcim.models import Device, Location, Module, Rack, Site
 from django.db.models import Q
 from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
@@ -113,9 +113,9 @@ class AssetFilterSet(NetBoxModelFilterSet):
         lookup_expr="isnull",
         label="Price is not set",
     )
-    
+
     currency = django_filters.MultipleChoiceFilter(choices=[])
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Set currency choices from config
@@ -171,7 +171,7 @@ class AssetFilterSet(NetBoxModelFilterSet):
     def filter_has_external_inventory_items(self, queryset, name, value):
         """
         Filter assets based on whether they have external inventory items.
-        
+
         Uses exclude for the false case to avoid join-induced duplicates.
         """
         if value is True:
@@ -210,11 +210,12 @@ class AssetFilterSet(NetBoxModelFilterSet):
         # Add External Inventory inventory number search
         external_inventory_number = Q(external_inventory_items__inventory_number__icontains=value)
 
-        # Get content types for assigned object types
-        device_type = ContentType.objects.get_for_model(Device)
-        site_type = ContentType.objects.get_for_model(Site)
-        location_type = ContentType.objects.get_for_model(Location)
-        rack_type = ContentType.objects.get_for_model(Rack)
+        # Get object types for assigned object types
+        device_type = ObjectType.objects.get_for_model(Device)
+        site_type = ObjectType.objects.get_for_model(Site)
+        location_type = ObjectType.objects.get_for_model(Location)
+        rack_type = ObjectType.objects.get_for_model(Rack)
+        module_type = ObjectType.objects.get_for_model(Module)
 
         # Search through assigned objects
         device_search = Q(
@@ -233,6 +234,10 @@ class AssetFilterSet(NetBoxModelFilterSet):
             assigned_object_type=rack_type,
             assigned_object_id__in=Rack.objects.filter(name__icontains=value).values_list("pk", flat=True),
         )
+        module_search = Q(
+            assigned_object_type=module_type,
+            assigned_object_id__in=Module.objects.filter(name__icontains=value).values_list("pk", flat=True),
+        )
 
         # Combine all search conditions including External Inventory numbers
         return queryset.filter(
@@ -247,4 +252,5 @@ class AssetFilterSet(NetBoxModelFilterSet):
             | site_search
             | location_search
             | rack_search
+            | module_search
         ).distinct()

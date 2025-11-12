@@ -10,9 +10,9 @@ This module provides NetBox UI customizations including:
 
 from typing import Any, Dict, List, Set, Type
 
+from core.models import ObjectType
 from dcim.models import Device, Location, Module, Rack, Site
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q, QuerySet
 from django.http import HttpRequest
 from netbox.plugins import PluginTemplateExtension
@@ -372,8 +372,8 @@ class AssignedAssetsView(generic.ObjectChildrenView):
     filterset = AssetFilterSet
     hide_if_empty = False
 
-    # Cache for content types to avoid repeated database queries
-    _content_types: Dict[str, ContentType] = {}
+    # Cache for object types to avoid repeated database queries
+    _content_types: Dict[str, ObjectType] = {}
 
     @staticmethod
     def get_hierarchical_asset_ids(parent: Any) -> Set[int]:
@@ -386,11 +386,11 @@ class AssignedAssetsView(generic.ObjectChildrenView):
         Returns:
             Set of asset IDs including direct and hierarchical assignments
         """
-        content_type = ContentType.objects.get_for_model(parent)
+        object_type = ObjectType.objects.get_for_model(parent)
 
         # Start with assets directly assigned to this object
         asset_ids = set(
-            Asset.objects.filter(assigned_object_type=content_type, assigned_object_id=parent.pk).values_list(
+            Asset.objects.filter(assigned_object_type=object_type, assigned_object_id=parent.pk).values_list(
                 "id", flat=True
             )
         )
@@ -411,34 +411,34 @@ class AssignedAssetsView(generic.ObjectChildrenView):
         return asset_ids
 
     @staticmethod
-    def _get_content_types() -> Dict[str, ContentType]:
+    def _get_content_types() -> Dict[str, ObjectType]:
         """
-        Cache content types to avoid repeated queries.
+        Cache object types to avoid repeated queries.
 
         Returns:
-            Dictionary mapping model names to their ContentType objects
+            Dictionary mapping model names to their ObjectType objects
         """
         if not AssignedAssetsView._content_types:
             AssignedAssetsView._content_types = {
-                "location": ContentType.objects.get_for_model(Location),
-                "device": ContentType.objects.get_for_model(Device),
-                "module": ContentType.objects.get_for_model(Module),
+                "location": ObjectType.objects.get_for_model(Location),
+                "device": ObjectType.objects.get_for_model(Device),
+                "module": ObjectType.objects.get_for_model(Module),
             }
         return AssignedAssetsView._content_types
 
     @staticmethod
-    def _add_assets_for_objects(asset_ids: Set[int], content_type: ContentType, object_ids: List[int]) -> None:
+    def _add_assets_for_objects(asset_ids: Set[int], object_type: ObjectType, object_ids: List[int]) -> None:
         """
         Helper to add asset IDs for given objects.
 
         Args:
             asset_ids: Set to update with new asset IDs
-            content_type: ContentType of the objects
+            object_type: ObjectType of the objects
             object_ids: List of object IDs to find assets for
         """
         if object_ids:
             new_asset_ids = Asset.objects.filter(
-                assigned_object_type=content_type, assigned_object_id__in=object_ids
+                assigned_object_type=object_type, assigned_object_id__in=object_ids
             ).values_list("id", flat=True)
             asset_ids.update(new_asset_ids)
 

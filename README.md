@@ -2,7 +2,7 @@
 
 A comprehensive NetBox plugin for asset management with semi-automatic discovery processes. This plugin extends NetBox with powerful inventory tracking capabilities, including asset lifecycle management, probe monitoring, contract tracking, and RMA (Return Merchandise Authorization) processing.
 
-[![Version](https://img.shields.io/badge/version-11.1.0b4-blue.svg)](https://gitlab.cesnet.cz/701/done/inventory-monitor-plugin)
+[![Version](https://img.shields.io/badge/version-12.0.0b1-blue.svg)](https://gitlab.cesnet.cz/701/done/inventory-monitor-plugin)
 [![NetBox](https://img.shields.io/badge/netbox-4.4.x-green.svg)](https://github.com/netbox-community/netbox)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 
@@ -30,6 +30,7 @@ A comprehensive NetBox plugin for asset management with semi-automatic discovery
 - [Data Model Overview](#data-model-overview)
 - [Data Models](#data-models)
 - [Installation](#installation)
+- [Upgrade Guide](#upgrade-guide)
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [API](#api)
@@ -375,6 +376,60 @@ python manage.py migrate
 ```bash
 sudo systemctl restart netbox netbox-rq
 ```
+
+---
+
+## Upgrade Guide
+
+### Upgrading to v12.0.0
+
+**Version 12.0.0** brings full **NetBox v4 compatibility** with significant internal changes:
+
+#### Breaking Changes
+
+None - this version maintains full backward compatibility with existing data and APIs.
+
+#### Migration Details
+
+**NetBox v4 API Update (ObjectType Migration)**
+
+Starting with NetBox v4, the plugin has been updated to use NetBox's new `ObjectType` API instead of Django's deprecated `ContentType`. This is an internal change with **no user-facing impact**:
+
+- ✅ All asset assignments continue to work as before (Device, Site, Location, Rack, Module)
+- ✅ All API endpoints remain compatible and functional
+- ✅ All existing data is automatically compatible
+- ✅ Search functionality expanded to include Module in searchable object types
+- ✅ Database schema unchanged - no data migration required
+
+**Technical Details:**
+
+The following components have been updated for NetBox v4 compatibility:
+- API Serializers: Updated to use `ObjectType` for assigned object handling
+- Filtersets: Enhanced asset search now includes Module filtering
+- Forms: Updated assignment object handling for NetBox v4 API
+- Template Tags: Updated for ObjectType-based model lookups
+- Template Content: Updated caching system for hierarchical asset views
+
+#### Upgrade Steps
+
+1. **Backup your database** (recommended)
+2. **Update the plugin:**
+   ```bash
+   pip install --upgrade inventory-monitor
+   ```
+3. **No manual migration required** - the plugin automatically handles the transition
+4. **Restart NetBox services:**
+   ```bash
+   sudo systemctl restart netbox netbox-rq
+   ```
+
+#### Verification
+
+After upgrading, verify that:
+- Assets display correctly in the NetBox interface
+- Asset search returns expected results including Module assignments
+- API requests to asset endpoints work as expected
+- No errors appear in NetBox logs
 
 ---
 

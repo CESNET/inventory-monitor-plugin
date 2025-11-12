@@ -1,6 +1,6 @@
+from core.models import ObjectType
 from dcim.models import Device, Location, Module, Rack, Site
 from django import forms
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from netbox.forms import (
@@ -222,19 +222,19 @@ class AssetForm(NetBoxModelForm):
 
         if instance:
             # When editing: set the initial value for assigned_object selection
-            for assigned_object_model in ContentType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY):
+            for assigned_object_model in ObjectType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY):
                 if type(instance.assigned_object) is assigned_object_model.model_class():
                     initial[assigned_object_model.model] = instance.assigned_object
                     break
         elif assigned_object_type and assigned_object_id:
             # When adding the Asset from an assigned_object page
             if (
-                content_type := ContentType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY)
+                object_type := ObjectType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY)
                 .filter(pk=assigned_object_type)
                 .first()
             ):
-                if assigned_object := content_type.model_class().objects.filter(pk=assigned_object_id).first():
-                    initial[content_type.model] = assigned_object
+                if assigned_object := object_type.model_class().objects.filter(pk=assigned_object_id).first():
+                    initial[object_type.model] = assigned_object
 
         kwargs["initial"] = initial
         super().__init__(*args, **kwargs)

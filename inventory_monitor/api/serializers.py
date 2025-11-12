@@ -1,10 +1,10 @@
 # NetBox serializers
+from core.models import ObjectType
 from dcim.api.serializers import (
     DeviceSerializer,
     LocationSerializer,
     SiteSerializer,
 )
-from django.contrib.contenttypes.models import ContentType
 from drf_spectacular.utils import extend_schema_field
 from netbox.api.fields import ContentTypeField, SerializedPKRelatedField
 from netbox.api.serializers import NetBoxModelSerializer
@@ -146,7 +146,7 @@ class AssetSerializer(NetBoxModelSerializer):
 
     # Generic relationship fields
     assigned_object_type = ContentTypeField(
-        queryset=ContentType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY),
+        queryset=ObjectType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY),
         required=False,
         allow_null=True,
     )

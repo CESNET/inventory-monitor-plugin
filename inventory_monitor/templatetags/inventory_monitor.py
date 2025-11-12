@@ -1,5 +1,5 @@
+from core.models import ObjectType
 from django import template
-from django.contrib.contenttypes.models import ContentType
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
@@ -58,8 +58,8 @@ def get_content_type_param(obj):
         return None
 
     # Get the model name in lowercase
-    content_type = ContentType.objects.get_for_model(obj)
-    model_name = content_type.model.lower()
+    object_type = ObjectType.objects.get_for_model(obj)
+    model_name = object_type.model.lower()
 
     # You can customize this mapping if needed
     param_mapping = {
