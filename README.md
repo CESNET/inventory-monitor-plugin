@@ -190,6 +190,40 @@ classDiagram
 
 ## Data Models
 
+### Description Fields & UI Display
+
+Most models in the Inventory Monitor plugin include a **description** field that provides additional context and details. These descriptions are automatically displayed in form choice fields (dropdowns) thanks to NetBox's built-in JavaScript functionality.
+
+**Models with Description Fields:**
+- **Asset**: Asset description
+- **AssetType**: Asset type description  
+- **Probe**: Discovery information and probe notes
+- **Contractor**: Contractor company/vendor description
+- **Contract**: Contract terms and conditions summary
+- **Invoice**: Invoice notes and project references
+- **AssetService**: Service scope and terms
+
+**How It Works:**
+When you're selecting from a choice field in a form (e.g., selecting an Asset Type, selecting a Contract, or selecting a linked Probe record), the description field is automatically shown as secondary text below the primary identifier in the dropdown. This makes it easier to identify and select the correct item without having to navigate to the detail page.
+
+**Example:**
+```
+Asset Type Dropdown:
+┌─────────────────────────────────────┐
+│ #1: Server                          │
+│ High-performance computing          │  ← Description shown in gray
+│                                     │
+│ #2: Network Equipment               │
+│ Networking devices                  │  ← Description shown in gray
+└─────────────────────────────────────┘
+```
+
+**String Representations:**
+All models now include a primary key prefix in their string representations for uniqueness and traceability:
+- Format: `#{pk}: <model_specific_identifier>`
+- Example: `#42: Asset1 (SN12345)` for an Asset
+- Composite models use helper methods to avoid ID duplication in related references
+
 ### Core Models
 
 #### **Asset**
@@ -251,10 +285,20 @@ Discovery and monitoring data collection points populated by external scripts (e
 #### **Contract & Contractor**
 Business relationship management with full currency support.
 
+**Contractor Features:**
+- `name`: Contractor/vendor name (**required**)
+- `company`: Company legal name
+- `address`: Business address
+- `description`: Contractor description and notes
+- `tenant`: Optional NetBox tenant association for multi-tenant deployments
+- `comments`: Additional contractor information
+- Searchable by name, company, address, description, and tenant
+
 **Contract Features:**
-- `name`: Contract identifier
-- `name_internal`: Internal reference name
+- `name`: Contract identifier (**required**)
+- `name_internal`: Internal reference name (**required**)
 - `type`: Contract type (supply, order, service, other)
+- `description`: Contract description and terms summary
 - `price`: Contract value (DecimalField, nullable)
 - `currency`: Contract currency (CharField, nullable - required only when price > 0)
 - `signed`: Date contract was signed
@@ -272,39 +316,59 @@ Business relationship management with full currency support.
 - Convenience properties: `contract_type` returns "subcontract" vs "contract"
 
 **Invoice Tracking:**
-- Invoice records tied to contracts
-- Multi-currency support for invoices
-- Invoicing date range tracking
+- Invoice records tied to contracts with name, internal name, project, and description
+- Multi-currency support for invoices (invoice_price, currency)
+- Invoicing date range tracking (invoicing_start, invoicing_end)
+- Full searchability across all invoice fields
 
 #### **RMA (Return Merchandise Authorization)**
 Complete RMA workflow management with serial number tracking.
 
 **Key Fields:**
-- `rma_number`: RMA reference number
-- `asset`: Foreign key to Asset being returned/replaced
+- `rma_number`: RMA reference number (unique)
+- `asset`: Foreign key to Asset being returned/replaced (**required**)
 - `original_serial`: Serial number of the failed/returned hardware
 - `replacement_serial`: Serial number of the replacement hardware
-- `status`: RMA status (investigating, authorized, shipped, in_transit, completed, cancelled)
+- `status`: RMA status (pending, shipped, received, investigating, approved, rejected, completed)
 - `date_issued`: When the RMA was created
 - `date_replaced`: When the replacement was installed/received
-- `comments`: RMA notes and history
+- `issue_description`: Description of the issue with the asset (**required**)
+- `vendor_response`: Vendor response/resolution details
 
 **Key Features:**
+- Automatic serial tracking: `original_serial` auto-populated from asset when RMA created
 - Automatic probe matching: both original and replacement serials are used for probe matching
 - Asset lifecycle tracking: helps maintain historical record of hardware replacements
 - Bidirectional serial tracking: enables finding all probes related to an asset through its RMA history
-- Status workflow: move through RMA lifecycle states
+- Auto-update asset serial: When RMA status changes to COMPLETED, asset serial is automatically updated to replacement_serial
+- Status workflow: move through RMA lifecycle states (pending → shipped → received → investigating → approved/rejected → completed)
+- Composite display using `str_no_pk()` to avoid ID duplication in string representation
 - Integration with Asset: allows viewing all RMAs for an asset including serial changes
 
 #### **AssetService**
-Service and maintenance contract tracking.
+Service and maintenance contract tracking with multi-currency support.
+
+**Key Fields:**
+- `service_start`: Service contract start date
+- `service_end`: Service contract end date
+- `service_price`: Service cost (DecimalField, nullable)
+- `service_currency`: Service currency (CharField, nullable - required only when service_price > 0)
+- `service_category`: Service category/type classification
+- `service_category_vendor`: Vendor for the service category
+- `description`: Service scope and terms description
+- `asset`: Foreign key to Asset being serviced
+- `contract`: Foreign key to related Contract
+- `comments`: Service notes
 
 **Features:**
-- Service period management
+- Service period management with date tracking
 - Pricing with multi-currency support (service_price, service_currency)
-- Category tracking (service_category, service_category_vendor)
-- Links to both Assets and Contracts
-- Currency required only when service price is set
+- Category and vendor tracking for service classification
+- **Price-Currency validation**: Currency is required only when service price is set
+- Links to both Assets and Contracts for complete service history
+- Date status tracking for service lifecycle (upcoming, active, completed)
+- Composite display using `str_no_pk()` to avoid ID duplication when both asset and contract are linked
+- Searchable by asset, contract, description, dates, and price ranges
 
 #### **ExternalInventory**
 Integration with external inventory management systems.

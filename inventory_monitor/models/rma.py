@@ -75,10 +75,20 @@ class RMA(NetBoxModel):
         verbose_name = "RMA"
         verbose_name_plural = "RMAs"
 
+    @property
+    def asset_display(self):
+        """
+        Safe asset display for composite use.
+        Returns asset string representation without PK, or fallback if None.
+        """
+        if not self.asset:
+            return "No Asset"
+        return self.asset.str_no_pk()
+
     def __str__(self):
         if self.rma_number:
-            return f"RMA {self.rma_number} - {self.asset}"
-        return f"RMA {self.pk} - {self.asset}"
+            return f"#{self.pk}: RMA {self.rma_number} - {self.asset_display}"
+        return f"#{self.pk}: {self.asset_display}"
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:rma", args=[self.pk])

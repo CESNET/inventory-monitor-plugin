@@ -175,17 +175,15 @@ class ProbeFilterForm(NetBoxModelFilterSetForm):
     )
 
     # Display options
-    latest_only_per_device = forms.BooleanField(
+    latest_only_per_device = forms.NullBooleanField(
         required=False,
         label=_("Latest per device only"),
         help_text=_("Show only the most recent probe entry for each device"),
-        widget=forms.NullBooleanSelect(),
     )
-    latest_only = forms.BooleanField(
+    latest_only = forms.NullBooleanField(
         required=False,
         label=_("Latest entries only"),
         help_text=_("Show only the most recent probe entries overall"),
-        widget=forms.NullBooleanSelect(),
     )
 
 

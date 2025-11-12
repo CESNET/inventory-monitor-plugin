@@ -27,7 +27,7 @@ class InvoiceForm(NetBoxModelForm):
     invoicing_end = forms.DateField(required=False, label=("Invoicing End"), widget=DatePicker())
 
     fieldsets = (
-        FieldSet("name", "name_internal", "project", "contract", name=_("Invoice Details")),
+        FieldSet("name", "name_internal", "project", "contract", "description", name=_("Invoice Details")),
         FieldSet(InlineFields("price", "currency", label=_("Price")), name=_("Financial")),
         FieldSet("invoicing_start", "invoicing_end", name=_("Dates")),
         FieldSet("tags", name=_("Additional Information")),
@@ -50,6 +50,7 @@ class InvoiceForm(NetBoxModelForm):
             "currency",
             "invoicing_start",
             "invoicing_end",
+            "description",
             "comments",
             "tags",
         )
@@ -60,7 +61,7 @@ class InvoiceFilterForm(NetBoxModelFilterSetForm):
 
     fieldsets = (
         FieldSet("q", "filter_id", "tag", name=_("Misc")),
-        FieldSet("name", "name_internal", "project", name=_("Common")),
+        FieldSet("name", "name_internal", "project", "description", name=_("Common")),
         FieldSet("price", "price__gte", "price__lte", "price__isnull", "currency", name=_("Price")),
         FieldSet("contract_id", name=_("Linked")),
         FieldSet(
@@ -78,6 +79,7 @@ class InvoiceFilterForm(NetBoxModelFilterSetForm):
     name = forms.CharField(required=False)
     name_internal = forms.CharField(required=False)
     project = forms.CharField(required=False)
+    description = forms.CharField(required=False)
     contract_id = DynamicModelMultipleChoiceField(queryset=Contract.objects.all(), required=False, label=_("Contract"))
     price = forms.DecimalField(required=False)
     price__gte = forms.DecimalField(required=False, label=("Price (min)"))
@@ -111,6 +113,7 @@ class InvoiceBulkEditForm(NetBoxModelBulkEditForm):
     name = forms.CharField(max_length=100, required=False)
     name_internal = forms.CharField(max_length=100, required=False)
     project = forms.CharField(max_length=100, required=False)
+    description = forms.CharField(required=False)
     contract = DynamicModelChoiceField(queryset=Contract.objects.all(), required=False)
     price = forms.DecimalField(required=False)
     currency = forms.ChoiceField(choices=[], required=False)
@@ -118,10 +121,10 @@ class InvoiceBulkEditForm(NetBoxModelBulkEditForm):
     invoicing_end = forms.DateField(required=False, widget=DatePicker())
 
     model = Invoice
-    nullable_fields = ("name_internal", "project", "price", "currency", "invoicing_start", "invoicing_end")
+    nullable_fields = ("name_internal", "project", "description", "price", "currency", "invoicing_start", "invoicing_end")
 
     fieldsets = (
-        FieldSet("name", "name_internal", "project", "contract", name=_("Common")),
+        FieldSet("name", "name_internal", "project", "description", "contract", name=_("Common")),
         FieldSet("price", "currency", name=_("Financial")),
         FieldSet("invoicing_start", "invoicing_end", name=_("Dates")),
     )

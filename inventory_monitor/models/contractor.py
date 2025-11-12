@@ -10,6 +10,7 @@ class Contractor(NetBoxModel):
     name = models.CharField(max_length=255, blank=False, null=False)
     company = models.CharField(max_length=255, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, default="")
     comments = models.TextField(blank=True)
 
     tenant = models.ForeignKey(
@@ -42,10 +43,11 @@ class Contractor(NetBoxModel):
                 )
 
     def __str__(self):
-        if self.company:
-            return f"{self.name}: {self.company}"
-        else:
-            return f"{self.name}"
+        if self.name and self.company:
+            return f"#{self.pk}: {self.name}: {self.company}"
+        elif self.name:
+            return f"#{self.pk}: {self.name}"
+        return f"#{self.pk}: {self.company}"
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:contractor", args=[self.pk])

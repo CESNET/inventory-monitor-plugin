@@ -131,7 +131,7 @@ class ExternalInventory(NetBoxModel):
         # unique_together = [["inventory_number"]]
 
     def __str__(self):
-        return f"{self.inventory_number}: {self.name}"
+        return f"#{self.pk}: {self.inventory_number}: {self.name}"
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:externalinventory", args=[self.pk])

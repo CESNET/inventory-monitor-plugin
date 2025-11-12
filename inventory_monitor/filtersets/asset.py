@@ -236,7 +236,9 @@ class AssetFilterSet(NetBoxModelFilterSet):
         )
         module_search = Q(
             assigned_object_type=module_type,
-            assigned_object_id__in=Module.objects.filter(name__icontains=value).values_list("pk", flat=True),
+            assigned_object_id__in=Module.objects.filter(
+                Q(description__icontains=value) | Q(serial__icontains=value) | Q(asset_tag__icontains=value)
+            ).values_list("pk", flat=True),
         )
 
         # Combine all search conditions including External Inventory numbers

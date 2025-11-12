@@ -53,6 +53,7 @@ class ContractFilterSet(NetBoxModelFilterSet):
     name = django_filters.CharFilter(lookup_expr="exact", field_name="name")
     name__ic = django_filters.CharFilter(field_name="name", lookup_expr="icontains", label="Name Contains")
     name_internal = django_filters.CharFilter(lookup_expr="icontains")
+    description = django_filters.CharFilter()
     contractor_id = django_filters.ModelMultipleChoiceFilter(
         field_name="contractor__id",
         queryset=Contractor.objects.all(),
@@ -139,6 +140,7 @@ class ContractFilterSet(NetBoxModelFilterSet):
             "id",
             "name",
             "name_internal",
+            "description",
             "contractor",
             "type",
             "price",
@@ -152,7 +154,8 @@ class ContractFilterSet(NetBoxModelFilterSet):
     def search(self, queryset, name, value):
         name = Q(name__icontains=value)
         name_internal = Q(name_internal__icontains=value)
-        return queryset.filter(name | name_internal)
+        description = Q(description__icontains=value)
+        return queryset.filter(name | name_internal | description)
 
     def _master_contracts(self, queryset, name, value):
         if value:

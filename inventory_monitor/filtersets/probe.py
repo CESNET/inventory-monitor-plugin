@@ -76,6 +76,19 @@ class ProbeFilterSet(BaseFilterSet):
             "category",
         )
 
+    @property
+    def qs(self):
+        """
+        Optimize queryset with select_related and prefetch_related
+        to reduce N+1 query problems.
+        """
+        qs = super().qs
+        return qs.select_related(
+            'device',
+            'site',
+            'location'
+        ).prefetch_related('tags')
+
     def search(self, queryset, name, value):
         """
         Perform a search based on the provided value.

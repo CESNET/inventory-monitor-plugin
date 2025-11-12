@@ -77,13 +77,14 @@ class ContractorSerializer(NetBoxModelSerializer):
             "name",
             "company",
             "address",
+            "description",
             "tenant",
             "tags",
             "comments",
             "custom_fields",
         ]
 
-        brief_fields = ["id", "url", "display", "name", "company", "address"]
+        brief_fields = ["id", "url", "display", "name", "company", "address", "description"]
 
 
 class ContractSerializer(NetBoxModelSerializer):
@@ -100,6 +101,7 @@ class ContractSerializer(NetBoxModelSerializer):
             "display",
             "name",
             "name_internal",
+            "description",
             "contractor",
             "type",
             "contract_type",
@@ -120,6 +122,7 @@ class ContractSerializer(NetBoxModelSerializer):
             "display",
             "name",
             "name_internal",
+            "description",
         ]
 
     def get_fields(self):
@@ -286,6 +289,7 @@ class InvoiceSerializer(NetBoxModelSerializer):
             "name",
             "name_internal",
             "project",
+            "description",
             "contract",
             "price",
             "invoicing_start",
@@ -295,7 +299,7 @@ class InvoiceSerializer(NetBoxModelSerializer):
             "custom_fields",
         ]
 
-        brief_fields = ["id", "url", "display", "name", "name_internal"]
+        brief_fields = ["id", "url", "display", "name", "name_internal", "description"]
 
 
 class AssetServiceSerializer(NetBoxModelSerializer):
@@ -317,6 +321,7 @@ class AssetServiceSerializer(NetBoxModelSerializer):
             "service_currency",
             "service_category",
             "service_category_vendor",
+            "description",
             "asset",
             "contract",
             "tags",
@@ -331,6 +336,7 @@ class AssetServiceSerializer(NetBoxModelSerializer):
             "service_start",
             "service_end",
             "service_price",
+            "description",
             "asset",
             "contract",
         ]

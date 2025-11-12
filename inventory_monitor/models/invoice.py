@@ -38,6 +38,7 @@ class Invoice(NetBoxModel):
         blank=True,
         null=True,
     )
+    description = models.CharField(max_length=255, blank=True, default="")
     comments = models.TextField(blank=True)
 
     class Meta:
@@ -52,7 +53,7 @@ class Invoice(NetBoxModel):
         )
 
     def __str__(self):
-        return f"{self.name}"
+        return f"#{self.pk}: {self.name}"
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:invoice", args=[self.pk])

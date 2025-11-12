@@ -46,6 +46,7 @@ class AssetService(NetBoxModel, DateStatusMixin):
         blank=True,
         null=True,
     )
+    description = models.CharField(max_length=255, blank=True, default="")
     comments = models.TextField(blank=True)
 
     class Meta:
@@ -60,8 +61,24 @@ class AssetService(NetBoxModel, DateStatusMixin):
             "contract",
         )
 
+    @property
+    def asset_display(self):
+        """
+        Safe asset display for composite use.
+        Returns asset string representation without PK, or fallback if None.
+        """
+        if not self.asset:
+            return "No Asset"
+        return self.asset.str_no_pk()
+
     def __str__(self):
-        return f"{self.pk}"
+        if self.asset and self.contract:
+                return f"#{self.pk}: {self.asset_display} - {self.contract.name}"
+        elif self.asset:
+            return f"#{self.pk}: {self.asset_display} - Service"
+        elif self.contract:
+            return f"#{self.pk}: {self.contract.name} - Service"
+        return f"#{self.pk}"
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:assetservice", args=[self.pk])
@@ -72,7 +89,7 @@ class AssetService(NetBoxModel, DateStatusMixin):
         # Validate - currency is required if price is set (including 0)
         if self.service_price is not None and not self.service_currency:
             raise ValidationError({"service_currency": "Currency is required when service price is set."})
-        
+
         # If currency is set, price must also be set
         if self.service_currency and self.service_price is None:
             raise ValidationError({"service_price": "Service price is required when currency is set."})

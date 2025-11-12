@@ -81,7 +81,7 @@ class Probe(
         )
 
     def __str__(self):
-        return f"{self.serial} - {self.name}"
+        return f"#{self.pk}: {self.serial} - {self.name}"
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:probe", args=[self.pk])

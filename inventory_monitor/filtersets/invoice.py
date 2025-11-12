@@ -41,6 +41,7 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
     name__ic = django_filters.CharFilter(field_name="name", lookup_expr="icontains", label="Name Contains")
     name_internal = django_filters.CharFilter(lookup_expr="icontains")
     project = django_filters.CharFilter(lookup_expr="icontains")
+    description = django_filters.CharFilter()
 
     contract_id = django_filters.ModelMultipleChoiceFilter(
         field_name="contract__id",
@@ -93,6 +94,7 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
             "name",
             "name_internal",
             "project",
+            "description",
             "contract",
             "price",
             "currency",
@@ -102,7 +104,7 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
 
     def search(self, queryset, name, value):
         """
-        A method for searching invoices by name or internal name.
+        A method for searching invoices by name, internal name, or description.
 
         Args:
             queryset (QuerySet): The queryset to filter.
@@ -115,4 +117,5 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
         """
         name = Q(name__icontains=value)
         name_internal = Q(name_internal__icontains=value)
-        return queryset.filter(name | name_internal)
+        description = Q(description__icontains=value)
+        return queryset.filter(name | name_internal | description)

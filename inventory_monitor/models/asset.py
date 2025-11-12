@@ -69,7 +69,7 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
     # Basic identification fields
     #
     partnumber = models.CharField(max_length=64, blank=True, null=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, default="")
     serial = models.CharField(max_length=255, blank=False, null=False)
     #
     # Status fields
@@ -272,8 +272,14 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
 
     def __str__(self):
         if self.partnumber:
+            return f"#{self.pk}: {self.partnumber} ({self.serial})"
+        return f"#{self.pk}: {self.serial}"
+    
+    def str_no_pk(self):
+        if self.partnumber:
             return f"{self.partnumber} ({self.serial})"
         return f"{self.serial}"
+    
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:asset", args=[self.pk])

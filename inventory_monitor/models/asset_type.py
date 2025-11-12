@@ -16,7 +16,7 @@ class AssetType(NetBoxModel):
         verbose_name=_("name"),
     )
     slug = models.SlugField(max_length=100, unique=True)
-    description = models.CharField(max_length=200, blank=True, verbose_name=_("description"))
+    description = models.CharField(max_length=200, blank=True, default="", verbose_name=_("description"))
     color = ColorField(verbose_name=_("color"), blank=True)
 
     class Meta:
@@ -29,7 +29,7 @@ class AssetType(NetBoxModel):
         ]
 
     def __str__(self):
-        return self.name
+        return f"#{self.pk}: {self.name}"
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:assettype", args=[self.pk])

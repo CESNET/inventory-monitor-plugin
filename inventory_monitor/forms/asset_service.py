@@ -17,7 +17,7 @@ from inventory_monitor.models import Asset, AssetService, Contract
 
 class AssetServiceForm(NetBoxModelForm):
     fieldsets = (
-        FieldSet("contract", "asset", name=_("Linked")),
+        FieldSet("contract", "asset", "description", name=_("Linked")),
         FieldSet("service_start", "service_end", name=_("Dates")),
         FieldSet(
             InlineFields("service_price", "service_currency", label=_("Service Price")),
@@ -29,6 +29,7 @@ class AssetServiceForm(NetBoxModelForm):
     )
 
     comments = CommentField(label="Comments")
+    description = forms.CharField(required=False, label="Description")
     service_start = forms.DateField(required=False, label=("Service Start"), widget=DatePicker())
     service_end = forms.DateField(required=False, label=("Service End"), widget=DatePicker())
     service_price = forms.DecimalField(
@@ -81,6 +82,7 @@ class AssetServiceForm(NetBoxModelForm):
             "service_category_vendor",
             "asset",
             "contract",
+            "description",
             "comments",
             "tags",
         )
@@ -91,7 +93,7 @@ class AssetServiceFilterForm(NetBoxModelFilterSetForm):
 
     fieldsets = (
         FieldSet("q", "filter_id", "tag", name=_("Misc")),
-        FieldSet("asset", "contract", name=_("Linked")),
+        FieldSet("asset", "contract", "description", name=_("Linked")),
         FieldSet(
             "service_start",
             "service_start__gte",
@@ -115,6 +117,7 @@ class AssetServiceFilterForm(NetBoxModelFilterSetForm):
 
     tag = TagFilterField(model)
     service_start = forms.DateField(required=False, label=("Service Start"), widget=DatePicker())
+    description = forms.CharField(required=False, label="Description")
     service_start__gte = forms.DateField(required=False, label=("Service Start: From"), widget=DatePicker())
     service_start__lte = forms.DateField(required=False, label=("Service Start: Till"), widget=DatePicker())
     service_end = forms.DateField(required=False, label=("Service End"), widget=DatePicker())
@@ -176,6 +179,7 @@ class AssetServiceBulkEditForm(NetBoxModelBulkEditForm):
         decimal_places=2,
     )
     service_currency = forms.ChoiceField(required=False)
+    description = forms.CharField(required=False, label="Description")
     service_category = forms.CharField(
         required=False,
         label="Service Category",
@@ -208,6 +212,7 @@ class AssetServiceBulkEditForm(NetBoxModelBulkEditForm):
             "service_currency",
             "service_category",
             "service_category_vendor",
+            "description",
             name=_("Service Params"),
         ),
         FieldSet("asset", "contract", name=_("Linked")),
@@ -219,4 +224,5 @@ class AssetServiceBulkEditForm(NetBoxModelBulkEditForm):
         "service_currency",
         "service_category",
         "service_category_vendor",
+        "description",
     )

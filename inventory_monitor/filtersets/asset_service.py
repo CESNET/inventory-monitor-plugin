@@ -73,6 +73,7 @@ class AssetServiceFilterSet(NetBoxModelFilterSet):
     )
     service_category = django_filters.CharFilter(lookup_expr="icontains", field_name="service_category")
     service_category_vendor = django_filters.CharFilter(lookup_expr="icontains", field_name="service_category_vendor")
+    description = django_filters.CharFilter()
     service_currency = django_filters.MultipleChoiceFilter(
         choices=[],
         label="Service Currency",
@@ -108,6 +109,7 @@ class AssetServiceFilterSet(NetBoxModelFilterSet):
             "service_currency",
             "service_category",
             "service_category_vendor",
+            "description",
             "asset",
             "contract",
         )
@@ -127,6 +129,7 @@ class AssetServiceFilterSet(NetBoxModelFilterSet):
         """
         service_category = Q(service_category__icontains=value)
         service_category_vendor = Q(service_category_vendor__icontains=value)
+        description = Q(description__icontains=value)
         asset = Q(asset__serial__icontains=value)
         contract = Q(contract__name__icontains=value)
-        return queryset.filter(service_category | service_category_vendor | asset | contract)
+        return queryset.filter(service_category | service_category_vendor | description | asset | contract)

@@ -67,6 +67,7 @@ class Contract(NetBoxModel):
         blank=True,
         verbose_name="Parent contract",
     )
+    description = models.CharField(max_length=255, blank=True, default="")
     comments = models.TextField(blank=True)
 
     @property
@@ -91,9 +92,9 @@ class Contract(NetBoxModel):
 
     def __str__(self):
         if self.parent:
-            return f"{self.parent.name} - {self.name}"
+            return f"#{self.pk}: {self.parent.name} - {self.name}"
         else:
-            return f"{self.name}"
+            return f"#{self.pk}: {self.name}"
 
     def get_type_color(self):
         return ContractTypeChoices.colors.get(self.type)

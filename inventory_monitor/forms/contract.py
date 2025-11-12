@@ -69,6 +69,7 @@ class ContractForm(NetBoxModelForm):
             "invoicing_start",
             "invoicing_end",
             "parent",
+            "description",
             "comments",
             "tags",
         )
@@ -79,7 +80,7 @@ class ContractFilterForm(NetBoxModelFilterSetForm):
 
     fieldsets = (
         FieldSet("q", "filter_id", "tag", name=_("Misc")),
-        FieldSet("name", "name_internal", "contract_type", "type", name=_("Common")),
+        FieldSet("name", "name_internal", "contract_type", "type", "description", name=_("Common")),
         FieldSet("price", "price__gte", "price__lte", "price__isnull", "currency", name=_("Price")),
         FieldSet("contractor_id", "parent_id", name=_("Linked")),
         FieldSet(
@@ -107,6 +108,7 @@ class ContractFilterForm(NetBoxModelFilterSetForm):
 
     name = forms.CharField(required=False)
     name_internal = forms.CharField(required=False)
+    description = forms.CharField(required=False)
     contract_type = forms.ChoiceField(
         label="Contract Type",
         choices=(
@@ -132,11 +134,11 @@ class ContractFilterForm(NetBoxModelFilterSetForm):
     price__lte = forms.DecimalField(required=False, label=("Price (max)"))
     price__isnull = forms.ChoiceField(
         required=False,
-        label=("Has Price"),
+        label=("Price is null"),
         choices=(
             ("", "Any"),
-            ("false", "Yes"),
-            ("true", "No"),
+            ("true", "Yes"),
+            ("false", "No"),
         ),
     )
     currency = forms.MultipleChoiceField(required=False)
@@ -158,6 +160,7 @@ class ContractFilterForm(NetBoxModelFilterSetForm):
 class ContractBulkEditForm(NetBoxModelBulkEditForm):
     name = forms.CharField(max_length=100, required=False)
     name_internal = forms.CharField(max_length=100, required=False)
+    description = forms.CharField(required=False)
     contractor = DynamicModelChoiceField(queryset=Contractor.objects.all(), required=False)
     type = forms.ChoiceField(required=False, choices=add_blank_choice(ContractTypeChoices))
     price = forms.DecimalField(required=False)
@@ -173,4 +176,4 @@ class ContractBulkEditForm(NetBoxModelBulkEditForm):
         self.fields["currency"].choices = add_blank_choice(get_currency_choices())
 
     model = Contract
-    nullable_fields = ("name_internal", "price", "currency", "signed", "accepted", "invoicing_start", "invoicing_end")
+    nullable_fields = ("name_internal", "description", "price", "currency", "signed", "accepted", "invoicing_start", "invoicing_end")
