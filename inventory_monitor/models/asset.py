@@ -250,12 +250,11 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
     def get_external_inventory_asset_numbers(self):
         """Get all External Inventory numbers associated with this asset"""
         return (
-            self.external_inventory_items
-            .filter(inventory_number__isnull=False)
-            .exclude(inventory_number='')
+            self.external_inventory_items.filter(inventory_number__isnull=False)
+            .exclude(inventory_number="")
             .values_list("inventory_number", flat=True)
             .distinct()
-            .order_by('inventory_number')
+            .order_by("inventory_number")
         )
 
     def get_external_inventory_asset_numbers_display(self):
@@ -281,19 +280,31 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
 
     def clean(self):
         super().clean()
-        
+
         # Validate price and currency relationship
         if self.price is not None:
             if not self.currency:
-                raise ValidationError({
-                    "currency": _("Currency is required when price is set.")
-                })
-        
+                raise ValidationError({"currency": _("Currency is required when price is set.")})
+
         # If currency is set, price must also be set
         if self.currency and self.price is None:
-            raise ValidationError({
-                "price": _("Price is required when currency is set.")
-            })
+            raise ValidationError({"price": _("Price is required when currency is set.")})
+
+    def delete(self, *args, **kwargs):
+        """
+        Override delete to prevent deletion of assets with associated contracts.
+        Raises a ValidationError if the asset has an order_contract.
+        """
+        if self.order_contract:
+            raise ValidationError(
+                {
+                    "order_contract": _(
+                        "Cannot delete an Asset that is linked to a Contract. "
+                        "Please remove the order_contract association first."
+                    )
+                }
+            )
+        super().delete(*args, **kwargs)
 
     def get_assignment_status_color(self):
         return AssignmentStatusChoices.colors.get(self.assignment_status, "gray")

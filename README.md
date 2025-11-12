@@ -2,7 +2,7 @@
 
 A comprehensive NetBox plugin for asset management with semi-automatic discovery processes. This plugin extends NetBox with powerful inventory tracking capabilities, including asset lifecycle management, probe monitoring, contract tracking, and RMA (Return Merchandise Authorization) processing.
 
-[![Version](https://img.shields.io/badge/version-11.1.0b3-blue.svg)](https://gitlab.cesnet.cz/701/done/inventory-monitor-plugin)
+[![Version](https://img.shields.io/badge/version-11.1.0b4-blue.svg)](https://gitlab.cesnet.cz/701/done/inventory-monitor-plugin)
 [![NetBox](https://img.shields.io/badge/netbox-4.4.x-green.svg)](https://github.com/netbox-community/netbox)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 
@@ -51,20 +51,25 @@ classDiagram
     }
 
     class Asset {
-        +CharField serial
+        +CharField serial*
         +CharField partnumber
+        +CharField description
         +CharField assignment_status
         +CharField lifecycle_status
+        +PositiveIntegerField quantity
+        +DecimalField price
+        +CharField currency
+        +CharField project
+        +CharField vendor
+        +DateField warranty_start
+        +DateField warranty_end
         +GenericForeignKey assigned_object
         +ForeignKey type
         +ForeignKey order_contract
-        +CharField project
-        +CharField vendor
-        +DecimalField price
-        +CharField currency
-        +DateField warranty_start
-        +DateField warranty_end
+        +TextField comments
         +is_recently_probed()
+        +get_related_probes()
+        +delete() throws ValidationError
     }
 
     class AssetService {
@@ -81,14 +86,17 @@ classDiagram
     class Contract {
         +CharField name
         +CharField name_internal
-        +ForeignKey contractor
         +CharField type
         +DecimalField price
         +CharField currency
         +DateField signed
+        +DateField accepted
         +DateField invoicing_start
         +DateField invoicing_end
+        +TextField comments
+        +ForeignKey contractor
         +ForeignKey parent
+        +clean() validates price/currency
     }
 
     class Contractor {
@@ -101,59 +109,80 @@ classDiagram
     class Invoice {
         +CharField name
         +CharField project
-        +ForeignKey contract
         +DecimalField price
         +CharField currency
         +DateField invoicing_start
         +DateField invoicing_end
+        +ForeignKey contract
     }
 
     class Probe {
         +DateTimeField time
+        +DateTimeField creation_time
+        +CharField name
+        +CharField serial
+        +CharField part
+        +CharField category
         +CharField device_descriptor
         +CharField site_descriptor
         +CharField location_descriptor
-        +CharField serial
+        +TextField description
+        +TextField comments
+        +JSONField discovered_data
         +ForeignKey device
         +ForeignKey site
         +ForeignKey location
-        +JSONField discovered_data
         +is_recently_probed()
     }
 
     class RMA {
         +CharField rma_number
-        +ForeignKey asset
         +CharField original_serial
         +CharField replacement_serial
         +CharField status
         +DateField date_issued
         +DateField date_replaced
-        +update_asset_serial()
+        +TextField comments
+        +ForeignKey asset
     }
 
     class ExternalInventory {
+        +CharField external_id
         +CharField inventory_number
-        +CharField status
+        +CharField name
+        +CharField serial_number
+        +CharField person_id
+        +CharField person_name
+        +CharField location_code
+        +CharField location
+        +CharField department_code
         +CharField project_code
         +CharField user_name
+        +TextField user_note
+        +CharField split_asset
+        +CharField status
         +ManyToManyField assets
+        +get_status_color()
+        +get_status_display()
     }
 
     AssetType --> Asset : "type"
     Asset --> AssetService : "asset"
     Asset --> RMA : "asset"
-    Asset --> Probe : "serial"
+    Asset --> Probe : "serial match"
+    Asset --> ExternalInventory : "M2M assets"
     Contract --> Asset : "order_contract"
     Contract --> AssetService : "contract"
     Contractor --> Contract : "contractor"
     Contract --> Invoice : "contract"
-    Contract --> Contract : "parent"
+    Contract --> Contract : "parent (subcontract)"
     ExternalInventory --> Asset : "assets"
 
-    Asset --> Device : "assigned_object"
     Asset --> Site : "assigned_object"
     Asset --> Location : "assigned_object"
+    Asset --> Rack : "assigned_object"
+    Asset --> Device : "assigned_object"
+    Asset --> Module : "assigned_object"
 ```
 
 ---
@@ -166,7 +195,7 @@ classDiagram
 The central model representing physical or logical inventory items.
 
 **Key Fields:**
-- `serial`: Unique identifier for the asset
+- `serial`: Unique identifier for the asset (**required**)
 - `partnumber`: Manufacturer part number
 - `description`: Asset description
 - `assignment_status`: Current assignment status (reserved, deployed, loaned, stocked)
@@ -176,29 +205,45 @@ The central model representing physical or logical inventory items.
 - `order_contract`: Associated purchase contract
 - `project`: Project identifier
 - `vendor`: Vendor name
-- `quantity`: Number of items (default: 1)
-- `price`: Asset purchase price (DecimalField, nullable)
+- `quantity`: Number of items (default: 1, must be ≥ 0)
+- `price`: Asset purchase price (DecimalField, nullable, must be ≥ 0)
 - `currency`: Price currency (CharField, nullable - required only when price is set and non-zero)
 - `warranty_start/end`: Warranty period tracking
+- `comments`: Additional notes
 
 **Special Features:**
 - Probe status integration with `is_recently_probed()` method
 - Generic assignment to Site, Location, Rack, Device, Module via GenericForeignKey
 - Integration with External Inventory systems via many-to-many relationship
 - Multi-currency support with configurable currency codes and symbols
-- Currency validation enforced only when price > 0
+- Currency validation enforced: *if price is set (non-zero), currency is required*
+- **Deletion protection**: Cannot delete an Asset with an `order_contract` (prevents orphaned contract references). User must clear the contract first.
 - External inventory assignment management with dedicated form
 - Comprehensive filtering including external inventory number search
+- Probe matching via serial number (current and RMA serials)
 
 #### **Probe**
 Discovery and monitoring data collection points populated by external scripts (e.g., SNMP discovery tools).
 
 **Key Fields:**
-- `time`: Timestamp of the probe data collection
-- `serial`: Links to Asset via serial number matching
+- `time`: Timestamp of the probe data collection (last probe time)
+- `creation_time`: Timestamp when the probe was first discovered (first discovery)
+- `serial`: Device serial number - links to Asset via serial number matching
+- `name`: Device name or description
+- `part`: Part number or model identifier
+- `category`: Probe type/category classification
 - `device_descriptor`, `site_descriptor`, `location_descriptor`: Context information from discovery
+- `device`, `site`, `location`: Foreign keys to actual NetBox objects (if resolved)
+- `description`: Additional discovery information
+- `comments`: User notes about the probe
 - `discovered_data`: JSON field for flexible data storage from external tools
-- `category`: Probe type classification
+
+**Features:**
+- Many-to-many probe matching: matches by current serial, original RMA serial, and replacement RMA serial
+- `is_recently_probed()` method for status indicators
+- Used to find: what's actually deployed vs. what's in inventory
+- Helps detect duplicates and unrecorded assets
+- First discovery and last probe times tracked separately
 
 **Note**: Probe data is populated by external discovery scripts, not generated by the plugin itself.
 
@@ -206,25 +251,49 @@ Discovery and monitoring data collection points populated by external scripts (e
 Business relationship management with full currency support.
 
 **Contract Features:**
-- Hierarchical contracts (parent/child relationships)
-- Contract types (purchase, service, support, warranty, lease, subscription, other)
-- Invoice tracking with multi-currency support
-- Service associations
-- Asset procurement tracking
-- Multi-currency pricing support with configurable currencies
-- Currency required only when price is set and non-zero (price can be None, 0, or > 0)
-- Date tracking (signed, invoicing_start, invoicing_end)
+- `name`: Contract identifier
+- `name_internal`: Internal reference name
+- `type`: Contract type (supply, order, service, other)
+- `price`: Contract value (DecimalField, nullable)
+- `currency`: Contract currency (CharField, nullable - required only when price > 0)
+- `signed`: Date contract was signed
+- `accepted`: Date contract was accepted
+- `invoicing_start/end`: Invoicing period dates
+- `contractor`: Foreign key to Contractor/Vendor
+- `parent`: Self-referential FK for subcontracts (one level only)
+- `comments`: Contract notes
+
+**Validation Rules:**
+- Hierarchical contracts (parent/child relationships) - **one level only** (subcontract cannot itself have a parent)
+- Subcontract must use the same `Contractor` as its parent
+- **Price-Currency validation**: If price is set (non-zero), currency is required; if currency is set, price must be set
+- `invoicing_start` must not be after `invoicing_end`
+- Convenience properties: `contract_type` returns "subcontract" vs "contract"
+
+**Invoice Tracking:**
+- Invoice records tied to contracts
+- Multi-currency support for invoices
+- Invoicing date range tracking
 
 #### **RMA (Return Merchandise Authorization)**
 Complete RMA workflow management with serial number tracking.
 
+**Key Fields:**
+- `rma_number`: RMA reference number
+- `asset`: Foreign key to Asset being returned/replaced
+- `original_serial`: Serial number of the failed/returned hardware
+- `replacement_serial`: Serial number of the replacement hardware
+- `status`: RMA status (investigating, authorized, shipped, in_transit, completed, cancelled)
+- `date_issued`: When the RMA was created
+- `date_replaced`: When the replacement was installed/received
+- `comments`: RMA notes and history
+
 **Key Features:**
-- Status tracking (investigating, authorized, shipped, in_transit, completed, cancelled)
-- Automatic serial number updates upon completion
-- Original and replacement serial number tracking
-- Integration with Asset lifecycle
-- Date tracking (issued, replaced)
-- Associated with Assets via foreign key
+- Automatic probe matching: both original and replacement serials are used for probe matching
+- Asset lifecycle tracking: helps maintain historical record of hardware replacements
+- Bidirectional serial tracking: enables finding all probes related to an asset through its RMA history
+- Status workflow: move through RMA lifecycle states
+- Integration with Asset: allows viewing all RMAs for an asset including serial changes
 
 #### **AssetService**
 Service and maintenance contract tracking.
@@ -251,16 +320,16 @@ Integration with external inventory management systems.
 - `user_name/user_note`: User information and notes
 - `split_asset`: Whether this is a split/shared asset
 - `status`: Current status code (configurable via plugin settings)
-- `assets`: Many-to-many relationship with Assets
+- `assets`: Many-to-many relationship with Assets (handles splits and mappings)
 
 **Features:**
-- Many-to-many relationship with Assets
-- Configurable status display with labels and colors
-- Status configuration via plugin settings
+- Many-to-many relationship with Assets (one external record can map to multiple internal assets for splits)
+- Configurable status display with labels and colors (via plugin settings)
 - Dynamic status tooltips with customizable templates
-- Project code tracking
+- Project code tracking for accounting/billing
+- RMA integration: external_id used for RMA matching and display
 - Comprehensive filtering by all fields
-- RMA integration via external_id matching
+- Status methods: `get_status_color()` and `get_status_display()` for UI rendering
 
 ---
 
@@ -458,34 +527,6 @@ The plugin provides a dedicated form (`AssetExternalInventoryAssignmentForm`) fo
 - **Accessible via Asset detail page** - "Edit External Inventory" button provides direct access
 
 This specialized form prevents validation errors like `'AssetExternalInventoryAssignmentForm' has no field named 'currency'` that would occur if the full Asset model validation ran.
-
----
-
-## API
-
-The plugin provides a full REST API following NetBox patterns:
-
-### Available Endpoints
-
-- `/api/plugins/inventory-monitor/assets/` - Asset management
-- `/api/plugins/inventory-monitor/asset-types/` - Asset type management
-- `/api/plugins/inventory-monitor/probes/` - Probe data access
-- `/api/plugins/inventory-monitor/contracts/` - Contract management
-- `/api/plugins/inventory-monitor/contractors/` - Contractor management
-- `/api/plugins/inventory-monitor/invoices/` - Invoice tracking
-- `/api/plugins/inventory-monitor/asset-services/` - Service management
-- `/api/plugins/inventory-monitor/rmas/` - RMA processing
-- `/api/plugins/inventory-monitor/external-inventory/` - External inventory integration
-
-### API Features
-
-- **Full CRUD operations** on all models
-- **Advanced filtering** with NetBox's built-in filter backend
-- **Pagination** for large datasets
-- **Search capabilities** across relevant fields
-- **Bulk operations** for efficient data management
-- **OpenAPI/Swagger documentation** at `/api/docs/`
-
 
 ---
 
