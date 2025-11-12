@@ -18,7 +18,7 @@ ADDRESS_MAX = Contractor._meta.get_field("address").max_length
 
 
 class ContractorForm(NetBoxModelForm):
-    tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), required=True)
+    tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), selector=True, required=False)
 
     comments = CommentField(label="Comments")
 
