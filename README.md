@@ -265,7 +265,7 @@ Business relationship management with full currency support.
 
 **Validation Rules:**
 - Hierarchical contracts (parent/child relationships) - **one level only** (subcontract cannot itself have a parent)
-- Subcontract must use the same `Contractor` as its parent
+- Subcontract can have a different contractor than the parent (allows complex procurement hierarchies)
 - **Price-Currency validation**: If price is set (non-zero), currency is required; if currency is set, price must be set
 - `invoicing_start` must not be after `invoicing_end`
 - Convenience properties: `contract_type` returns "subcontract" vs "contract"
