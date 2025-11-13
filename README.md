@@ -2,7 +2,7 @@
 
 A comprehensive NetBox plugin for asset management with semi-automatic discovery processes. This plugin extends NetBox with powerful inventory tracking capabilities, including asset lifecycle management, probe monitoring, contract tracking, and RMA (Return Merchandise Authorization) processing.
 
-[![Version](https://img.shields.io/badge/version-12.0.0b1-blue.svg)](https://gitlab.cesnet.cz/701/done/inventory-monitor-plugin)
+[![Version](https://img.shields.io/badge/version-12.0.0b2-blue.svg)](https://github.com/CESNET/inventory-monitor-plugin)
 [![NetBox](https://img.shields.io/badge/netbox-4.4.x-green.svg)](https://github.com/netbox-community/netbox)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 
@@ -33,7 +33,6 @@ A comprehensive NetBox plugin for asset management with semi-automatic discovery
 - [Upgrade Guide](#upgrade-guide)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [API](#api)
 - [Development](#development)
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
