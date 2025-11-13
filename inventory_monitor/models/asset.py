@@ -382,6 +382,16 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
                 ),
                 protected_objects=[self.order_contract],
             )
+
+        if items := self.external_inventory_items.all():
+            raise ProtectedError(
+                msg=_(
+                    "Cannot delete an Asset that is linked to a External Inventory Items. "
+                    "Please remove the external inventory items association first."
+                ),
+                protected_objects=list(items),
+            )
+
         super().delete(*args, **kwargs)
 
     def get_assignment_status_color(self):

@@ -109,6 +109,9 @@ class RMA(NetBoxModel):
 
     @transaction.atomic
     def save(self, *args, **kwargs):
+        if not self.rma_number:
+            self.rma_number = None
+
         # Automatically populate original_serial from asset if not set
         if not self.original_serial and self.asset:
             self.original_serial = self.asset.serial

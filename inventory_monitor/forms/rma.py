@@ -13,6 +13,7 @@ from inventory_monitor.models.rma import RMAStatusChoices
 class RMAForm(NetBoxModelForm):
     rma_number = forms.CharField(
         required=False,
+        empty_value=None,
         label=_("RMA Number"),
         help_text=_("RMA identifier provided by vendor"),
     )

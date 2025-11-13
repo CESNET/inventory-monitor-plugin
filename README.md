@@ -361,7 +361,7 @@ Business relationship management with full currency support.
 Complete RMA workflow management with serial number tracking.
 
 **Key Fields:**
-- `rma_number`: RMA reference number (unique)
+- `rma_number`: RMA reference number (unique when provided, optional for draft RMAs)
 - `asset`: Foreign key to Asset being returned/replaced (**required**)
 - `original_serial`: Serial number of the failed/returned hardware
 - `replacement_serial`: Serial number of the replacement hardware
@@ -372,6 +372,7 @@ Complete RMA workflow management with serial number tracking.
 - `vendor_response`: Vendor response/resolution details
 
 **Key Features:**
+- **Flexible RMA numbering**: `rma_number` supports NULL values for draft RMAs, enforces uniqueness only on non-empty values (via `UniqueConstraint`)
 - Automatic serial tracking: `original_serial` auto-populated from asset when RMA created
 - Automatic probe matching: both original and replacement serials are used for probe matching
 - Asset lifecycle tracking: helps maintain historical record of hardware replacements
