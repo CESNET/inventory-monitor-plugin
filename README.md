@@ -288,7 +288,7 @@ The central model representing physical or logical inventory items.
 - Integration with External Inventory systems via many-to-many relationship
 - Multi-currency support with configurable currency codes and symbols
 - Currency validation enforced: *if price is set (non-zero), currency is required*
-- **Deletion protection**: Cannot delete an Asset with an `order_contract` (prevents orphaned contract references). User must clear the contract first.
+- **Deletion protection**: Cannot delete an Asset with an `order_contract` (prevents orphaned contract references). User must clear the contract first. Also prevents deletion when linked to external inventory items.
 - External inventory assignment management with dedicated form
 - Comprehensive filtering including external inventory number search
 - Probe matching via serial number (current and RMA serials)
@@ -432,6 +432,7 @@ Integration with external inventory management systems.
 - RMA integration: external_id used for RMA matching and display
 - Comprehensive filtering by all fields
 - Status methods: `get_status_color()` and `get_status_display()` for UI rendering
+- **Deletion protection**: Cannot delete external inventory items that have associated assets (prevents orphaned references)
 
 ---
 

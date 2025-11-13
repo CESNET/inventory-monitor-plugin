@@ -1,5 +1,7 @@
 from django.db import models
+from django.db.models.deletion import ProtectedError
 from django.urls import reverse
+from django.utils.translation import gettext as _
 from netbox.models import NetBoxModel
 
 from inventory_monitor.models.asset import Asset
@@ -168,3 +170,19 @@ class ExternalInventory(NetBoxModel):
         # Get label for current status, default to the status value if not found
         status_info = status_config.get(str(self.status), {})
         return status_info.get("label", str(self.status))
+
+    def delete(self, *args, **kwargs):
+        """
+        Override delete to prevent deletion of external inventory items with associated assets.
+        Raises a ProtectedError if the external inventory item has associated assets.
+        """
+        if self.assets.exists():
+            raise ProtectedError(
+                msg=_(
+                    "Cannot delete an External Inventory item that is linked to Assets. "
+                    "Please remove the asset associations first."
+                ),
+                protected_objects=list(self.assets.all()),
+            )
+
+        super().delete(*args, **kwargs)
