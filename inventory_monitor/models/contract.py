@@ -7,7 +7,6 @@ from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
 
 
-
 class ContractTypeChoices(ChoiceSet):
     key = "Contract.type"
 
@@ -91,10 +90,21 @@ class Contract(NetBoxModel):
         )
 
     def __str__(self):
+        parts = [self.name]
+
+        # Add internal name if different
+        if self.name_internal and self.name_internal != self.name:
+            parts.append(f"({self.name_internal})")
+
+        # Add parent contract context for subcontracts
         if self.parent:
-            return f"#{self.pk}: {self.parent.name} - {self.name}"
-        else:
-            return f"#{self.pk}: {self.name}"
+            parts.append(f"[Sub: {self.parent.name}]")
+
+        # Add contractor context
+        if self.contractor:
+            parts.append(f"via {self.contractor.name}")
+
+        return " ".join(parts)
 
     def get_type_color(self):
         return ContractTypeChoices.colors.get(self.type)
@@ -108,7 +118,7 @@ class Contract(NetBoxModel):
         # Validate - currency is required if price is set (including 0)
         if self.price is not None and not self.currency:
             raise ValidationError({"currency": "Currency is required when price is set."})
-        
+
         # If currency is set, price must also be set
         if self.currency and self.price is None:
             raise ValidationError({"price": "Price is required when currency is set."})

@@ -29,7 +29,9 @@ class AssetType(NetBoxModel):
         ]
 
     def __str__(self):
-        return f"#{self.pk}: {self.name}"
+        if self.description:
+            return f"{self.name} ({self.description})"
+        return self.name
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:assettype", args=[self.pk])

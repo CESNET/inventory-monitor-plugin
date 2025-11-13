@@ -43,11 +43,13 @@ class Contractor(NetBoxModel):
                 )
 
     def __str__(self):
-        if self.name and self.company:
-            return f"#{self.pk}: {self.name}: {self.company}"
-        elif self.name:
-            return f"#{self.pk}: {self.name}"
-        return f"#{self.pk}: {self.company}"
+        parts = [self.name] if self.name else []
+        if self.company and self.company != self.name:
+            parts.append(f"({self.company})")
+        if self.tenant:
+            parts.append(f"[{self.tenant}]")
+
+        return " ".join(parts) if parts else f"#{self.pk}"
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:contractor", args=[self.pk])

@@ -86,9 +86,20 @@ class RMA(NetBoxModel):
         return self.asset.str_no_pk()
 
     def __str__(self):
+        parts = []
+
+        # RMA number is the primary identifier
         if self.rma_number:
-            return f"#{self.pk}: RMA {self.rma_number} - {self.asset_display}"
-        return f"#{self.pk}: {self.asset_display}"
+            parts.append(f"RMA#{self.rma_number}")
+
+        # Asset context
+        if self.asset:
+            parts.append(self.asset.str_no_pk())
+
+        # Status for visibility
+        parts.append(f"[{self.get_status_display()}]")
+
+        return " ".join(parts) if parts else f"#{self.pk}"
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:rma", args=[self.pk])

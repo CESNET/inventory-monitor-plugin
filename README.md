@@ -190,6 +190,41 @@ classDiagram
 
 ## Data Models
 
+### String Representations & Readability
+
+All models have optimized `__str__` methods designed for **human readability** and **easy searching** without relying on primary keys. The format is intuitive and includes contextual information relevant to each model type.
+
+**Design Principles:**
+- **Natural key first**: Most distinguishing identifier appears first (e.g., RMA number before asset)
+- **Context in parentheses**: Related information in `(parentheses)` for clarity
+- **Hierarchy in brackets**: Parent/child or relationship context in `[brackets]`
+- **No PK prefix**: Primary keys omitted for cleaner, more searchable text
+- **Status visibility**: Important status information included where relevant
+
+**String Representation Examples:**
+
+| Model | Format | Example |
+|-------|--------|---------|
+| **Asset** | `partnumber [serial] (vendor)` | `PROD-123 [SN12345] (Dell)` |
+| **Probe** | `serial - name` | `SN12345 - Server-01` |
+| **Contractor** | `name (company) [tenant]` | `John Doe (ACME Corp) [Tenant1]` |
+| **Contract** | `name (internal_name) [Sub: parent] via contractor` | `Main Contract (MC-001) via ACME Corp` |
+| **Invoice** | `name (contract_name) [project] price currency` | `Invoice-Q1 (Main Contract) [PRJ-001] 5000.00 EUR` |
+| **AssetService** | `asset_serial (contract_name) [category]` | `SN12345 (Service Contract) [Maintenance]` |
+| **RMA** | `RMA#number asset_serial [status]` | `RMA#12345 PROD-123 [SN12345] [Approved]` |
+| **AssetType** | `name (description)` | `Server (High-performance computing)` |
+| **ExternalInventory** | `inventory_number name [SN: serial] → person_name` | `INV-001 Server Hardware [SN: ABC123] → John Smith` |
+
+**Search Optimization:**
+These representations are optimized for text-based searching in:
+- NetBox admin UI dropdowns and choice fields
+- Search bars and filters
+- API response bodies
+- Logs and audit trails
+- Reports and exports
+
+The absence of primary key prefixes makes searching by name, serial number, or other identifying fields significantly easier.
+
 ### Description Fields & UI Display
 
 Most models in the Inventory Monitor plugin include a **description** field that provides additional context and details. These descriptions are automatically displayed in form choice fields (dropdowns) thanks to NetBox's built-in JavaScript functionality.
@@ -219,10 +254,11 @@ Asset Type Dropdown:
 ```
 
 **String Representations:**
-All models now include a primary key prefix in their string representations for uniqueness and traceability:
-- Format: `#{pk}: <model_specific_identifier>`
-- Example: `#42: Asset1 (SN12345)` for an Asset
-- Composite models use helper methods to avoid ID duplication in related references
+All models use optimized string representations for human readability and searchability (see [String Representations & Readability](#string-representations--readability) section above):
+- Format varies by model type to show the most relevant identifying information
+- Natural keys appear first (serial numbers, contract names, RMA numbers)
+- Related context is shown in parentheses or brackets
+- Primary keys are omitted for cleaner text display
 
 ### Core Models
 

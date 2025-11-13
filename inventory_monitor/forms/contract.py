@@ -176,4 +176,13 @@ class ContractBulkEditForm(NetBoxModelBulkEditForm):
         self.fields["currency"].choices = add_blank_choice(get_currency_choices())
 
     model = Contract
-    nullable_fields = ("name_internal", "description", "price", "currency", "signed", "accepted", "invoicing_start", "invoicing_end")
+    nullable_fields = (
+        "name_internal",
+        "description",
+        "price",
+        "currency",
+        "signed",
+        "accepted",
+        "invoicing_start",
+        "invoicing_end",
+    )

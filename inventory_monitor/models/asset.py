@@ -271,15 +271,20 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
         return " ".join(self.get_external_inventory_asset_numbers())
 
     def __str__(self):
+        parts = []
         if self.partnumber:
-            return f"#{self.pk}: {self.partnumber} ({self.serial})"
-        return f"#{self.pk}: {self.serial}"
-    
+            parts.append(self.partnumber)
+        if self.serial:
+            parts.append(f"[{self.serial}]")
+        if self.vendor:
+            parts.append(f"({self.vendor})")
+
+        return " ".join(parts) if parts else f"#{self.pk}"
+
     def str_no_pk(self):
         if self.partnumber:
             return f"{self.partnumber} ({self.serial})"
         return f"{self.serial}"
-    
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:asset", args=[self.pk])

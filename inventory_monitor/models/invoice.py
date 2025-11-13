@@ -53,7 +53,21 @@ class Invoice(NetBoxModel):
         )
 
     def __str__(self):
-        return f"#{self.pk}: {self.name}"
+        parts = [self.name]
+
+        # Add contract context
+        if self.contract:
+            parts.append(f"({self.contract.name})")
+
+        # Add project if useful
+        if self.project and (not self.contract or self.project != self.contract.name):
+            parts.append(f"[{self.project}]")
+
+        # Add price if available
+        if self.price is not None and self.currency:
+            parts.append(f"{self.price} {self.currency}")
+
+        return " ".join(parts)
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:invoice", args=[self.pk])
@@ -64,7 +78,7 @@ class Invoice(NetBoxModel):
         # Validate - currency is required if price is set (including 0)
         if self.price is not None and not self.currency:
             raise ValidationError({"currency": "Currency is required when price is set."})
-        
+
         # If currency is set, price must also be set
         if self.currency and self.price is None:
             raise ValidationError({"price": "Price is required when currency is set."})

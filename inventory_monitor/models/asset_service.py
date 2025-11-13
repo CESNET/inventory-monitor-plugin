@@ -72,12 +72,19 @@ class AssetService(NetBoxModel, DateStatusMixin):
         return self.asset.str_no_pk()
 
     def __str__(self):
-        if self.asset and self.contract:
-                return f"#{self.pk}: {self.asset_display} - {self.contract.name}"
-        elif self.asset:
-            return f"#{self.pk}: {self.asset_display} - Service"
-        elif self.contract:
-            return f"#{self.pk}: {self.contract.name} - Service"
+        parts = []
+
+        if self.asset:
+            parts.append(self.asset.str_no_pk())  # Uses helper without PK
+
+        if self.contract:
+            parts.append(f"({self.contract.name})")
+
+        if self.service_category:
+            parts.append(f"[{self.service_category}]")
+
+        if parts:
+            return " ".join(parts)
         return f"#{self.pk}"
 
     def get_absolute_url(self):
