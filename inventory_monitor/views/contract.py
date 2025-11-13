@@ -37,7 +37,7 @@ def get_attachments_count_query(model_name):
 
 
 def annotate_queryset_with_counts(queryset):
-    queryset = queryset.select_related("contractor").annotate(
+    queryset = queryset.select_related("contractor", "parent").annotate(
         subcontracts_count=Count("subcontracts", distinct=True),
         invoices_count=Count("invoices", distinct=True),
         attachments_count=get_attachments_count_query("contract"),

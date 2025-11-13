@@ -41,6 +41,12 @@ class AssetListView(generic.ObjectListView):
         "bulk_edit": {"change"},
         "bulk_delete": {"delete"},
     }
+    
+    def get_queryset(self, request):
+        """Override to apply probe data annotations to avoid N+1 queries."""
+        queryset = super().get_queryset(request)
+        # Annotate with probe data computed in database
+        return Asset.annotate_with_probe_data(queryset)
 
 
 @register_model_view(models.Asset, "add", detail=False)
