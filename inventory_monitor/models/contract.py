@@ -8,7 +8,7 @@ from utilities.querysets import RestrictedQuerySet
 
 
 class ContractTypeChoices(ChoiceSet):
-    key = "Contract.type"
+    key = "inventory_monitor.Contract.type"
 
     CHOICES = [
         ("supply", "Supply Contract", "green"),

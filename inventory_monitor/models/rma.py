@@ -6,7 +6,7 @@ from utilities.querysets import RestrictedQuerySet
 
 
 class RMAStatusChoices(ChoiceSet):
-    key = "cesnet_service_path_plugin.rma.status"
+    key = "inventory_monitor.RMA.status"
 
     PENDING = "pending"
     SHIPPED = "shipped"
