@@ -2,7 +2,7 @@
 
 A comprehensive NetBox plugin for asset management with semi-automatic discovery processes. This plugin extends NetBox with powerful inventory tracking capabilities, including asset lifecycle management, probe monitoring, contract tracking, and RMA (Return Merchandise Authorization) processing.
 
-[![Version](https://img.shields.io/badge/version-12.0.0b2-blue.svg)](https://github.com/CESNET/inventory-monitor-plugin)
+[![Version](https://img.shields.io/badge/version-12.0.0-blue.svg)](https://github.com/CESNET/inventory-monitor-plugin)
 [![NetBox](https://img.shields.io/badge/netbox-4.4.x-green.svg)](https://github.com/netbox-community/netbox)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 
@@ -510,6 +510,14 @@ The following components have been updated for NetBox v4 compatibility:
 - Forms: Updated assignment object handling for NetBox v4 API
 - Template Tags: Updated for ObjectType-based model lookups
 - Template Content: Updated caching system for hierarchical asset views
+
+**Plugin Compatibility Fix**
+
+The plugin now properly handles tag field reverse accessor conflicts when multiple inventory plugins are installed simultaneously. All models now use unique `related_name` values for their tags fields to prevent Django's `fields.E304` reverse accessor clash errors.
+
+- ✅ Resolves conflicts with other inventory plugins (e.g., ARNES netbox_inventory)
+- ✅ Maintains full tagging functionality
+- ✅ No user-facing changes required
 
 #### Upgrade Steps
 
