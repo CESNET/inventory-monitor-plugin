@@ -3,6 +3,7 @@ from django.db.models.deletion import ProtectedError
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from netbox.models import NetBoxModel
+from taggit.managers import TaggableManager
 
 from inventory_monitor.models.asset import Asset
 from inventory_monitor.settings import get_external_inventory_status_config_safe
@@ -115,6 +116,13 @@ class ExternalInventory(NetBoxModel):
         blank=True,
         verbose_name="Assets",
         help_text="Associated internal asset records",
+    )
+
+    # Override tags field to avoid reverse accessor clash with other plugins
+    tags = TaggableManager(
+        through="extras.TaggedItem",
+        related_name="inventory_monitor_external_inventories",
+        blank=True,
     )
 
     class Meta:

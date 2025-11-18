@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 from netbox.models import NetBoxModel
+from taggit.managers import TaggableManager
 from utilities.querysets import RestrictedQuerySet
 
 from inventory_monitor.models.mixins import DateStatusMixin
@@ -48,6 +49,13 @@ class AssetService(NetBoxModel, DateStatusMixin):
     )
     description = models.CharField(max_length=255, blank=True, default="")
     comments = models.TextField(blank=True)
+
+    # Override tags field to avoid reverse accessor clash with other plugins
+    tags = TaggableManager(
+        through="extras.TaggedItem",
+        related_name="inventory_monitor_asset_services",
+        blank=True,
+    )
 
     class Meta:
         ordering = (

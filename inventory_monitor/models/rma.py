@@ -1,6 +1,7 @@
 from django.db import models, transaction
 from django.urls import reverse
 from netbox.models import NetBoxModel
+from taggit.managers import TaggableManager
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
 
@@ -69,6 +70,13 @@ class RMA(NetBoxModel):
     issue_description = models.TextField(help_text="Description of the issue with the asset")
 
     vendor_response = models.TextField(blank=True, help_text="Vendor response/resolution details")
+
+    # Override tags field to avoid reverse accessor clash with other plugins
+    tags = TaggableManager(
+        through="extras.TaggedItem",
+        related_name="inventory_monitor_rmas",
+        blank=True,
+    )
 
     class Meta:
         ordering = ["date_issued"]

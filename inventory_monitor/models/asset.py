@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from netbox.models import ImageAttachmentsMixin, NetBoxModel
+from taggit.managers import TaggableManager
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
 
@@ -163,6 +164,13 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
     # Notes
     #
     comments = models.TextField(blank=True)
+
+    # Override tags field to avoid reverse accessor clash with other plugins
+    tags = TaggableManager(
+        through="extras.TaggedItem",
+        related_name="inventory_monitor_assets",
+        blank=True,
+    )
 
     class Meta:
         db_table = "inventory_monitor_asset"
