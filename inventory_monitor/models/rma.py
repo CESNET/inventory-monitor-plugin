@@ -1,12 +1,13 @@
 from django.db import models, transaction
 from django.urls import reverse
 from netbox.models import NetBoxModel
+from taggit.managers import TaggableManager
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
 
 
 class RMAStatusChoices(ChoiceSet):
-    key = "cesnet_service_path_plugin.rma.status"
+    key = "inventory_monitor.RMA.status"
 
     PENDING = "pending"
     SHIPPED = "shipped"
@@ -70,15 +71,43 @@ class RMA(NetBoxModel):
 
     vendor_response = models.TextField(blank=True, help_text="Vendor response/resolution details")
 
+    # Override tags field to avoid reverse accessor clash with other plugins
+    tags = TaggableManager(
+        through="extras.TaggedItem",
+        related_name="inventory_monitor_rmas",
+        blank=True,
+    )
+
     class Meta:
         ordering = ["date_issued"]
         verbose_name = "RMA"
         verbose_name_plural = "RMAs"
 
+    @property
+    def asset_display(self):
+        """
+        Safe asset display for composite use.
+        Returns asset string representation without PK, or fallback if None.
+        """
+        if not self.asset:
+            return "No Asset"
+        return self.asset.str_no_pk()
+
     def __str__(self):
+        parts = []
+
+        # RMA number is the primary identifier
         if self.rma_number:
-            return f"RMA {self.rma_number} - {self.asset}"
-        return f"RMA {self.pk} - {self.asset}"
+            parts.append(f"RMA#{self.rma_number}")
+
+        # Asset context
+        if self.asset:
+            parts.append(self.asset.str_no_pk())
+
+        # Status for visibility
+        parts.append(f"[{self.get_status_display()}]")
+
+        return " ".join(parts) if parts else f"#{self.pk}"
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:rma", args=[self.pk])
@@ -88,6 +117,9 @@ class RMA(NetBoxModel):
 
     @transaction.atomic
     def save(self, *args, **kwargs):
+        if not self.rma_number:
+            self.rma_number = None
+
         # Automatically populate original_serial from asset if not set
         if not self.original_serial and self.asset:
             self.original_serial = self.asset.serial

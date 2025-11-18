@@ -77,6 +77,7 @@ class InventoryMonitorAssetType(NetBoxObjectType):
     vendor: str | None
     quantity: int
     price: str | None  # DecimalField as string
+    currency: str | None
 
     # Warranty information
     warranty_start: str | None  # DateField as string
@@ -113,6 +114,7 @@ class InventoryMonitorAssetServiceType(NetBoxObjectType):
     service_start: str | None  # DateField as string
     service_end: str | None  # DateField as string
     service_price: str | None  # DecimalField as string
+    service_currency: str | None  # Currency code
     service_category: str | None
     service_category_vendor: str | None
     comments: str
@@ -128,6 +130,7 @@ class InventoryMonitorContractType(NetBoxObjectType):
     name_internal: str
     type: Annotated["InventoryMonitorContractTypeEnum", strawberry.lazy("inventory_monitor.graphql.enums")] | None
     price: str | None  # DecimalField as string
+    currency: str  # Currency code
     signed: str | None  # DateField as string
     accepted: str | None  # DateField as string
     invoicing_start: str | None  # DateField as string

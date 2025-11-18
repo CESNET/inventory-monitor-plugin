@@ -1,7 +1,7 @@
 import django_tables2 as tables
 from netbox.tables import ChoiceFieldColumn, NetBoxTable, columns
 
-from inventory_monitor.helpers import NumberColumn
+from inventory_monitor.helpers import CurrencyColumn
 from inventory_monitor.models import Contract
 
 
@@ -14,7 +14,8 @@ class ContractTable(NetBoxTable):
     attachments_count = tables.Column()
     parent = tables.Column(linkify=True)
     type = ChoiceFieldColumn()
-    price = NumberColumn()
+    price = CurrencyColumn(price_field="price", currency_field="currency")
+    currency = tables.Column()
     tags = columns.TagColumn()
 
     class Meta(NetBoxTable.Meta):
@@ -28,6 +29,7 @@ class ContractTable(NetBoxTable):
             "type",
             "contract_type",
             "price",
+            "currency",
             "signed",
             "accepted",
             "invoicing_start",
@@ -42,15 +44,9 @@ class ContractTable(NetBoxTable):
         default_columns = (
             "id",
             "name",
-            "name_internal",
             "contractor",
             "type",
-            "contract_type",
             "price",
-            "signed",
-            "accepted",
             "invoicing_start",
             "invoicing_end",
-            "parent",
-            "attachments_count",
         )

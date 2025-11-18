@@ -1,6 +1,7 @@
+from core.models import ObjectType
 from dcim.models import Device, Location, Module, Rack, Site
 from django import forms
-from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from netbox.forms import (
     NetBoxModelBulkEditForm,
@@ -15,10 +16,12 @@ from utilities.forms.fields import (
     DynamicModelMultipleChoiceField,
     TagFilterField,
 )
-from utilities.forms.rendering import FieldSet, TabbedGroups
+from utilities.forms.rendering import FieldSet, InlineFields, TabbedGroups
+from utilities.forms.utils import add_blank_choice
 from utilities.forms.widgets.datetime import DatePicker
 
 # Local application imports
+from inventory_monitor.helpers import get_currency_choices
 from inventory_monitor.models import Asset, AssetType, Contract, ExternalInventory
 from inventory_monitor.models.asset import (
     ASSIGNED_OBJECT_MODELS_QUERY,
@@ -91,9 +94,7 @@ class AssetForm(NetBoxModelForm):
 
     # Related object fields
     order_contract = DynamicModelChoiceField(
-        queryset=Contract.objects.all(),
-        required=False,
-        label="Order Contract",
+        queryset=Contract.objects.all(), required=False, label="Order Contract", selector=True
     )
     # Additional information fields
     project = forms.CharField(
@@ -104,13 +105,24 @@ class AssetForm(NetBoxModelForm):
         required=False,
         label="Vendor",
     )
-    quantity = forms.IntegerField(required=True, label="Items", initial=1, min_value=1)
-    price = forms.DecimalField(
+    quantity = forms.IntegerField(
         required=True,
+        label="Items",
+        initial=1,
+        min_value=1,
+        help_text="Number of identical items (e.g., 5 servers with same specifications)",
+    )
+    price = forms.DecimalField(
+        required=False,
         label="Price",
-        initial=0,
         min_value=0,
         decimal_places=2,
+    )
+    currency = forms.ChoiceField(
+        required=False,
+        label=_("Currency"),
+        help_text=_("Required if price is set"),
+        choices=[],
     )
 
     # Warranty information
@@ -135,7 +147,7 @@ class AssetForm(NetBoxModelForm):
             "description",
             "type",
             "project",
-            "price",
+            InlineFields("price", "currency", label=_("Price")),
             "vendor",
             "quantity",
             name=_("Asset"),
@@ -189,6 +201,7 @@ class AssetForm(NetBoxModelForm):
             "vendor",
             "quantity",
             "price",
+            "currency",
             # Warranty information
             "warranty_start",
             "warranty_end",
@@ -209,22 +222,26 @@ class AssetForm(NetBoxModelForm):
 
         if instance:
             # When editing: set the initial value for assigned_object selection
-            for assigned_object_model in ContentType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY):
+            for assigned_object_model in ObjectType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY):
                 if type(instance.assigned_object) is assigned_object_model.model_class():
                     initial[assigned_object_model.model] = instance.assigned_object
                     break
         elif assigned_object_type and assigned_object_id:
             # When adding the Asset from an assigned_object page
             if (
-                content_type := ContentType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY)
+                object_type := ObjectType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY)
                 .filter(pk=assigned_object_type)
                 .first()
             ):
-                if assigned_object := content_type.model_class().objects.filter(pk=assigned_object_id).first():
-                    initial[content_type.model] = assigned_object
+                if assigned_object := object_type.model_class().objects.filter(pk=assigned_object_id).first():
+                    initial[object_type.model] = assigned_object
 
         kwargs["initial"] = initial
         super().__init__(*args, **kwargs)
+
+        # Set currency choices with blank option
+        self.fields["currency"].choices = add_blank_choice(get_currency_choices())
+        # Don't set default - let currency be blank until user adds a price
 
     def clean(self):
         """
@@ -299,7 +316,7 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
         ),
         # Numeric range filters
         FieldSet("quantity", "quantity__gte", "quantity__lte", name=_("Quantity")),
-        FieldSet("price", "price__gte", "price__lte", name=_("Price")),
+        FieldSet("price", "price__gte", "price__lte", "price__isnull", "currency", name=_("Price")),
         FieldSet("has_external_inventory_items", name=_("External Inventory")),
     )
 
@@ -363,6 +380,21 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label=("Price: Till"),
     )
+    price__isnull = forms.ChoiceField(
+        required=False,
+        label=("Has Price"),
+        choices=(
+            ("", "Any"),
+            ("false", "Yes"),
+            ("true", "No"),
+        ),
+    )
+    currency = forms.MultipleChoiceField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set currency choices from config
+        self.fields["currency"].choices = get_currency_choices()
 
     # Warranty date filters (exact and range)
     warranty_start = forms.DateField(required=False, label=("Warranty Start"), widget=DatePicker())
@@ -392,15 +424,19 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
     )
     type = DynamicModelChoiceField(queryset=AssetType.objects.all(), required=False)
 
-    assignment_status = forms.ChoiceField(choices=AssignmentStatusChoices, required=False)
+    assignment_status = forms.ChoiceField(choices=add_blank_choice(AssignmentStatusChoices), required=False)
 
-    lifecycle_status = forms.ChoiceField(choices=LifecycleStatusChoices, required=False)
+    lifecycle_status = forms.ChoiceField(choices=add_blank_choice(LifecycleStatusChoices), required=False)
 
     project = forms.CharField(required=False)
 
     vendor = forms.CharField(required=False)
 
     order_contract = DynamicModelChoiceField(queryset=Contract.objects.all(), required=False)
+
+    price = forms.DecimalField(required=False, decimal_places=2)
+
+    currency = forms.ChoiceField(required=False, choices=add_blank_choice(get_currency_choices()))
 
     warranty_start = forms.DateField(required=False, widget=DatePicker())
 
@@ -417,9 +453,20 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
         "project",
         "vendor",
         "order_contract",
+        "price",
+        "currency",
         "warranty_start",
         "warranty_end",
         "comments",
+    )
+
+    fieldsets = (
+        FieldSet("description", "type", name=_("Asset")),
+        FieldSet("assignment_status", "lifecycle_status", name=_("Status")),
+        FieldSet("project", "vendor", "order_contract", name=_("Details")),
+        FieldSet("price", "currency", name=_("Financial")),
+        FieldSet("warranty_start", "warranty_end", name=_("Warranty")),
+        FieldSet("comments", name=_("Comments")),
     )
 
 
@@ -442,8 +489,9 @@ class AssetBulkImportForm(NetBoxModelImportForm):
         required=False,
         to_field_name="name",  # Assuming you want to match by contract name
     )
-    quantity = forms.IntegerField(required=False, initial=1)
-    price = forms.DecimalField(required=False, initial=0, decimal_places=2)
+    quantity = forms.IntegerField(required=False)
+    price = forms.DecimalField(required=False, decimal_places=2)
+    currency = forms.CharField(required=False)
     warranty_start = forms.DateField(required=False)
     warranty_end = forms.DateField(required=False)
     comments = forms.CharField(required=False)
@@ -462,6 +510,7 @@ class AssetBulkImportForm(NetBoxModelImportForm):
             "order_contract",
             "quantity",
             "price",
+            "currency",
             "warranty_start",
             "warranty_end",
             "comments",
@@ -479,6 +528,7 @@ class AssetExternalInventoryAssignmentForm(NetBoxModelForm):
         required=False,
         label="External Inventory Items",
         help_text="Add or Remove External Inventory items to this Asset",
+        selector=True,
     )
 
     fieldsets = (
@@ -504,6 +554,27 @@ class AssetExternalInventoryAssignmentForm(NetBoxModelForm):
             self.fields.pop(cf_name, None)
         self.custom_fields = {}
         self.custom_fields_groups = {}
+
+    def _post_clean(self):
+        """
+        Override _post_clean to skip model-level validation entirely.
+
+        Since this form only manages the external_inventory_items many-to-many relationship
+        and doesn't modify any other Asset fields, we don't need to run the model's clean()
+        method which validates price/currency relationships that this form doesn't touch.
+
+        We still perform field-level validation for the fields in this form.
+        """
+        # Get validation exclusions - this validates form fields
+        exclude = self._get_validation_exclusions()
+
+        # Validate field values but skip model.clean() by not calling full_clean()
+        # This prevents the price/currency validation in Asset.clean()
+        try:
+            # Only validate fields, not the model's clean() method
+            self.instance.clean_fields(exclude=exclude)
+        except ValidationError as e:
+            self._update_errors(e)
 
     def save(self, commit=True):
         instance = super().save(commit=False)

@@ -97,6 +97,7 @@ class InventoryMonitorAssetFilter(NetBoxModelFilterMixin):
     # Numeric filters
     quantity: FilterLookup[int] | None = strawberry_django.filter_field()
     price: FilterLookup[str] | None = strawberry_django.filter_field()  # DecimalField
+    currency: FilterLookup[str] | None = strawberry_django.filter_field()
 
     # Date filters
     warranty_start: FilterLookup[str] | None = strawberry_django.filter_field()
@@ -146,6 +147,7 @@ class InventoryMonitorAssetServiceFilter(NetBoxModelFilterMixin):
     service_start: FilterLookup[str] | None = strawberry_django.filter_field()
     service_end: FilterLookup[str] | None = strawberry_django.filter_field()
     service_price: FilterLookup[str] | None = strawberry_django.filter_field()
+    service_currency: FilterLookup[str] | None = strawberry_django.filter_field()
     service_category: FilterLookup[str] | None = strawberry_django.filter_field()
     service_category_vendor: FilterLookup[str] | None = strawberry_django.filter_field()
 
@@ -169,6 +171,7 @@ class InventoryMonitorContractFilter(NetBoxModelFilterMixin):
         strawberry_django.filter_field()
     )
     price: FilterLookup[str] | None = strawberry_django.filter_field()
+    currency: FilterLookup[str] | None = strawberry_django.filter_field()
     signed: FilterLookup[str] | None = strawberry_django.filter_field()
     accepted: FilterLookup[str] | None = strawberry_django.filter_field()
     invoicing_start: FilterLookup[str] | None = strawberry_django.filter_field()

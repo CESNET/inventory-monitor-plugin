@@ -10,18 +10,18 @@ This module provides NetBox UI customizations including:
 
 from typing import Any, Dict, List, Set, Type
 
+from core.models import ObjectType
 from dcim.models import Device, Location, Module, Rack, Site
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q, QuerySet
 from django.http import HttpRequest
 from netbox.plugins import PluginTemplateExtension
 from netbox.views import generic
 from utilities.views import ViewTab, register_model_view
 
-from inventory_monitor.filtersets import AssetFilterSet, ProbeFilterSet
-from inventory_monitor.models import Asset, Contract, Contractor, Probe
-from inventory_monitor.tables import EnhancedAssetTable, EnhancedProbeTable
+from inventory_monitor.filtersets import AssetFilterSet, AssetServiceFilterSet, ProbeFilterSet
+from inventory_monitor.models import Asset, AssetService, Contract, Contractor, Probe
+from inventory_monitor.tables import AssetServiceTable, EnhancedAssetTable, EnhancedProbeTable
 
 # Load plugin configuration settings
 plugin_settings = settings.PLUGINS_CONFIG.get("inventory_monitor", {})
@@ -327,7 +327,7 @@ class ContractAssetsView(generic.ObjectChildrenView):
     template_name = "generic/object_children.html"
     hide_if_empty = False
     tab = ViewTab(
-        label="Assets",
+        label="Assets (Order Contract)",
         badge=lambda obj: obj.assets.count(),
         permission="inventory_monitor.view_asset",
     )
@@ -335,6 +335,27 @@ class ContractAssetsView(generic.ObjectChildrenView):
     def get_children(self, request: HttpRequest, parent: Contract) -> QuerySet[Asset]:
         """Get assets where this contract is the order_contract."""
         return parent.assets.all()
+
+
+@register_model_view(Contract, name="services", path="services")
+class ContractServicesView(generic.ObjectChildrenView):
+    """View to display asset services linked to this contract."""
+
+    queryset = Contract.objects.all()
+    child_model = AssetService
+    filterset = AssetServiceFilterSet
+    table = AssetServiceTable
+    template_name = "generic/object_children.html"
+    hide_if_empty = False
+    tab = ViewTab(
+        label="Services",
+        badge=lambda obj: obj.services.count(),
+        permission="inventory_monitor.view_assetservice",
+    )
+
+    def get_children(self, request: HttpRequest, parent: Contract) -> QuerySet[AssetService]:
+        """Get asset services where this contract is linked."""
+        return parent.services.all()
 
 
 class AssignedAssetsView(generic.ObjectChildrenView):
@@ -351,8 +372,8 @@ class AssignedAssetsView(generic.ObjectChildrenView):
     filterset = AssetFilterSet
     hide_if_empty = False
 
-    # Cache for content types to avoid repeated database queries
-    _content_types: Dict[str, ContentType] = {}
+    # Cache for object types to avoid repeated database queries
+    _content_types: Dict[str, ObjectType] = {}
 
     @staticmethod
     def get_hierarchical_asset_ids(parent: Any) -> Set[int]:
@@ -365,11 +386,11 @@ class AssignedAssetsView(generic.ObjectChildrenView):
         Returns:
             Set of asset IDs including direct and hierarchical assignments
         """
-        content_type = ContentType.objects.get_for_model(parent)
+        object_type = ObjectType.objects.get_for_model(parent)
 
         # Start with assets directly assigned to this object
         asset_ids = set(
-            Asset.objects.filter(assigned_object_type=content_type, assigned_object_id=parent.pk).values_list(
+            Asset.objects.filter(assigned_object_type=object_type, assigned_object_id=parent.pk).values_list(
                 "id", flat=True
             )
         )
@@ -390,34 +411,34 @@ class AssignedAssetsView(generic.ObjectChildrenView):
         return asset_ids
 
     @staticmethod
-    def _get_content_types() -> Dict[str, ContentType]:
+    def _get_content_types() -> Dict[str, ObjectType]:
         """
-        Cache content types to avoid repeated queries.
+        Cache object types to avoid repeated queries.
 
         Returns:
-            Dictionary mapping model names to their ContentType objects
+            Dictionary mapping model names to their ObjectType objects
         """
         if not AssignedAssetsView._content_types:
             AssignedAssetsView._content_types = {
-                "location": ContentType.objects.get_for_model(Location),
-                "device": ContentType.objects.get_for_model(Device),
-                "module": ContentType.objects.get_for_model(Module),
+                "location": ObjectType.objects.get_for_model(Location),
+                "device": ObjectType.objects.get_for_model(Device),
+                "module": ObjectType.objects.get_for_model(Module),
             }
         return AssignedAssetsView._content_types
 
     @staticmethod
-    def _add_assets_for_objects(asset_ids: Set[int], content_type: ContentType, object_ids: List[int]) -> None:
+    def _add_assets_for_objects(asset_ids: Set[int], object_type: ObjectType, object_ids: List[int]) -> None:
         """
         Helper to add asset IDs for given objects.
 
         Args:
             asset_ids: Set to update with new asset IDs
-            content_type: ContentType of the objects
+            object_type: ObjectType of the objects
             object_ids: List of object IDs to find assets for
         """
         if object_ids:
             new_asset_ids = Asset.objects.filter(
-                assigned_object_type=content_type, assigned_object_id__in=object_ids
+                assigned_object_type=object_type, assigned_object_id__in=object_ids
             ).values_list("id", flat=True)
             asset_ids.update(new_asset_ids)
 

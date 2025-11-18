@@ -28,7 +28,7 @@ setup(
     description="Asset Management with semi-auto discovery processes",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://gitlab.cesnet.cz/701/done/inventory-monitor-plugin',
+    url='https://github.com/CESNET/inventory-monitor-plugin',
     author="Jan Krupa",
     install_requires=[],
     packages=find_packages(),

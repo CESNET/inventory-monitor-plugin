@@ -1,5 +1,5 @@
+from core.models import ObjectType
 from django.contrib import messages
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
@@ -18,16 +18,15 @@ class AssetView(generic.ObjectView):
     queryset = models.Asset.objects.all()
 
 
-@register_model_view(models.Asset, 'list', path='', detail=False)
+@register_model_view(models.Asset, "list", path="", detail=False)
 class AssetListView(generic.ObjectListView):
     queryset = (
         models.Asset.objects.all()
+        .select_related("type", "order_contract", "assigned_object_type")  # Use select_related for FK fields
         .prefetch_related("services")
         .prefetch_related("tags")
         .prefetch_related("external_inventory_items")
         .prefetch_related("rmas")  # Prefetch RMAs to avoid N+1 queries in get_related_probes
-        .prefetch_related("type")  # Prefetch asset types for table display
-        .select_related("assigned_object_type")  # Optimize generic foreign key queries
         .annotate(services_count=Count("services"))
         .annotate(services_to=ArrayAgg("services__service_end"))
         .annotate(services_contracts=ArrayAgg("services__contract__name"))
@@ -42,10 +41,16 @@ class AssetListView(generic.ObjectListView):
         "bulk_edit": {"change"},
         "bulk_delete": {"delete"},
     }
+    
+    def get_queryset(self, request):
+        """Override to apply probe data annotations to avoid N+1 queries."""
+        queryset = super().get_queryset(request)
+        # Annotate with probe data computed in database
+        return Asset.annotate_with_probe_data(queryset)
 
 
-@register_model_view(models.Asset, 'add', detail=False)
-@register_model_view(models.Asset, 'edit')
+@register_model_view(models.Asset, "add", detail=False)
+@register_model_view(models.Asset, "edit")
 class AssetEditView(generic.ObjectEditView):
     queryset = models.Asset.objects.all()
     form = forms.AssetForm
@@ -56,18 +61,18 @@ class AssetEditView(generic.ObjectEditView):
             assigned_object_id = request.GET.get("assigned_object_id")
 
             if assigned_object_type and assigned_object_id:
-                instance.assigned_object_type = ContentType.objects.get(pk=assigned_object_type)
+                instance.assigned_object_type = ObjectType.objects.get(pk=assigned_object_type)
                 instance.assigned_object_id = assigned_object_id
 
         return instance
 
 
-@register_model_view(models.Asset, 'delete')
+@register_model_view(models.Asset, "delete")
 class AssetDeleteView(generic.ObjectDeleteView):
     queryset = models.Asset.objects.all()
 
 
-@register_model_view(models.Asset, 'bulk_edit', path='edit', detail=False)
+@register_model_view(models.Asset, "bulk_edit", path="edit", detail=False)
 class AssetBulkEditView(generic.BulkEditView):
     queryset = models.Asset.objects.all()
     filterset = filtersets.AssetFilterSet
@@ -75,7 +80,7 @@ class AssetBulkEditView(generic.BulkEditView):
     form = forms.AssetBulkEditForm
 
 
-@register_model_view(models.Asset, 'bulk_delete', path='delete', detail=False)
+@register_model_view(models.Asset, "bulk_delete", path="delete", detail=False)
 class AssetBulkDeleteView(generic.BulkDeleteView):
     queryset = models.Asset.objects.all()
     filterset = filtersets.AssetFilterSet
@@ -83,13 +88,13 @@ class AssetBulkDeleteView(generic.BulkDeleteView):
     default_return_url = "plugins:inventory_monitor:asset_list"
 
 
-@register_model_view(models.Asset, 'bulk_import', path='import', detail=False)
+@register_model_view(models.Asset, "bulk_import", path="import", detail=False)
 class AssetBulkImportView(generic.BulkImportView):
     queryset = models.Asset.objects.all()
     model_form = forms.AssetBulkImportForm
 
 
-@register_model_view(models.Asset, 'external_inventory_assignment', path='assign-external-inventory')
+@register_model_view(models.Asset, "external_inventory_assignment", path="assign-external-inventory")
 class AssetExternalInventoryAssignmentView(generic.ObjectEditView):
     """
     View for assigning External Inventory objects to an Asset

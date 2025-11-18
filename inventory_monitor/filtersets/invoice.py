@@ -4,6 +4,7 @@ from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
 
 from inventory_monitor.models import Contract, Invoice
+from inventory_monitor.helpers import get_currency_choices
 
 
 class InvoiceFilterSet(NetBoxModelFilterSet):
@@ -40,6 +41,7 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
     name__ic = django_filters.CharFilter(field_name="name", lookup_expr="icontains", label="Name Contains")
     name_internal = django_filters.CharFilter(lookup_expr="icontains")
     project = django_filters.CharFilter(lookup_expr="icontains")
+    description = django_filters.CharFilter()
 
     contract_id = django_filters.ModelMultipleChoiceFilter(
         field_name="contract__id",
@@ -54,8 +56,29 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
         label="Contract (name)",
     )
 
-    # TODO: forms.DecimalField
+    # Price filters
     price = django_filters.NumberFilter(required=False)
+    price__gte = django_filters.NumberFilter(
+        field_name="price",
+        lookup_expr="gte",
+        label="Price (min)",
+    )
+    price__lte = django_filters.NumberFilter(
+        field_name="price",
+        lookup_expr="lte",
+        label="Price (max)",
+    )
+    price__isnull = django_filters.BooleanFilter(
+        field_name="price",
+        lookup_expr="isnull",
+        label="Price is not set",
+    )
+    currency = django_filters.MultipleChoiceFilter(choices=[])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set currency choices from config
+        self.filters["currency"].field.choices = get_currency_choices()
 
     invoicing_start__gte = django_filters.DateFilter(field_name="invoicing_start", lookup_expr="gte")
     invoicing_start__lte = django_filters.DateFilter(field_name="invoicing_start", lookup_expr="lte")
@@ -71,15 +94,17 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
             "name",
             "name_internal",
             "project",
+            "description",
             "contract",
             "price",
+            "currency",
             "invoicing_start",
             "invoicing_end",
         )
 
     def search(self, queryset, name, value):
         """
-        A method for searching invoices by name or internal name.
+        A method for searching invoices by name, internal name, or description.
 
         Args:
             queryset (QuerySet): The queryset to filter.
@@ -92,4 +117,5 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
         """
         name = Q(name__icontains=value)
         name_internal = Q(name_internal__icontains=value)
-        return queryset.filter(name | name_internal)
+        description = Q(description__icontains=value)
+        return queryset.filter(name | name_internal | description)

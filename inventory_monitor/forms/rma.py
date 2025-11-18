@@ -3,6 +3,7 @@ from django.utils.translation import gettext as _
 from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm
 from utilities.forms.fields import CommentField, DynamicModelChoiceField, TagFilterField
 from utilities.forms.rendering import FieldSet
+from utilities.forms.utils import add_blank_choice
 from utilities.forms.widgets.datetime import DatePicker
 
 from inventory_monitor.models import RMA, Asset
@@ -12,6 +13,7 @@ from inventory_monitor.models.rma import RMAStatusChoices
 class RMAForm(NetBoxModelForm):
     rma_number = forms.CharField(
         required=False,
+        empty_value=None,
         label=_("RMA Number"),
         help_text=_("RMA identifier provided by vendor"),
     )
@@ -30,7 +32,11 @@ class RMAForm(NetBoxModelForm):
         FieldSet("tags", name="Tags"),
     )
 
-    asset = DynamicModelChoiceField(queryset=Asset.objects.all())
+    asset = DynamicModelChoiceField(queryset=Asset.objects.all(), selector=True, required=True)
+    status = forms.ChoiceField(
+        choices=RMAStatusChoices,
+        help_text="Status will automatically update asset serial when set to 'Completed' with a replacement serial",
+    )
     comments = CommentField()
 
     class Meta:
@@ -94,7 +100,7 @@ class RMAFilterForm(NetBoxModelFilterSetForm):
 
 
 class RMABulkEditForm(NetBoxModelBulkEditForm):
-    status = forms.ChoiceField(choices=RMAStatusChoices, required=False)
+    status = forms.ChoiceField(choices=add_blank_choice(RMAStatusChoices), required=False)
     date_issued = forms.DateField(required=False, widget=DatePicker())
     date_replaced = forms.DateField(required=False, widget=DatePicker())
     issue_description = forms.CharField(

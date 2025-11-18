@@ -11,7 +11,7 @@ class AssetServiceView(generic.ObjectView):
 
 @register_model_view(models.AssetService, 'list')
 class AssetServiceListView(generic.ObjectListView):
-    queryset = models.AssetService.objects.all()
+    queryset = models.AssetService.objects.select_related("asset", "contract__contractor")
     filterset = filtersets.AssetServiceFilterSet
     filterset_form = forms.AssetServiceFilterForm
     table = tables.AssetServiceTable

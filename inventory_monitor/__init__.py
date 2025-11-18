@@ -13,6 +13,15 @@ class NetBoxInventoryMonitorConfig(PluginConfig):
     default_settings = {
         # Probe Status Settings
         "probe_recent_days": 7,
+        # Currency Settings
+        "currencies": [
+            ("CZK", "Czech Koruna", "Kč"),
+            ("EUR", "Euro", "€"),
+            ("USD", "US Dollar", "$"),
+            ("GBP", "British Pound", "£"),
+            ("JPY", "Japanese Yen", "¥"),
+        ],
+        "default_currency": "EUR",
     }
     required_settings = []
     min_version = "4.4.0"

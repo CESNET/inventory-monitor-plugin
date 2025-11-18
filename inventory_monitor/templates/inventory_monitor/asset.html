@@ -100,7 +100,11 @@
                         </tr>
                         <tr>
                             <th>Price</th>
-                            <td>{{ object.price|to_czech_crown }}</td>
+                            <td>{{ object.price|format_price_with_currency:object.currency }}</td>
+                        </tr>
+                        <tr>
+                            <th>Currency</th>
+                            <td>{{ object.currency|default:"---" }}</td>
                         </tr>
                         <tr>
                             <th>Asset Number(s)</th>

@@ -1,10 +1,10 @@
 # NetBox serializers
+from core.models import ObjectType
 from dcim.api.serializers import (
     DeviceSerializer,
     LocationSerializer,
     SiteSerializer,
 )
-from django.contrib.contenttypes.models import ContentType
 from drf_spectacular.utils import extend_schema_field
 from netbox.api.fields import ContentTypeField, SerializedPKRelatedField
 from netbox.api.serializers import NetBoxModelSerializer
@@ -77,13 +77,14 @@ class ContractorSerializer(NetBoxModelSerializer):
             "name",
             "company",
             "address",
+            "description",
             "tenant",
             "tags",
             "comments",
             "custom_fields",
         ]
 
-        brief_fields = ["id", "url", "display", "name", "company", "address"]
+        brief_fields = ["id", "url", "display", "name", "company", "address", "description"]
 
 
 class ContractSerializer(NetBoxModelSerializer):
@@ -100,10 +101,12 @@ class ContractSerializer(NetBoxModelSerializer):
             "display",
             "name",
             "name_internal",
+            "description",
             "contractor",
             "type",
             "contract_type",
             "price",
+            "currency",
             "signed",
             "accepted",
             "invoicing_start",
@@ -119,6 +122,7 @@ class ContractSerializer(NetBoxModelSerializer):
             "display",
             "name",
             "name_internal",
+            "description",
         ]
 
     def get_fields(self):
@@ -145,7 +149,7 @@ class AssetSerializer(NetBoxModelSerializer):
 
     # Generic relationship fields
     assigned_object_type = ContentTypeField(
-        queryset=ContentType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY),
+        queryset=ObjectType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY),
         required=False,
         allow_null=True,
     )
@@ -178,6 +182,7 @@ class AssetSerializer(NetBoxModelSerializer):
             "vendor",
             "quantity",
             "price",
+            "currency",
             # Warranty information
             "warranty_start",
             "warranty_end",
@@ -284,6 +289,7 @@ class InvoiceSerializer(NetBoxModelSerializer):
             "name",
             "name_internal",
             "project",
+            "description",
             "contract",
             "price",
             "invoicing_start",
@@ -293,7 +299,7 @@ class InvoiceSerializer(NetBoxModelSerializer):
             "custom_fields",
         ]
 
-        brief_fields = ["id", "url", "display", "name", "name_internal"]
+        brief_fields = ["id", "url", "display", "name", "name_internal", "description"]
 
 
 class AssetServiceSerializer(NetBoxModelSerializer):
@@ -312,8 +318,10 @@ class AssetServiceSerializer(NetBoxModelSerializer):
             "service_start",
             "service_end",
             "service_price",
+            "service_currency",
             "service_category",
             "service_category_vendor",
+            "description",
             "asset",
             "contract",
             "tags",
@@ -328,6 +336,7 @@ class AssetServiceSerializer(NetBoxModelSerializer):
             "service_start",
             "service_end",
             "service_price",
+            "description",
             "asset",
             "contract",
         ]

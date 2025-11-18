@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from netbox.models import NetBoxModel
+from taggit.managers import TaggableManager
 from utilities.fields import ColorField
 
 
@@ -16,8 +17,15 @@ class AssetType(NetBoxModel):
         verbose_name=_("name"),
     )
     slug = models.SlugField(max_length=100, unique=True)
-    description = models.CharField(max_length=200, blank=True, verbose_name=_("description"))
+    description = models.CharField(max_length=200, blank=True, default="", verbose_name=_("description"))
     color = ColorField(verbose_name=_("color"), blank=True)
+
+    # Override tags field to avoid reverse accessor clash with other plugins
+    tags = TaggableManager(
+        through="extras.TaggedItem",
+        related_name="inventory_monitor_asset_types",
+        blank=True,
+    )
 
     class Meta:
         ordering = ("name",)
@@ -29,6 +37,8 @@ class AssetType(NetBoxModel):
         ]
 
     def __str__(self):
+        if self.description:
+            return f"{self.name} ({self.description})"
         return self.name
 
     def get_absolute_url(self):

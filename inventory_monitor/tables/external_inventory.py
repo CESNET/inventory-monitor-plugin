@@ -8,8 +8,7 @@ ASSOCIATED_ASSETS = """
     <a href="{% url 'plugins:inventory_monitor:asset_list' %}?external_inventory_items={{ record.pk }}">{{ value.count }}</a>
   {% elif value and value.all %}
     {% for asset in value.all %}
-      {% if asset.lifecycle_status != 'in_use' %}
-        <a 
+      <a 
             href="{{ asset.get_absolute_url }}" 
             class="badge text-bg-{{ asset.get_lifecycle_status_color }}" 
             data-bs-toggle="tooltip" 
@@ -23,9 +22,6 @@ ASSOCIATED_ASSETS = """
             "
             title="{{ asset.get_lifecycle_status_display }}"
         >{{ asset }}</a>
-      {% else %}
-        <a href="{{ asset.get_absolute_url }}">{{ asset }}</a>
-      {% endif %}
     {% endfor %}
   {% endif %}
 """
@@ -42,6 +38,18 @@ class ExternalInventoryTable(NetBoxTable):
     serial_number = tables.Column()
     person_name = tables.Column()
     location = tables.Column()
+    status = tables.TemplateColumn(
+        template_code="""
+        {% if record.status %}
+            <span class="badge text-bg-{{ record.get_status_color }}">
+                {{ record.get_status_display }}
+            </span>
+        {% else %}
+            {{ ''|placeholder }}
+        {% endif %}
+        """,
+        verbose_name="Status",
+    )
     assets = tables.TemplateColumn(template_code=ASSOCIATED_ASSETS, orderable=False, verbose_name="Assets")
     tags = columns.TagColumn()
 

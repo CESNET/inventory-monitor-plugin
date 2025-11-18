@@ -33,7 +33,11 @@
                         </tr>
                         <tr>
                             <td>Service Price</td>
-                            <td>{{ object.service_price|to_czech_crown }}</td>
+                            <td>{{ object.service_price|format_price_with_currency:object.service_currency }}</td>
+                        </tr>
+                        <tr>
+                            <td>Service Currency</td>
+                            <td>{{ object.service_currency|default:"---" }}</td>
                         </tr>
                         <tr>
                             <td>Service Category</td>

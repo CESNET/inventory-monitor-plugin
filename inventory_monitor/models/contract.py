@@ -3,12 +3,13 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 from netbox.models import NetBoxModel
+from taggit.managers import TaggableManager
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
 
 
 class ContractTypeChoices(ChoiceSet):
-    key = "Contract.type"
+    key = "inventory_monitor.Contract.type"
 
     CHOICES = [
         ("supply", "Supply Contract", "green"),
@@ -37,6 +38,11 @@ class Contract(NetBoxModel):
         null=True,
         validators=[MinValueValidator(0)],
     )
+    currency = models.CharField(
+        blank=True,
+        null=True,
+        help_text="Currency for the contract price (required if price is set, including 0)",
+    )
     signed = models.DateField(
         blank=True,
         null=True,
@@ -61,7 +67,15 @@ class Contract(NetBoxModel):
         blank=True,
         verbose_name="Parent contract",
     )
+    description = models.CharField(max_length=255, blank=True, default="")
     comments = models.TextField(blank=True)
+
+    # Override tags field to avoid reverse accessor clash with other plugins
+    tags = TaggableManager(
+        through="extras.TaggedItem",
+        related_name="inventory_monitor_contracts",
+        blank=True,
+    )
 
     @property
     def contract_type(self):
@@ -84,10 +98,21 @@ class Contract(NetBoxModel):
         )
 
     def __str__(self):
+        parts = [self.name]
+
+        # Add internal name if different
+        if self.name_internal and self.name_internal != self.name:
+            parts.append(f"({self.name_internal})")
+
+        # Add parent contract context for subcontracts
         if self.parent:
-            return f"{self.parent.name} - {self.name}"
-        else:
-            return f"{self.name}"
+            parts.append(f"[Sub: {self.parent.name}]")
+
+        # Add contractor context
+        if self.contractor:
+            parts.append(f"via {self.contractor.name}")
+
+        return " ".join(parts)
 
     def get_type_color(self):
         return ContractTypeChoices.colors.get(self.type)
@@ -98,15 +123,17 @@ class Contract(NetBoxModel):
     def clean(self):
         super().clean()
 
+        # Validate - currency is required if price is set (including 0)
+        if self.price is not None and not self.currency:
+            raise ValidationError({"currency": "Currency is required when price is set."})
+
+        # If currency is set, price must also be set
+        if self.currency and self.price is None:
+            raise ValidationError({"price": "Price is required when currency is set."})
+
         # Validate - subcontract cannot set parent which is subcontract
         if self.parent and self.parent.parent:
             raise ValidationError({"parent": "Subcontract cannot be set as Parent Contract"})
-
-        # Validate - if parent contract has different contractor
-        if self.parent and self.parent.contractor != self.contractor:
-            raise ValidationError(
-                {"contractor": f"Contractor must be same as Parent contractor: {self.parent.contractor}"}
-            )
 
         # Validate invoicing_start and invoicing_end
         if self.invoicing_start and self.invoicing_end and self.invoicing_start > self.invoicing_end:

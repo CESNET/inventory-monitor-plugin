@@ -39,6 +39,7 @@ class ContractorFilterSet(NetBoxModelFilterSet):
     name = django_filters.CharFilter(lookup_expr="icontains")
     company = django_filters.CharFilter(lookup_expr="icontains")
     address = django_filters.CharFilter(lookup_expr="icontains")
+    description = django_filters.CharFilter()
 
     tenant_id = django_filters.ModelMultipleChoiceFilter(
         field_name="tenant__id",
@@ -55,11 +56,11 @@ class ContractorFilterSet(NetBoxModelFilterSet):
 
     class Meta:
         model = Contractor
-        fields = ("id", "name", "company", "address", "tenant")
+        fields = ("id", "name", "company", "address", "description", "tenant")
 
     def search(self, queryset, name, value):
         """
-        Perform a case-insensitive search across the name, company, and address fields.
+        Perform a case-insensitive search across the name, company, address, and description fields.
 
         Args:
             queryset (QuerySet): The initial queryset to filter.
@@ -73,5 +74,6 @@ class ContractorFilterSet(NetBoxModelFilterSet):
         name = Q(name__icontains=value)
         company = Q(company__icontains=value)
         address = Q(address__icontains=value)
+        description = Q(description__icontains=value)
         tenant_name = Q(tenant__name__icontains=value)
-        return queryset.filter(name | company | address | tenant_name)
+        return queryset.filter(name | company | address | description | tenant_name)

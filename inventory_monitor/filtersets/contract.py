@@ -53,6 +53,7 @@ class ContractFilterSet(NetBoxModelFilterSet):
     name = django_filters.CharFilter(lookup_expr="exact", field_name="name")
     name__ic = django_filters.CharFilter(field_name="name", lookup_expr="icontains", label="Name Contains")
     name_internal = django_filters.CharFilter(lookup_expr="icontains")
+    description = django_filters.CharFilter()
     contractor_id = django_filters.ModelMultipleChoiceFilter(
         field_name="contractor__id",
         queryset=Contractor.objects.all(),
@@ -69,6 +70,25 @@ class ContractFilterSet(NetBoxModelFilterSet):
     type = django_filters.MultipleChoiceFilter(choices=ContractTypeChoices, required=False)
 
     price = django_filters.NumberFilter(required=False)
+    price__gte = django_filters.NumberFilter(
+        field_name="price",
+        lookup_expr="gte",
+        label="Price (min)",
+    )
+    price__lte = django_filters.NumberFilter(
+        field_name="price",
+        lookup_expr="lte",
+        label="Price (max)",
+    )
+    price__isnull = django_filters.BooleanFilter(
+        field_name="price",
+        lookup_expr="isnull",
+        label="Price is not set",
+    )
+    currency = django_filters.MultipleChoiceFilter(
+        choices=[],
+        label="Currency",
+    )
     signed__gte = django_filters.DateFilter(field_name="signed", lookup_expr="gte")
     signed__lte = django_filters.DateFilter(field_name="signed", lookup_expr="lte")
     signed = django_filters.DateFilter(field_name="signed", lookup_expr="contains")
@@ -106,15 +126,25 @@ class ContractFilterSet(NetBoxModelFilterSet):
 
     master_contracts = django_filters.BooleanFilter(method="_master_contracts", label="Master contracts only")
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Import here to avoid circular imports
+        from inventory_monitor.helpers import get_currency_choices
+
+        # Set currency choices dynamically from plugin config
+        self.filters["currency"].field.choices = get_currency_choices()
+
     class Meta:
         model = Contract
         fields = (
             "id",
             "name",
             "name_internal",
+            "description",
             "contractor",
             "type",
             "price",
+            "currency",
             "signed",
             "accepted",
             "invoicing_start",
@@ -124,7 +154,8 @@ class ContractFilterSet(NetBoxModelFilterSet):
     def search(self, queryset, name, value):
         name = Q(name__icontains=value)
         name_internal = Q(name_internal__icontains=value)
-        return queryset.filter(name | name_internal)
+        description = Q(description__icontains=value)
+        return queryset.filter(name | name_internal | description)
 
     def _master_contracts(self, queryset, name, value):
         if value:

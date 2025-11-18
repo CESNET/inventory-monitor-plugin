@@ -1,6 +1,9 @@
 from django.db import models
+from django.db.models.deletion import ProtectedError
 from django.urls import reverse
+from django.utils.translation import gettext as _
 from netbox.models import NetBoxModel
+from taggit.managers import TaggableManager
 
 from inventory_monitor.models.asset import Asset
 from inventory_monitor.settings import get_external_inventory_status_config_safe
@@ -16,7 +19,7 @@ class ExternalInventory(NetBoxModel):
     external_id = models.CharField(
         unique=True,
         verbose_name="External System ID",
-        help_text="Unique identifier for the item in external inventory system (ID)",
+        help_text="Unique identifier from external inventory system",
         # TODO: after Migration and setting up the external_id, make this field non nullable and blankable
         null=True,
         blank=True,
@@ -25,85 +28,85 @@ class ExternalInventory(NetBoxModel):
 
     inventory_number = models.CharField(
         max_length=64,
-        verbose_name="Inventory Number (Asset Number)",
-        help_text="External asset identifier (INVENT_CIS)",
+        verbose_name="Inventory Number",
+        help_text="Asset number from external inventory system",
     )
-    name = models.CharField(max_length=255, verbose_name="Name", help_text="Item name/description (NAZEV)")
+    name = models.CharField(max_length=255, verbose_name="Name", help_text="Item name or description")
     serial_number = models.CharField(
         max_length=255,
         blank=True,
         null=True,
         verbose_name="Serial Number",
-        help_text="Serial or production number (CVYR)",
+        help_text="Serial or production number",
     )
     person_id = models.CharField(
         max_length=64,
         blank=True,
         null=True,
         verbose_name="Person ID",
-        help_text="ID of the person responsible for this item (OSOBA_OSCISLO)",
+        help_text="ID of the person responsible for this item",
     )
     person_name = models.CharField(
         max_length=255,
         blank=True,
         null=True,
         verbose_name="Person Name",
-        help_text="Name of the person responsible for this item (OSOBA)",
+        help_text="Name of the person responsible for this item",
     )
     location_code = models.CharField(
         max_length=64,
         blank=True,
         null=True,
         verbose_name="Location Code",
-        help_text="Code representing the location of this item (KOD_UMISTENI)",
+        help_text="Code representing the location of this item",
     )
     location = models.CharField(
         max_length=255,
         blank=True,
         null=True,
         verbose_name="Location",
-        help_text="Description of item location (UMISTENI)",
+        help_text="Description of item location",
     )
     department_code = models.CharField(
         max_length=64,
         blank=True,
         null=True,
         verbose_name="Department Code",
-        help_text="Department code (AKTIVITA)",
+        help_text="Department code",
     )
     project_code = models.CharField(
         max_length=64,
         blank=True,
         null=True,
         verbose_name="Project Code",
-        help_text="Project code (PROJEKT)",
+        help_text="Project code",
     )
     user_name = models.CharField(
         max_length=255,
         blank=True,
         null=True,
         verbose_name="User Name",
-        help_text="Name of the user (NAZEV_UZIV)",
+        help_text="Name of the user",
     )
     user_note = models.TextField(
         blank=True,
         null=True,
         verbose_name="User Notes",
-        help_text="Notes from the user (POZN_UZIV)",
+        help_text="Notes from the user",
     )
     split_asset = models.CharField(
         # max_length=1,
         blank=True,
         null=True,
         verbose_name="Split Asset",
-        help_text="Whether this is a split/shared asset (DELENY_MAJETEK): A=Yes, N=No",
+        help_text="Whether this is a split/shared asset",
     )
     status = models.CharField(
         # max_length=1,
         blank=True,
         null=True,
         verbose_name="Status",
-        help_text="Current status of the item (STAV): 1=Active, 0=Inactive",
+        help_text="Current status of the item",
     )
 
     ############## EXTRA FIELDS
@@ -113,6 +116,13 @@ class ExternalInventory(NetBoxModel):
         blank=True,
         verbose_name="Assets",
         help_text="Associated internal asset records",
+    )
+
+    # Override tags field to avoid reverse accessor clash with other plugins
+    tags = TaggableManager(
+        through="extras.TaggedItem",
+        related_name="inventory_monitor_external_inventories",
+        blank=True,
     )
 
     class Meta:
@@ -131,7 +141,17 @@ class ExternalInventory(NetBoxModel):
         # unique_together = [["inventory_number"]]
 
     def __str__(self):
-        return f"{self.inventory_number}: {self.name}"
+        parts = [self.inventory_number, self.name]
+
+        # Add serial if available
+        if self.serial_number:
+            parts.append(f"[SN: {self.serial_number}]")
+
+        # Add person responsible
+        if self.person_name:
+            parts.append(f"→ {self.person_name}")
+
+        return " ".join(parts)
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:externalinventory", args=[self.pk])
@@ -158,3 +178,19 @@ class ExternalInventory(NetBoxModel):
         # Get label for current status, default to the status value if not found
         status_info = status_config.get(str(self.status), {})
         return status_info.get("label", str(self.status))
+
+    def delete(self, *args, **kwargs):
+        """
+        Override delete to prevent deletion of external inventory items with associated assets.
+        Raises a ProtectedError if the external inventory item has associated assets.
+        """
+        if self.assets.exists():
+            raise ProtectedError(
+                msg=_(
+                    "Cannot delete an External Inventory item that is linked to Assets. "
+                    "Please remove the asset associations first."
+                ),
+                protected_objects=list(self.assets.all()),
+            )
+
+        super().delete(*args, **kwargs)

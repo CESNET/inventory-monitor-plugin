@@ -19,7 +19,7 @@ def get_invoice_queryset():
     """
     Generates the queryset for Invoice objects, optionally annotating with attachment counts.
     """
-    base_queryset = models.Invoice.objects.all()
+    base_queryset = models.Invoice.objects.select_related("contract")
     if attachments_model_exists:
         try:
             invoice_object_type = get_object_type_or_none(app_label="inventory_monitor", model="invoice")

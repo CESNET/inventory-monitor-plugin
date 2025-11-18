@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from netbox.models import NetBoxModel
+from taggit.managers import TaggableManager
 from utilities.querysets import RestrictedQuerySet
 
 
@@ -10,6 +11,7 @@ class Contractor(NetBoxModel):
     name = models.CharField(max_length=255, blank=False, null=False)
     company = models.CharField(max_length=255, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True, default="")
     comments = models.TextField(blank=True)
 
     tenant = models.ForeignKey(
@@ -18,6 +20,13 @@ class Contractor(NetBoxModel):
         related_name="contractors",
         blank=True,
         null=True,
+    )
+
+    # Override tags field to avoid reverse accessor clash with other plugins
+    tags = TaggableManager(
+        through="extras.TaggedItem",
+        related_name="inventory_monitor_contractors",
+        blank=True,
     )
 
     class Meta:
@@ -42,10 +51,13 @@ class Contractor(NetBoxModel):
                 )
 
     def __str__(self):
-        if self.company:
-            return f"{self.name}: {self.company}"
-        else:
-            return f"{self.name}"
+        parts = [self.name] if self.name else []
+        if self.company and self.company != self.name:
+            parts.append(f"({self.company})")
+        if self.tenant:
+            parts.append(f"[{self.tenant}]")
+
+        return " ".join(parts) if parts else f"#{self.pk}"
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:contractor", args=[self.pk])
