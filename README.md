@@ -437,6 +437,17 @@ Integration with external inventory management systems.
 
 ## Installation
 
+### Compatibility
+
+| Plugin Version | NetBox Version | Tested on |
+| ------------- |:-------------:| :-----------:|
+| 12.0.0        | 4.4.x        | 4.4.0        |
+| 11.0.2        | 4.4.x        | 4.4.0        |
+| 10.3.x        | 4.3.x        | 4.3.0        |
+| 10.0.x - 10.2.x | 4.2.x      | 4.2.0        |
+| 9.0.x         | 4.1.x        | 4.1.0        |
+| 8.x.x         | 4.0.x        | 4.0.0        |
+
 ### Requirements
 
 - NetBox 4.4.0 or higher
