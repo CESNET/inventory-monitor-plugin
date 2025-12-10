@@ -437,6 +437,18 @@ Integration with external inventory management systems.
 
 ## Installation
 
+### Compatibility
+
+| Plugin Version | NetBox Version | Tested on |
+| ------------- |:-------------| :-----------:|
+| 7.0.0+        | 3.7.x        | 3.7.x        |
+| 8.0.0+        | 4.0.x        | 4.0.x        |
+| 9.0.0+        | 4.1.x        | 4.1.x        |
+| 10.0.0 - 10.1.x | 4.2.x      | 4.2.x        |
+| 10.2.0 - 10.3.x | 4.3.x      | 4.3.x        |
+| 11.0.0+       | 4.4.x        | 4.4.0        |
+| 12.0.0+       | 4.4.x        | 4.4.0        |
+
 ### Requirements
 
 - NetBox 4.4.0 or higher
@@ -879,7 +891,7 @@ days = settings.get("probe_recent_days", 7)
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for more details.
+This project is licensed under the Apache License 2.0. See the LICENSE file for more details.
 
 ---
 
