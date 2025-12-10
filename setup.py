@@ -30,6 +30,7 @@ setup(
     long_description_content_type="text/markdown",
     url='https://github.com/CESNET/inventory-monitor-plugin',
     author="Jan Krupa",
+    license="MIT",
     install_requires=[],
     packages=find_packages(),
     include_package_data=True,
@@ -38,6 +39,7 @@ setup(
     classifiers=[
         'Framework :: Django',
         'Programming Language :: Python :: 3',
+        'License :: OSI Approved :: MIT License',
     ],
     keywords=['netbox', 'netbox-plugin'],
 )
