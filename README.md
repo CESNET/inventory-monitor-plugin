@@ -440,7 +440,7 @@ Integration with external inventory management systems.
 ### Compatibility
 
 | Plugin Version | NetBox Version | Tested on |
-| ------------- |:-------------:| :-----------:|
+| ------------- |:-------------| :-----------:|
 | 12.0.0        | 4.4.x        | 4.4.0        |
 | 11.0.2        | 4.4.x        | 4.4.0        |
 | 10.3.x        | 4.3.x        | 4.3.0        |
