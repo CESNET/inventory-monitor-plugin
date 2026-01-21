@@ -2,11 +2,13 @@ import django_filters
 from django.db.models import Q
 from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
+from utilities.filtersets import register_filterset
 from tenancy.models import Tenant
 
 from inventory_monitor.models import Contractor
 
 
+@register_filterset
 class ContractorFilterSet(NetBoxModelFilterSet):
     """
     Filter set for the Contractor model.

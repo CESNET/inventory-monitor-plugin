@@ -1,9 +1,11 @@
 import django_filters
 from netbox.filtersets import NetBoxModelFilterSet
+from utilities.filtersets import register_filterset
 
 from inventory_monitor.models import AssetType
 
 
+@register_filterset
 class AssetTypeFilterSet(NetBoxModelFilterSet):
     class Meta:
         model = AssetType

@@ -41,7 +41,7 @@ class AssetListView(generic.ObjectListView):
         "bulk_edit": {"change"},
         "bulk_delete": {"delete"},
     }
-    
+
     def get_queryset(self, request):
         """Override to apply probe data annotations to avoid N+1 queries."""
         queryset = super().get_queryset(request)

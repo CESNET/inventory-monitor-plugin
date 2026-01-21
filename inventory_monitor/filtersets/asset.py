@@ -6,6 +6,7 @@ from dcim.models import Device, Location, Module, Rack, Site
 from django.db.models import Q
 from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
+from utilities.filtersets import register_filterset
 from utilities.filters import (
     ContentTypeFilter,
     MultiValueNumberFilter,
@@ -15,6 +16,7 @@ from inventory_monitor.helpers import get_currency_choices
 from inventory_monitor.models import Asset, AssetType, Contract, ExternalInventory
 
 
+@register_filterset
 class AssetFilterSet(NetBoxModelFilterSet):
     """
     Filterset for Asset objects providing comprehensive search and filtering capabilities.

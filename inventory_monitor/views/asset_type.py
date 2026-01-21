@@ -15,7 +15,7 @@ class AssetTypeView(GetRelatedModelsMixin, generic.ObjectView):
         }
 
 
-@register_model_view(models.AssetType, 'list', path='', detail=False)
+@register_model_view(models.AssetType, "list", path="", detail=False)
 class AssetTypeListView(generic.ObjectListView):
     queryset = models.AssetType.objects.annotate(asset_count=count_related(models.Asset, "type"))
     table = tables.AssetTypeTable
@@ -29,19 +29,19 @@ class AssetTypeListView(generic.ObjectListView):
     }
 
 
-@register_model_view(models.AssetType, 'add', detail=False)
-@register_model_view(models.AssetType, 'edit')
+@register_model_view(models.AssetType, "add", detail=False)
+@register_model_view(models.AssetType, "edit")
 class AssetTypeEditView(generic.ObjectEditView):
     queryset = models.AssetType.objects.all()
     form = forms.AssetTypeForm
 
 
-@register_model_view(models.AssetType, 'delete')
+@register_model_view(models.AssetType, "delete")
 class AssetTypeDeleteView(generic.ObjectDeleteView):
     queryset = models.AssetType.objects.all()
 
 
-@register_model_view(models.AssetType, 'bulk_edit', path='edit', detail=False)
+@register_model_view(models.AssetType, "bulk_edit", path="edit", detail=False)
 class AssetTypeBulkEditView(generic.BulkEditView):
     queryset = models.AssetType.objects.all()
     filterset = filtersets.AssetTypeFilterSet
@@ -49,7 +49,7 @@ class AssetTypeBulkEditView(generic.BulkEditView):
     form = forms.AssetTypeBulkEditForm
 
 
-@register_model_view(models.AssetType, 'bulk_delete', path='delete', detail=False)
+@register_model_view(models.AssetType, "bulk_delete", path="delete", detail=False)
 class AssetTypeBulkDeleteView(generic.BulkDeleteView):
     queryset = models.AssetType.objects.all()
     filterset = filtersets.AssetTypeFilterSet
