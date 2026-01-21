@@ -2,10 +2,12 @@ import django_filters
 from django.db.models import Q
 from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
+from utilities.filtersets import register_filterset
 
 from inventory_monitor.models import Asset, AssetService, Contract
 
 
+@register_filterset
 class AssetServiceFilterSet(NetBoxModelFilterSet):
     """
     Filter set for AssetService model.

@@ -58,7 +58,7 @@ __all__ = [
     # Asset models
     "ASSIGNED_OBJECT_MODELS_QUERY",
     "AssignmentStatusChoices",
-    "LifecycleStatusChoices", 
+    "LifecycleStatusChoices",
     "Asset",
     # Asset Service models
     "AssetService",

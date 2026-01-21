@@ -1,10 +1,12 @@
 import django_filters
 from django.db.models import Q
 from netbox.filtersets import NetBoxModelFilterSet
+from utilities.filtersets import register_filterset
 
 from inventory_monitor.models import RMA
 
 
+@register_filterset
 class RMAFilterSet(NetBoxModelFilterSet):
     q = django_filters.CharFilter(method="search")
     rma_number = django_filters.CharFilter()

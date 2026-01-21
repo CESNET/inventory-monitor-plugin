@@ -1,4 +1,5 @@
 from typing import Annotated, List
+from decimal import Decimal
 
 import strawberry
 import strawberry_django
@@ -76,7 +77,7 @@ class InventoryMonitorAssetType(NetBoxObjectType):
     project: str | None
     vendor: str | None
     quantity: int
-    price: str | None  # DecimalField as string
+    price: Decimal | None  # DecimalField - preserves precision for monetary values
     currency: str | None
 
     # Warranty information
@@ -113,7 +114,7 @@ class InventoryMonitorAssetTypeType(NetBoxObjectType):
 class InventoryMonitorAssetServiceType(NetBoxObjectType):
     service_start: str | None  # DateField as string
     service_end: str | None  # DateField as string
-    service_price: str | None  # DecimalField as string
+    service_price: Decimal | None  # DecimalField - preserves precision for service pricing
     service_currency: str | None  # Currency code
     service_category: str | None
     service_category_vendor: str | None
@@ -129,7 +130,7 @@ class InventoryMonitorContractType(NetBoxObjectType):
     name: str
     name_internal: str
     type: Annotated["InventoryMonitorContractTypeEnum", strawberry.lazy("inventory_monitor.graphql.enums")] | None
-    price: str | None  # DecimalField as string
+    price: Decimal | None  # DecimalField - preserves precision for contract amounts
     currency: str  # Currency code
     signed: str | None  # DateField as string
     accepted: str | None  # DateField as string
@@ -167,7 +168,7 @@ class InventoryMonitorInvoiceType(NetBoxObjectType):
     name: str
     name_internal: str
     project: str | None
-    price: str  # DecimalField as string (required)
+    price: Decimal | None  # DecimalField - preserves precision for invoice amounts
     invoicing_start: str | None  # DateField as string
     invoicing_end: str | None  # DateField as string
     comments: str

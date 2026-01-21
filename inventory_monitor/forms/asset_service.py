@@ -37,7 +37,7 @@ class AssetServiceForm(NetBoxModelForm):
         label="Service Price",
         min_value=0,
         decimal_places=2,
-        widget=forms.NumberInput(attrs={'placeholder': 'Enter price'}),
+        widget=forms.NumberInput(attrs={"placeholder": "Enter price"}),
     )
     service_currency = forms.ChoiceField(
         required=False,
@@ -52,17 +52,9 @@ class AssetServiceForm(NetBoxModelForm):
         required=False,
         label="Service Category Vendor",
     )
-    asset = DynamicModelChoiceField(
-        queryset=Asset.objects.all(),
-        required=True,
-        label="Service Asset",
-        selector=True
-    )
+    asset = DynamicModelChoiceField(queryset=Asset.objects.all(), required=True, label="Service Asset", selector=True)
     contract = DynamicModelChoiceField(
-        queryset=Contract.objects.all(),
-        required=True,
-        label="Service Contract",
-        selector=True
+        queryset=Contract.objects.all(), required=True, label="Service Contract", selector=True
     )
 
     def __init__(self, *args, **kwargs):
@@ -145,9 +137,9 @@ class AssetServiceFilterForm(NetBoxModelFilterSetForm):
         required=False,
         label=("Has Service Price"),
         choices=(
-            ('', 'Any'),
-            ('false', 'Yes'),
-            ('true', 'No'),
+            ("", "Any"),
+            ("false", "Yes"),
+            ("true", "No"),
         ),
     )
     service_currency = forms.MultipleChoiceField(required=False)

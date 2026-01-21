@@ -3,10 +3,12 @@ from dcim.models import Device
 from django.db.models import Q
 from extras.filters import TagFilter
 from netbox.filtersets import BaseFilterSet
+from utilities.filtersets import register_filterset
 
 from inventory_monitor.models import Probe
 
 
+@register_filterset
 class ProbeFilterSet(BaseFilterSet):
     """
     Filter set for the Probe model.
@@ -83,11 +85,7 @@ class ProbeFilterSet(BaseFilterSet):
         to reduce N+1 query problems.
         """
         qs = super().qs
-        return qs.select_related(
-            'device',
-            'site',
-            'location'
-        ).prefetch_related('tags')
+        return qs.select_related("device", "site", "location").prefetch_related("tags")
 
     def search(self, queryset, name, value):
         """

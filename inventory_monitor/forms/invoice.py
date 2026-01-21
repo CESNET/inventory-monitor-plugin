@@ -121,7 +121,15 @@ class InvoiceBulkEditForm(NetBoxModelBulkEditForm):
     invoicing_end = forms.DateField(required=False, widget=DatePicker())
 
     model = Invoice
-    nullable_fields = ("name_internal", "project", "description", "price", "currency", "invoicing_start", "invoicing_end")
+    nullable_fields = (
+        "name_internal",
+        "project",
+        "description",
+        "price",
+        "currency",
+        "invoicing_start",
+        "invoicing_end",
+    )
 
     fieldsets = (
         FieldSet("name", "name_internal", "project", "description", "contract", name=_("Common")),
