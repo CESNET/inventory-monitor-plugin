@@ -9,7 +9,7 @@ class RMAView(generic.ObjectView):
     queryset = models.RMA.objects.all()
 
 
-@register_model_view(models.RMA, 'list', path='', detail=False)
+@register_model_view(models.RMA, "list", path="", detail=False)
 class RMAListView(generic.ObjectListView):
     queryset = models.RMA.objects.select_related("asset")
     table = tables.RMATable
@@ -23,19 +23,19 @@ class RMAListView(generic.ObjectListView):
     }
 
 
-@register_model_view(models.RMA, 'add', detail=False)
-@register_model_view(models.RMA, 'edit')
+@register_model_view(models.RMA, "add", detail=False)
+@register_model_view(models.RMA, "edit")
 class RMAEditView(generic.ObjectEditView):
     queryset = models.RMA.objects.all()
     form = forms.RMAForm
 
 
-@register_model_view(models.RMA, 'delete')
+@register_model_view(models.RMA, "delete")
 class RMADeleteView(generic.ObjectDeleteView):
     queryset = models.RMA.objects.all()
 
 
-@register_model_view(models.RMA, 'bulk_edit', path='edit', detail=False)
+@register_model_view(models.RMA, "bulk_edit", path="edit", detail=False)
 class RMABulkEditView(generic.BulkEditView):
     queryset = models.RMA.objects.all()
     filterset = filtersets.RMAFilterSet
@@ -43,7 +43,7 @@ class RMABulkEditView(generic.BulkEditView):
     form = forms.RMABulkEditForm
 
 
-@register_model_view(models.RMA, 'bulk_delete', path='delete', detail=False)
+@register_model_view(models.RMA, "bulk_delete", path="delete", detail=False)
 class RMABulkDeleteView(generic.BulkDeleteView):
     queryset = models.RMA.objects.all()
     filterset = filtersets.RMAFilterSet

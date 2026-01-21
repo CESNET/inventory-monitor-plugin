@@ -50,7 +50,7 @@ class ContractView(generic.ObjectView):
     queryset = annotate_queryset_with_counts(models.Contract.objects.all())
 
 
-@register_model_view(models.Contract, 'list', path='', detail=False)
+@register_model_view(models.Contract, "list", path="", detail=False)
 class ContractListView(generic.ObjectListView):
     queryset = annotate_queryset_with_counts(models.Contract.objects.all())
     filterset = filtersets.ContractFilterSet
@@ -64,19 +64,19 @@ class ContractListView(generic.ObjectListView):
     }
 
 
-@register_model_view(models.Contract, 'add', detail=False)
-@register_model_view(models.Contract, 'edit')
+@register_model_view(models.Contract, "add", detail=False)
+@register_model_view(models.Contract, "edit")
 class ContractEditView(generic.ObjectEditView):
     queryset = models.Contract.objects.all().annotate(subcontracts_count=Count("subcontracts"))
     form = forms.ContractForm
 
 
-@register_model_view(models.Contract, 'delete')
+@register_model_view(models.Contract, "delete")
 class ContractDeleteView(generic.ObjectDeleteView):
     queryset = models.Contract.objects.all()
 
 
-@register_model_view(models.Contract, 'bulk_edit', path='edit', detail=False)
+@register_model_view(models.Contract, "bulk_edit", path="edit", detail=False)
 class ContractBulkEditView(generic.BulkEditView):
     queryset = models.Contract.objects.all()
     filterset = filtersets.ContractFilterSet
@@ -84,7 +84,7 @@ class ContractBulkEditView(generic.BulkEditView):
     form = forms.ContractBulkEditForm
 
 
-@register_model_view(models.Contract, 'bulk_delete', path='delete', detail=False)
+@register_model_view(models.Contract, "bulk_delete", path="delete", detail=False)
 class ContractBulkDeleteView(generic.BulkDeleteView):
     queryset = models.Contract.objects.all()
     filterset = filtersets.ContractFilterSet

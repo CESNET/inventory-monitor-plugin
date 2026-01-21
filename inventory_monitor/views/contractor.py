@@ -35,9 +35,13 @@ class ContractorView(generic.ObjectView):
     queryset = models.Contractor.objects.all()
 
 
-@register_model_view(models.Contractor, 'list', path='', detail=False)
+@register_model_view(models.Contractor, "list", path="", detail=False)
 class ContractorListView(generic.ObjectListView):
-    queryset = models.Contractor.objects.select_related("tenant").prefetch_related("tags").annotate(contracts_count=Count("contracts"))
+    queryset = (
+        models.Contractor.objects.select_related("tenant")
+        .prefetch_related("tags")
+        .annotate(contracts_count=Count("contracts"))
+    )
     filterset = filtersets.ContractorFilterSet
     filterset_form = forms.ContractorFilterForm
     table = tables.ContractorTable
@@ -49,19 +53,19 @@ class ContractorListView(generic.ObjectListView):
     }
 
 
-@register_model_view(models.Contractor, 'add', detail=False)
-@register_model_view(models.Contractor, 'edit')
+@register_model_view(models.Contractor, "add", detail=False)
+@register_model_view(models.Contractor, "edit")
 class ContractorEditView(generic.ObjectEditView):
     queryset = models.Contractor.objects.all()
     form = forms.ContractorForm
 
 
-@register_model_view(models.Contractor, 'delete')
+@register_model_view(models.Contractor, "delete")
 class ContractorDeleteView(generic.ObjectDeleteView):
     queryset = models.Contractor.objects.all()
 
 
-@register_model_view(models.Contractor, 'bulk_edit', path='edit', detail=False)
+@register_model_view(models.Contractor, "bulk_edit", path="edit", detail=False)
 class ContractorBulkEditView(generic.BulkEditView):
     queryset = models.Contractor.objects.all()
     filterset = filtersets.ContractorFilterSet
@@ -69,7 +73,7 @@ class ContractorBulkEditView(generic.BulkEditView):
     form = forms.ContractorBulkEditForm
 
 
-@register_model_view(models.Contractor, 'bulk_delete', path='delete', detail=False)
+@register_model_view(models.Contractor, "bulk_delete", path="delete", detail=False)
 class ContractorBulkDeleteView(generic.BulkDeleteView):
     queryset = models.Contractor.objects.all()
     filterset = filtersets.ContractorFilterSet
