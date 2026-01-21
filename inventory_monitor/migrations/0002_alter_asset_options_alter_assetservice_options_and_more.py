@@ -5,71 +5,125 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('inventory_monitor', '0001_initial_squashed'),
+        ("inventory_monitor", "0001_initial_squashed"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='asset',
-            options={'ordering': ('partnumber', 'serial', 'description', 'project', 'vendor', 'quantity', 'price', 'currency', 'order_contract', 'warranty_start', 'warranty_end')},
+            name="asset",
+            options={
+                "ordering": (
+                    "partnumber",
+                    "serial",
+                    "description",
+                    "project",
+                    "vendor",
+                    "quantity",
+                    "price",
+                    "currency",
+                    "order_contract",
+                    "warranty_start",
+                    "warranty_end",
+                )
+            },
         ),
         migrations.AlterModelOptions(
-            name='assetservice',
-            options={'ordering': ('service_start', 'service_end', 'service_price', 'service_currency', 'service_category', 'service_category_vendor', 'asset', 'contract')},
+            name="assetservice",
+            options={
+                "ordering": (
+                    "service_start",
+                    "service_end",
+                    "service_price",
+                    "service_currency",
+                    "service_category",
+                    "service_category_vendor",
+                    "asset",
+                    "contract",
+                )
+            },
         ),
         migrations.AlterModelOptions(
-            name='invoice',
-            options={'ordering': ('name', 'name_internal', 'contract', 'price', 'currency', 'invoicing_start', 'invoicing_end')},
+            name="invoice",
+            options={
+                "ordering": (
+                    "name",
+                    "name_internal",
+                    "contract",
+                    "price",
+                    "currency",
+                    "invoicing_start",
+                    "invoicing_end",
+                )
+            },
         ),
         migrations.RemoveIndex(
-            model_name='externalinventory',
-            name='ext_inv_id_idx',
+            model_name="externalinventory",
+            name="ext_inv_id_idx",
         ),
         migrations.AddField(
-            model_name='asset',
-            name='currency',
+            model_name="asset",
+            name="currency",
             field=models.CharField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='assetservice',
-            name='service_currency',
+            model_name="assetservice",
+            name="service_currency",
             field=models.CharField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='contract',
-            name='currency',
+            model_name="contract",
+            name="currency",
             field=models.CharField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='invoice',
-            name='currency',
+            model_name="invoice",
+            name="currency",
             field=models.CharField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='asset',
-            name='price',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=19, null=True, validators=[django.core.validators.MinValueValidator(0)]),
+            model_name="asset",
+            name="price",
+            field=models.DecimalField(
+                blank=True,
+                decimal_places=2,
+                max_digits=19,
+                null=True,
+                validators=[django.core.validators.MinValueValidator(0)],
+            ),
         ),
         migrations.AlterField(
-            model_name='assetservice',
-            name='service_price',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=12, null=True, validators=[django.core.validators.MinValueValidator(0)]),
+            model_name="assetservice",
+            name="service_price",
+            field=models.DecimalField(
+                blank=True,
+                decimal_places=2,
+                max_digits=12,
+                null=True,
+                validators=[django.core.validators.MinValueValidator(0)],
+            ),
         ),
         migrations.AlterField(
-            model_name='externalinventory',
-            name='assets',
-            field=models.ManyToManyField(blank=True, related_name='external_inventory_items', to='inventory_monitor.asset'),
+            model_name="externalinventory",
+            name="assets",
+            field=models.ManyToManyField(
+                blank=True, related_name="external_inventory_items", to="inventory_monitor.asset"
+            ),
         ),
         migrations.AlterField(
-            model_name='externalinventory',
-            name='external_id',
+            model_name="externalinventory",
+            name="external_id",
             field=models.CharField(blank=True, max_length=64, null=True, unique=True),
         ),
         migrations.AlterField(
-            model_name='invoice',
-            name='price',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=19, null=True, validators=[django.core.validators.MinValueValidator(0)]),
+            model_name="invoice",
+            name="price",
+            field=models.DecimalField(
+                blank=True,
+                decimal_places=2,
+                max_digits=19,
+                null=True,
+                validators=[django.core.validators.MinValueValidator(0)],
+            ),
         ),
     ]

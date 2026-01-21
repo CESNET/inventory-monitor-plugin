@@ -1,10 +1,12 @@
 import django_filters
 from django.db.models import Q
 from netbox.filtersets import NetBoxModelFilterSet
+from utilities.filtersets import register_filterset
 
 from inventory_monitor.models import Asset, ExternalInventory
 
 
+@register_filterset
 class ExternalInventoryFilterSet(NetBoxModelFilterSet):
     """
     Filterset for External Inventory objects providing comprehensive search and filtering capabilities.

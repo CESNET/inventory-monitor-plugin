@@ -12,7 +12,7 @@ class ExternalInventoryView(generic.ObjectView):
     queryset = ExternalInventory.objects.all()
 
 
-@register_model_view(ExternalInventory, 'list', path='', detail=False)
+@register_model_view(ExternalInventory, "list", path="", detail=False)
 class ExternalInventoryListView(generic.ObjectListView):
     queryset = ExternalInventory.objects.all()
     table = ExternalInventoryTable
@@ -26,19 +26,19 @@ class ExternalInventoryListView(generic.ObjectListView):
     }
 
 
-@register_model_view(ExternalInventory, 'add', detail=False)
-@register_model_view(ExternalInventory, 'edit')
+@register_model_view(ExternalInventory, "add", detail=False)
+@register_model_view(ExternalInventory, "edit")
 class ExternalInventoryEditView(generic.ObjectEditView):
     queryset = ExternalInventory.objects.all()
     form = ExternalInventoryForm
 
 
-@register_model_view(ExternalInventory, 'delete')
+@register_model_view(ExternalInventory, "delete")
 class ExternalInventoryDeleteView(generic.ObjectDeleteView):
     queryset = ExternalInventory.objects.all()
 
 
-@register_model_view(ExternalInventory, 'bulk_edit', path='edit', detail=False)
+@register_model_view(ExternalInventory, "bulk_edit", path="edit", detail=False)
 class ExternalInventoryBulkEditView(generic.BulkEditView):
     queryset = ExternalInventory.objects.all()
     filterset = ExternalInventoryFilterSet
@@ -46,7 +46,7 @@ class ExternalInventoryBulkEditView(generic.BulkEditView):
     form = ExternalInventoryBulkEditForm
 
 
-@register_model_view(ExternalInventory, 'bulk_delete', path='delete', detail=False)
+@register_model_view(ExternalInventory, "bulk_delete", path="delete", detail=False)
 class ExternalInventoryBulkDeleteView(generic.BulkDeleteView):
     queryset = ExternalInventory.objects.all()
     filterset = ExternalInventoryFilterSet

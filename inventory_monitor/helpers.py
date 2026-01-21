@@ -36,7 +36,7 @@ def get_currency_symbol(currency_code):
     """
     if not currency_code:
         return ""
-    
+
     currencies = get_plugin_config("inventory_monitor", "currencies", [])
 
     # Look for currency in config
@@ -44,7 +44,7 @@ def get_currency_symbol(currency_code):
         # Validate entry format before accessing
         if not isinstance(currency, (list, tuple)) or len(currency) < 2:
             continue
-        
+
         if currency[0] == currency_code:
             # Return symbol if it's a 3-tuple (code, name, symbol) and symbol is not empty
             if len(currency) >= 3 and currency[2]:
