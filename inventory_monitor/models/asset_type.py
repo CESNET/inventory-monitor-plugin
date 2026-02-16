@@ -31,10 +31,6 @@ class AssetType(NetBoxModel):
         ordering = ("name",)
         verbose_name = _("asset type")
         verbose_name_plural = _("asset types")
-        indexes = [
-            models.Index(fields=["name"]),
-            models.Index(fields=["slug"]),
-        ]
 
     def __str__(self):
         if self.description:
