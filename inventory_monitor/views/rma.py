@@ -15,12 +15,6 @@ class RMAListView(generic.ObjectListView):
     table = tables.RMATable
     filterset = filtersets.RMAFilterSet
     filterset_form = forms.RMAFilterForm
-    actions = {
-        "add": {"add"},
-        "export": set(),
-        "bulk_edit": {"change"},
-        "bulk_delete": {"delete"},
-    }
 
 
 @register_model_view(models.RMA, "add", detail=False)

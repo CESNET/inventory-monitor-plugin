@@ -54,6 +54,7 @@ from inventory_monitor.forms.probe import (
     ProbeForm,
     ProbeFilterForm,
     ProbeDiffForm,
+    ProbeBulkEditForm,
 )
 
 # RMA forms
@@ -99,6 +100,7 @@ __all__ = [
     "ProbeForm",
     "ProbeFilterForm",
     "ProbeDiffForm",
+    "ProbeBulkEditForm",
     # RMA forms
     "RMAForm",
     "RMAFilterForm",

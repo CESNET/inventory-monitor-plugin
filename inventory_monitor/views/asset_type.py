@@ -21,12 +21,6 @@ class AssetTypeListView(generic.ObjectListView):
     table = tables.AssetTypeTable
     filterset = filtersets.AssetTypeFilterSet
     filterset_form = forms.AssetTypeFilterForm
-    actions = {
-        "add": {"add"},
-        "export": set(),
-        "bulk_edit": {"change"},
-        "bulk_delete": {"delete"},
-    }
 
 
 @register_model_view(models.AssetType, "add", detail=False)

@@ -4,7 +4,7 @@ from dcim.models import Device, Location, Site
 from django import forms
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelFilterSetForm, NetBoxModelForm
+from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm
 from utilities.forms.fields import (
     CommentField,
     DynamicModelChoiceField,
@@ -228,3 +228,15 @@ class ProbeDiffForm(NetBoxModelForm):
     class Meta:
         model = Probe
         fields = ("date_from", "date_to", "device")
+
+
+class ProbeBulkEditForm(NetBoxModelBulkEditForm):
+    device = DynamicModelChoiceField(queryset=Device.objects.all(), required=False)
+    site = DynamicModelChoiceField(queryset=Site.objects.all(), required=False)
+    location = DynamicModelChoiceField(queryset=Location.objects.all(), required=False)
+    category = forms.CharField(max_length=255, required=False)
+    description = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
+    comments = CommentField(required=False)
+
+    model = Probe
+    nullable_fields = ("device", "site", "location", "category", "description", "comments")
