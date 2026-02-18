@@ -43,3 +43,9 @@ class RMABulkDeleteView(generic.BulkDeleteView):
     filterset = filtersets.RMAFilterSet
     table = tables.RMATable
     default_return_url = "plugins:inventory_monitor:rma_list"
+
+
+@register_model_view(models.RMA, "bulk_import", path="import", detail=False)
+class RMABulkImportView(generic.BulkImportView):
+    queryset = models.RMA.objects.all()
+    model_form = forms.RMABulkImportForm

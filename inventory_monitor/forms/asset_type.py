@@ -1,6 +1,6 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm
+from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
 from utilities.forms.fields import ColorField, CommentField, SlugField, TagFilterField
 from utilities.forms.rendering import FieldSet
 
@@ -41,3 +41,24 @@ class AssetTypeFilterForm(NetBoxModelFilterSetForm):
     tag = TagFilterField(model)
 
     color = ColorField(label=_("Color"), required=False)
+
+
+class AssetTypeBulkImportForm(NetBoxModelImportForm):
+    """
+    Form for bulk importing Asset Types
+    """
+
+    name = forms.CharField(required=True)
+    slug = SlugField(required=True)
+    color = ColorField(required=False)
+    description = forms.CharField(required=False)
+
+    class Meta:
+        model = AssetType
+        fields = [
+            "name",
+            "slug",
+            "color",
+            "description",
+            "tags",
+        ]

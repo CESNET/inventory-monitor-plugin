@@ -1,8 +1,9 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm
+from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
 from utilities.forms.fields import (
     CommentField,
+    CSVModelChoiceField,
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,
@@ -186,3 +187,50 @@ class ContractBulkEditForm(NetBoxModelBulkEditForm):
         "invoicing_start",
         "invoicing_end",
     )
+
+
+class ContractBulkImportForm(NetBoxModelImportForm):
+    """
+    Form for bulk importing Contracts
+    """
+
+    name = forms.CharField(required=True)
+    name_internal = forms.CharField(required=True)
+    type = forms.ChoiceField(choices=ContractTypeChoices, required=True)
+    contractor = CSVModelChoiceField(
+        queryset=Contractor.objects.all(),
+        required=False,
+        to_field_name="name",
+    )
+    parent = CSVModelChoiceField(
+        queryset=Contract.objects.all(),
+        required=False,
+        to_field_name="name",
+    )
+    price = forms.DecimalField(required=False, decimal_places=2)
+    currency = forms.CharField(required=False)
+    signed = forms.DateField(required=False)
+    accepted = forms.DateField(required=False)
+    invoicing_start = forms.DateField(required=False)
+    invoicing_end = forms.DateField(required=False)
+    description = forms.CharField(required=False)
+    comments = forms.CharField(required=False)
+
+    class Meta:
+        model = Contract
+        fields = [
+            "name",
+            "name_internal",
+            "type",
+            "contractor",
+            "parent",
+            "price",
+            "currency",
+            "signed",
+            "accepted",
+            "invoicing_start",
+            "invoicing_end",
+            "description",
+            "comments",
+            "tags",
+        ]
