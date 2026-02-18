@@ -45,12 +45,6 @@ class ContractorListView(generic.ObjectListView):
     filterset = filtersets.ContractorFilterSet
     filterset_form = forms.ContractorFilterForm
     table = tables.ContractorTable
-    actions = {
-        "add": {"add"},
-        "export": set(),
-        "bulk_edit": {"change"},
-        "bulk_delete": {"delete"},
-    }
 
 
 @register_model_view(models.Contractor, "add", detail=False)

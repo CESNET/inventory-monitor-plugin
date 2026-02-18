@@ -56,12 +56,6 @@ class ContractListView(generic.ObjectListView):
     filterset = filtersets.ContractFilterSet
     filterset_form = forms.ContractFilterForm
     table = tables.ContractTable
-    actions = {
-        "add": {"add"},
-        "export": set(),
-        "bulk_edit": {"change"},
-        "bulk_delete": {"delete"},
-    }
 
 
 @register_model_view(models.Contract, "add", detail=False)

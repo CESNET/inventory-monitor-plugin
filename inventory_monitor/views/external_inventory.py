@@ -18,12 +18,6 @@ class ExternalInventoryListView(generic.ObjectListView):
     table = ExternalInventoryTable
     filterset = ExternalInventoryFilterSet
     filterset_form = ExternalInventoryFilterForm
-    actions = {
-        "add": {"add"},
-        "export": set(),
-        "bulk_edit": {"change"},
-        "bulk_delete": {"delete"},
-    }
 
 
 @register_model_view(ExternalInventory, "add", detail=False)

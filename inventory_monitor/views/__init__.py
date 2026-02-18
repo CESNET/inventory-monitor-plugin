@@ -78,6 +78,7 @@ from inventory_monitor.views.probe import (
     ProbeEditView,
     ProbeDeleteView,
     ProbeBulkDeleteView,
+    ProbeBulkEditView,
     ProbeDiffView,
 )
 
@@ -151,6 +152,7 @@ __all__ = [
     "ProbeEditView",
     "ProbeDeleteView",
     "ProbeBulkDeleteView",
+    "ProbeBulkEditView",
     "ProbeDiffView",
     # RMA views
     "RMAView",

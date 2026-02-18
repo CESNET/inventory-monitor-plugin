@@ -35,12 +35,6 @@ class AssetListView(generic.ObjectListView):
     filterset_form = forms.AssetFilterForm
     table = tables.EnhancedAssetTable  # Changed to show probe status with green rows
     template_name = "inventory_monitor/asset_list.html"  # Custom template with CSS
-    actions = {
-        "add": {"add"},
-        "export": set(),
-        "bulk_edit": {"change"},
-        "bulk_delete": {"delete"},
-    }
 
     def get_queryset(self, request):
         """Override to apply probe data annotations to avoid N+1 queries."""
