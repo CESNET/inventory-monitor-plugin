@@ -2,7 +2,7 @@
 
 A comprehensive NetBox plugin for asset management with semi-automatic discovery processes. This plugin extends NetBox with powerful inventory tracking capabilities, including asset lifecycle management, probe monitoring, contract tracking, and RMA (Return Merchandise Authorization) processing.
 
-[![Version](https://img.shields.io/badge/version-13.0.0-blue.svg)](https://github.com/CESNET/inventory-monitor-plugin)
+[![Version](https://img.shields.io/badge/version-13.0.2-blue.svg)](https://github.com/CESNET/inventory-monitor-plugin)
 [![NetBox](https://img.shields.io/badge/netbox-4.5.x-green.svg)](https://github.com/netbox-community/netbox)
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
 
@@ -775,7 +775,7 @@ After installation, the plugin adds an "Inventory Monitor" section to the NetBox
 
 #### Network Probe
 - **Probes**: Discovery and monitoring data
-- **Data Locations**: Probe data organization
+- **Network Changes**: Probe data organization
 
 #### Contracts
 - **Contractors**: Vendor and service provider management
@@ -819,6 +819,16 @@ The plugin provides a dedicated form (`AssetExternalInventoryAssignmentForm`) fo
 - **Accessible via Asset detail page** - "Edit External Inventory" button provides direct access
 
 This specialized form prevents validation errors like `'AssetExternalInventoryAssignmentForm' has no field named 'currency'` that would occur if the full Asset model validation ran.
+
+### Bulk Operations
+
+All 10 models support bulk import, bulk edit, and bulk delete operations via NetBox's standard bulk action framework:
+
+- **Bulk Import**: Create multiple records at once from CSV data. Access via the **Import** button in the navigation menu or list view toolbar.
+- **Bulk Edit**: Modify shared fields across multiple selected records from any list view.
+- **Bulk Delete**: Remove multiple selected records at once from any list view.
+
+Each model has a corresponding `BulkImportForm` (e.g., `AssetBulkImportForm`, `ContractBulkImportForm`) that defines which fields are available and required during CSV import.
 
 ---
 
@@ -872,9 +882,11 @@ ExternalInventory ← RMA (matched via external_id for display)
 # Recommended approach - use helper functions
 from inventory_monitor.settings import (
     get_probe_recent_days,
-    get_currency_choices,
     get_external_inventory_status_config_safe,
     get_external_inventory_tooltip_template,
+)
+from inventory_monitor.helpers import (
+    get_currency_choices,
 )
 
 days = get_probe_recent_days()

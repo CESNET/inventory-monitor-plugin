@@ -73,3 +73,9 @@ class ContractorBulkDeleteView(generic.BulkDeleteView):
     filterset = filtersets.ContractorFilterSet
     table = tables.ContractorTable
     default_return_url = "plugins:inventory_monitor:contractor_list"
+
+
+@register_model_view(models.Contractor, "bulk_import", path="import", detail=False)
+class ContractorBulkImportView(generic.BulkImportView):
+    queryset = models.Contractor.objects.all()
+    model_form = forms.ContractorBulkImportForm

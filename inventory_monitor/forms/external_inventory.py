@@ -1,6 +1,6 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm
+from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
 from utilities.forms.fields import (
     CommentField,
     DynamicModelMultipleChoiceField,
@@ -184,3 +184,44 @@ class ExternalInventoryFilterForm(NetBoxModelFilterSetForm):
         label=_("Has Assets"),
         help_text=_("Filter by whether External Inventory object has assigned assets"),
     )
+
+
+class ExternalInventoryBulkImportForm(NetBoxModelImportForm):
+    """
+    Form for bulk importing External Inventory items
+    """
+
+    inventory_number = forms.CharField(required=True)
+    name = forms.CharField(required=True)
+    external_id = forms.CharField(required=False)
+    serial_number = forms.CharField(required=False)
+    person_id = forms.CharField(required=False)
+    person_name = forms.CharField(required=False)
+    location_code = forms.CharField(required=False)
+    location = forms.CharField(required=False)
+    department_code = forms.CharField(required=False)
+    project_code = forms.CharField(required=False)
+    user_name = forms.CharField(required=False)
+    user_note = forms.CharField(required=False)
+    split_asset = forms.CharField(required=False)
+    status = forms.CharField(required=False)
+
+    class Meta:
+        model = ExternalInventory
+        fields = [
+            "inventory_number",
+            "name",
+            "external_id",
+            "serial_number",
+            "person_id",
+            "person_name",
+            "location_code",
+            "location",
+            "department_code",
+            "project_code",
+            "user_name",
+            "user_note",
+            "split_asset",
+            "status",
+            "tags",
+        ]

@@ -79,3 +79,9 @@ class InvoiceBulkDeleteView(generic.BulkDeleteView):
     filterset = filtersets.InvoiceFilterSet
     table = tables.InvoiceTable
     default_return_url = "plugins:inventory_monitor:invoice_list"
+
+
+@register_model_view(models.Invoice, "bulk_import", path="import", detail=False)
+class InvoiceBulkImportView(generic.BulkImportView):
+    queryset = models.Invoice.objects.all()
+    model_form = forms.InvoiceBulkImportForm

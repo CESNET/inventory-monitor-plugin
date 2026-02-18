@@ -2,7 +2,7 @@ from netbox.views import generic
 from utilities.views import register_model_view
 
 from inventory_monitor.filtersets import ExternalInventoryFilterSet
-from inventory_monitor.forms import ExternalInventoryFilterForm, ExternalInventoryForm, ExternalInventoryBulkEditForm
+from inventory_monitor.forms import ExternalInventoryFilterForm, ExternalInventoryForm, ExternalInventoryBulkEditForm, ExternalInventoryBulkImportForm
 from inventory_monitor.models import ExternalInventory
 from inventory_monitor.tables import ExternalInventoryTable
 
@@ -46,3 +46,9 @@ class ExternalInventoryBulkDeleteView(generic.BulkDeleteView):
     filterset = ExternalInventoryFilterSet
     table = ExternalInventoryTable
     default_return_url = "plugins:inventory_monitor:externalinventory_list"
+
+
+@register_model_view(ExternalInventory, "bulk_import", path="import", detail=False)
+class ExternalInventoryBulkImportView(generic.BulkImportView):
+    queryset = ExternalInventory.objects.all()
+    model_form = ExternalInventoryBulkImportForm

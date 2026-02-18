@@ -1,9 +1,10 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm
+from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
 from tenancy.models import Tenant
 from utilities.forms.fields import (
     CommentField,
+    CSVModelChoiceField,
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,
@@ -51,3 +52,30 @@ class ContractorBulkEditForm(NetBoxModelBulkEditForm):
 
     model = Contractor
     nullable_fields = ("company", "address", "description", "tenant")
+
+
+class ContractorBulkImportForm(NetBoxModelImportForm):
+    """
+    Form for bulk importing Contractors
+    """
+
+    name = forms.CharField(required=True)
+    company = forms.CharField(required=False)
+    address = forms.CharField(required=False)
+    description = forms.CharField(required=False)
+    tenant = CSVModelChoiceField(
+        queryset=Tenant.objects.all(),
+        required=False,
+        to_field_name="name",
+    )
+
+    class Meta:
+        model = Contractor
+        fields = [
+            "name",
+            "company",
+            "address",
+            "description",
+            "tenant",
+            "tags",
+        ]

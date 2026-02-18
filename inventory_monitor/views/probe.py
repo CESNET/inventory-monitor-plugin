@@ -50,6 +50,12 @@ class ProbeBulkEditView(generic.BulkEditView):
     form = forms.ProbeBulkEditForm
 
 
+@register_model_view(models.Probe, "bulk_import", path="import", detail=False)
+class ProbeBulkImportView(generic.BulkImportView):
+    queryset = models.Probe.objects.all()
+    model_form = forms.ProbeBulkImportForm
+
+
 class ProbeDiffView(View):
     def post(self, request):
         # load from, to and device_id from request
