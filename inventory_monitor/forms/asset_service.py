@@ -1,8 +1,9 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm
+from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
 from utilities.forms.fields import (
     CommentField,
+    CSVModelChoiceField,
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,
@@ -218,3 +219,43 @@ class AssetServiceBulkEditForm(NetBoxModelBulkEditForm):
         "service_category_vendor",
         "description",
     )
+
+
+class AssetServiceBulkImportForm(NetBoxModelImportForm):
+    """
+    Form for bulk importing Asset Services
+    """
+
+    service_start = forms.DateField(required=False)
+    service_end = forms.DateField(required=False)
+    service_price = forms.DecimalField(required=False, decimal_places=2, min_value=0)
+    service_currency = forms.CharField(required=False)
+    service_category = forms.CharField(required=False)
+    service_category_vendor = forms.CharField(required=False)
+    description = forms.CharField(required=False)
+    comments = forms.CharField(required=False)
+    asset = CSVModelChoiceField(
+        queryset=Asset.objects.all(),
+        required=False,
+    )
+    contract = CSVModelChoiceField(
+        queryset=Contract.objects.all(),
+        required=False,
+        to_field_name="name",
+    )
+
+    class Meta:
+        model = AssetService
+        fields = [
+            "service_start",
+            "service_end",
+            "service_price",
+            "service_currency",
+            "service_category",
+            "service_category_vendor",
+            "description",
+            "comments",
+            "asset",
+            "contract",
+            "tags",
+        ]

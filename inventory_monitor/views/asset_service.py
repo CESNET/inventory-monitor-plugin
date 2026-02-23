@@ -47,3 +47,9 @@ class AssetServiceBulkDeleteView(generic.BulkDeleteView):
     queryset = models.AssetService.objects.all()
     filterset = filtersets.AssetServiceFilterSet
     table = tables.AssetServiceTable
+
+
+@register_model_view(models.AssetService, "bulk_import", path="import", detail=False)
+class AssetServiceBulkImportView(generic.BulkImportView):
+    queryset = models.AssetService.objects.all()
+    model_form = forms.AssetServiceBulkImportForm

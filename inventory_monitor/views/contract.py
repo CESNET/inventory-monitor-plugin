@@ -56,12 +56,6 @@ class ContractListView(generic.ObjectListView):
     filterset = filtersets.ContractFilterSet
     filterset_form = forms.ContractFilterForm
     table = tables.ContractTable
-    actions = {
-        "add": {"add"},
-        "export": set(),
-        "bulk_edit": {"change"},
-        "bulk_delete": {"delete"},
-    }
 
 
 @register_model_view(models.Contract, "add", detail=False)
@@ -90,3 +84,9 @@ class ContractBulkDeleteView(generic.BulkDeleteView):
     filterset = filtersets.ContractFilterSet
     table = tables.ContractTable
     default_return_url = "plugins:inventory_monitor:contract_list"
+
+
+@register_model_view(models.Contract, "bulk_import", path="import", detail=False)
+class ContractBulkImportView(generic.BulkImportView):
+    queryset = models.Contract.objects.all()
+    model_form = forms.ContractBulkImportForm

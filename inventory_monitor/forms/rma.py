@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm
-from utilities.forms.fields import CommentField, DynamicModelChoiceField, TagFilterField
+from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
+from utilities.forms.fields import CommentField, CSVModelChoiceField, DynamicModelChoiceField, TagFilterField
 from utilities.forms.rendering import FieldSet
 from utilities.forms.utils import add_blank_choice
 from utilities.forms.widgets.datetime import DatePicker
@@ -113,4 +113,35 @@ class RMABulkEditForm(NetBoxModelBulkEditForm):
     nullable_fields = ("date_issued", "date_replaced")
 
 
-1
+class RMABulkImportForm(NetBoxModelImportForm):
+    """
+    Form for bulk importing RMAs
+    """
+
+    asset = CSVModelChoiceField(
+        queryset=Asset.objects.all(),
+        required=True,
+    )
+    issue_description = forms.CharField(required=True)
+    status = forms.ChoiceField(choices=RMAStatusChoices, required=True)
+    rma_number = forms.CharField(required=False)
+    original_serial = forms.CharField(required=False)
+    replacement_serial = forms.CharField(required=False)
+    date_issued = forms.DateField(required=False)
+    date_replaced = forms.DateField(required=False)
+    vendor_response = forms.CharField(required=False)
+
+    class Meta:
+        model = RMA
+        fields = [
+            "asset",
+            "issue_description",
+            "status",
+            "rma_number",
+            "original_serial",
+            "replacement_serial",
+            "date_issued",
+            "date_replaced",
+            "vendor_response",
+            "tags",
+        ]
