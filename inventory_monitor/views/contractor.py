@@ -45,12 +45,6 @@ class ContractorListView(generic.ObjectListView):
     filterset = filtersets.ContractorFilterSet
     filterset_form = forms.ContractorFilterForm
     table = tables.ContractorTable
-    actions = {
-        "add": {"add"},
-        "export": set(),
-        "bulk_edit": {"change"},
-        "bulk_delete": {"delete"},
-    }
 
 
 @register_model_view(models.Contractor, "add", detail=False)
@@ -79,3 +73,9 @@ class ContractorBulkDeleteView(generic.BulkDeleteView):
     filterset = filtersets.ContractorFilterSet
     table = tables.ContractorTable
     default_return_url = "plugins:inventory_monitor:contractor_list"
+
+
+@register_model_view(models.Contractor, "bulk_import", path="import", detail=False)
+class ContractorBulkImportView(generic.BulkImportView):
+    queryset = models.Contractor.objects.all()
+    model_form = forms.ContractorBulkImportForm

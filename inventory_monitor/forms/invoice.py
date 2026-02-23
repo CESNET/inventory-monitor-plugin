@@ -1,8 +1,9 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm
+from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
 from utilities.forms.fields import (
     CommentField,
+    CSVModelChoiceField,
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,
@@ -141,3 +142,40 @@ class InvoiceBulkEditForm(NetBoxModelBulkEditForm):
         super().__init__(*args, **kwargs)
         # Add blank choice for currency in bulk edit
         self.fields["currency"].choices = add_blank_choice(get_currency_choices())
+
+
+class InvoiceBulkImportForm(NetBoxModelImportForm):
+    """
+    Form for bulk importing Invoices
+    """
+
+    name = forms.CharField(required=True)
+    name_internal = forms.CharField(required=True)
+    contract = CSVModelChoiceField(
+        queryset=Contract.objects.all(),
+        required=True,
+        to_field_name="name",
+    )
+    project = forms.CharField(required=False)
+    price = forms.DecimalField(required=False, decimal_places=2)
+    currency = forms.CharField(required=False)
+    invoicing_start = forms.DateField(required=False)
+    invoicing_end = forms.DateField(required=False)
+    description = forms.CharField(required=False)
+    comments = forms.CharField(required=False)
+
+    class Meta:
+        model = Invoice
+        fields = [
+            "name",
+            "name_internal",
+            "project",
+            "contract",
+            "price",
+            "currency",
+            "invoicing_start",
+            "invoicing_end",
+            "description",
+            "comments",
+            "tags",
+        ]

@@ -51,12 +51,6 @@ class InvoiceListView(generic.ObjectListView):
     filterset_form = forms.InvoiceFilterForm
     table = tables.InvoiceTable
     queryset = get_invoice_queryset()
-    actions = {
-        "add": {"add"},
-        "export": set(),
-        "bulk_edit": {"change"},
-        "bulk_delete": {"delete"},
-    }
 
 
 @register_model_view(models.Invoice, "add", detail=False)
@@ -85,3 +79,9 @@ class InvoiceBulkDeleteView(generic.BulkDeleteView):
     filterset = filtersets.InvoiceFilterSet
     table = tables.InvoiceTable
     default_return_url = "plugins:inventory_monitor:invoice_list"
+
+
+@register_model_view(models.Invoice, "bulk_import", path="import", detail=False)
+class InvoiceBulkImportView(generic.BulkImportView):
+    queryset = models.Invoice.objects.all()
+    model_form = forms.InvoiceBulkImportForm

@@ -4,9 +4,10 @@ from dcim.models import Device, Location, Site
 from django import forms
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelFilterSetForm, NetBoxModelForm
+from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
 from utilities.forms.fields import (
     CommentField,
+    CSVModelChoiceField,
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,
@@ -228,3 +229,68 @@ class ProbeDiffForm(NetBoxModelForm):
     class Meta:
         model = Probe
         fields = ("date_from", "date_to", "device")
+
+
+class ProbeBulkEditForm(NetBoxModelBulkEditForm):
+    device = DynamicModelChoiceField(queryset=Device.objects.all(), required=False)
+    site = DynamicModelChoiceField(queryset=Site.objects.all(), required=False)
+    location = DynamicModelChoiceField(queryset=Location.objects.all(), required=False)
+    category = forms.CharField(max_length=255, required=False)
+    description = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
+    comments = CommentField(required=False)
+
+    model = Probe
+    nullable_fields = ("device", "site", "location", "category", "description", "comments")
+
+
+class ProbeBulkImportForm(NetBoxModelImportForm):
+    """
+    Form for bulk importing Probes
+    """
+
+    name = forms.CharField(required=True)
+    serial = forms.CharField(required=True)
+    time = forms.DateTimeField(required=True)
+    creation_time = forms.DateTimeField(required=False)
+    category = forms.CharField(required=False)
+    part = forms.CharField(required=False)
+    device_descriptor = forms.CharField(required=False)
+    site_descriptor = forms.CharField(required=False)
+    location_descriptor = forms.CharField(required=False)
+    description = forms.CharField(required=False)
+    comments = forms.CharField(required=False)
+    device = CSVModelChoiceField(
+        queryset=Device.objects.all(),
+        required=False,
+        to_field_name="name",
+    )
+    site = CSVModelChoiceField(
+        queryset=Site.objects.all(),
+        required=False,
+        to_field_name="name",
+    )
+    location = CSVModelChoiceField(
+        queryset=Location.objects.all(),
+        required=False,
+        to_field_name="name",
+    )
+
+    class Meta:
+        model = Probe
+        fields = [
+            "name",
+            "serial",
+            "time",
+            "creation_time",
+            "category",
+            "part",
+            "device_descriptor",
+            "site_descriptor",
+            "location_descriptor",
+            "description",
+            "comments",
+            "device",
+            "site",
+            "location",
+            "tags",
+        ]

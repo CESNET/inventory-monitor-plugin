@@ -21,12 +21,6 @@ class AssetTypeListView(generic.ObjectListView):
     table = tables.AssetTypeTable
     filterset = filtersets.AssetTypeFilterSet
     filterset_form = forms.AssetTypeFilterForm
-    actions = {
-        "add": {"add"},
-        "export": set(),
-        "bulk_edit": {"change"},
-        "bulk_delete": {"delete"},
-    }
 
 
 @register_model_view(models.AssetType, "add", detail=False)
@@ -55,3 +49,9 @@ class AssetTypeBulkDeleteView(generic.BulkDeleteView):
     filterset = filtersets.AssetTypeFilterSet
     table = tables.AssetTypeTable
     default_return_url = "plugins:inventory_monitor:assettype_list"
+
+
+@register_model_view(models.AssetType, "bulk_import", path="import", detail=False)
+class AssetTypeBulkImportView(generic.BulkImportView):
+    queryset = models.AssetType.objects.all()
+    model_form = forms.AssetTypeBulkImportForm

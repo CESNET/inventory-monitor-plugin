@@ -19,6 +19,7 @@ from inventory_monitor.views.asset_service import (
     AssetServiceDeleteView,
     AssetServiceBulkEditView,
     AssetServiceBulkDeleteView,
+    AssetServiceBulkImportView,
 )
 
 # Asset Type views
@@ -29,6 +30,7 @@ from inventory_monitor.views.asset_type import (
     AssetTypeDeleteView,
     AssetTypeBulkEditView,
     AssetTypeBulkDeleteView,
+    AssetTypeBulkImportView,
 )
 
 # Contract views
@@ -39,6 +41,7 @@ from inventory_monitor.views.contract import (
     ContractDeleteView,
     ContractBulkEditView,
     ContractBulkDeleteView,
+    ContractBulkImportView,
 )
 
 # Contractor views
@@ -49,6 +52,7 @@ from inventory_monitor.views.contractor import (
     ContractorDeleteView,
     ContractorBulkEditView,
     ContractorBulkDeleteView,
+    ContractorBulkImportView,
 )
 
 # External Inventory views
@@ -59,6 +63,7 @@ from inventory_monitor.views.external_inventory import (
     ExternalInventoryDeleteView,
     ExternalInventoryBulkEditView,
     ExternalInventoryBulkDeleteView,
+    ExternalInventoryBulkImportView,
 )
 
 # Invoice views
@@ -69,6 +74,7 @@ from inventory_monitor.views.invoice import (
     InvoiceDeleteView,
     InvoiceBulkEditView,
     InvoiceBulkDeleteView,
+    InvoiceBulkImportView,
 )
 
 # Probe views
@@ -78,6 +84,8 @@ from inventory_monitor.views.probe import (
     ProbeEditView,
     ProbeDeleteView,
     ProbeBulkDeleteView,
+    ProbeBulkEditView,
+    ProbeBulkImportView,
     ProbeDiffView,
 )
 
@@ -89,6 +97,7 @@ from inventory_monitor.views.rma import (
     RMADeleteView,
     RMABulkEditView,
     RMABulkDeleteView,
+    RMABulkImportView,
 )
 
 # Define __all__ to explicitly list what should be available when importing from this module
@@ -110,6 +119,7 @@ __all__ = [
     "AssetServiceDeleteView",
     "AssetServiceBulkEditView",
     "AssetServiceBulkDeleteView",
+    "AssetServiceBulkImportView",
     # Asset Type views
     "AssetTypeView",
     "AssetTypeListView",
@@ -117,6 +127,7 @@ __all__ = [
     "AssetTypeDeleteView",
     "AssetTypeBulkEditView",
     "AssetTypeBulkDeleteView",
+    "AssetTypeBulkImportView",
     # Contract views
     "ContractView",
     "ContractListView",
@@ -124,6 +135,7 @@ __all__ = [
     "ContractDeleteView",
     "ContractBulkEditView",
     "ContractBulkDeleteView",
+    "ContractBulkImportView",
     # Contractor views
     "ContractorView",
     "ContractorListView",
@@ -131,6 +143,7 @@ __all__ = [
     "ContractorDeleteView",
     "ContractorBulkEditView",
     "ContractorBulkDeleteView",
+    "ContractorBulkImportView",
     # External Inventory views
     "ExternalInventoryView",
     "ExternalInventoryListView",
@@ -138,6 +151,7 @@ __all__ = [
     "ExternalInventoryDeleteView",
     "ExternalInventoryBulkEditView",
     "ExternalInventoryBulkDeleteView",
+    "ExternalInventoryBulkImportView",
     # Invoice views
     "InvoiceView",
     "InvoiceListView",
@@ -145,12 +159,15 @@ __all__ = [
     "InvoiceDeleteView",
     "InvoiceBulkEditView",
     "InvoiceBulkDeleteView",
+    "InvoiceBulkImportView",
     # Probe views
     "ProbeView",
     "ProbeListView",
     "ProbeEditView",
     "ProbeDeleteView",
     "ProbeBulkDeleteView",
+    "ProbeBulkEditView",
+    "ProbeBulkImportView",
     "ProbeDiffView",
     # RMA views
     "RMAView",
@@ -159,4 +176,5 @@ __all__ = [
     "RMADeleteView",
     "RMABulkEditView",
     "RMABulkDeleteView",
+    "RMABulkImportView",
 ]

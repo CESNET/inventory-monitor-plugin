@@ -2,6 +2,7 @@ from django.db.models import Count, OuterRef, Subquery
 from django.shortcuts import render
 from django.views.generic import View
 from netbox.views import generic
+from utilities.views import register_model_view
 
 from inventory_monitor import filtersets, forms, models, tables
 
@@ -24,11 +25,6 @@ class ProbeListView(generic.ObjectListView):
     filterset = filtersets.ProbeFilterSet
     filterset_form = forms.ProbeFilterForm
     template_name = "inventory_monitor/probe_list.html"  # Custom template with CSS
-    actions = {
-        "add": {"add"},
-        "export": set(),
-        "bulk_delete": {"delete"},
-    }
 
 
 class ProbeEditView(generic.ObjectEditView):
@@ -44,6 +40,20 @@ class ProbeBulkDeleteView(generic.BulkDeleteView):
     queryset = models.Probe.objects.all()
     filterset = filtersets.ProbeFilterSet
     table = tables.ProbeTable
+
+
+@register_model_view(models.Probe, "bulk_edit", path="edit", detail=False)
+class ProbeBulkEditView(generic.BulkEditView):
+    queryset = models.Probe.objects.all()
+    filterset = filtersets.ProbeFilterSet
+    table = tables.ProbeTable
+    form = forms.ProbeBulkEditForm
+
+
+@register_model_view(models.Probe, "bulk_import", path="import", detail=False)
+class ProbeBulkImportView(generic.BulkImportView):
+    queryset = models.Probe.objects.all()
+    model_form = forms.ProbeBulkImportForm
 
 
 class ProbeDiffView(View):
