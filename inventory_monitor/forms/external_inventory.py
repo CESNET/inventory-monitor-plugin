@@ -191,20 +191,20 @@ class ExternalInventoryBulkImportForm(NetBoxModelImportForm):
     Form for bulk importing External Inventory items
     """
 
-    inventory_number = forms.CharField(required=True)
-    name = forms.CharField(required=True)
-    external_id = forms.CharField(required=False)
-    serial_number = forms.CharField(required=False)
-    person_id = forms.CharField(required=False)
-    person_name = forms.CharField(required=False)
-    location_code = forms.CharField(required=False)
-    location = forms.CharField(required=False)
-    department_code = forms.CharField(required=False)
-    project_code = forms.CharField(required=False)
-    user_name = forms.CharField(required=False)
-    user_note = forms.CharField(required=False)
-    split_asset = forms.CharField(required=False)
-    status = forms.CharField(required=False)
+    inventory_number = forms.CharField(required=True, help_text="Unique inventory number (required)")
+    name = forms.CharField(required=True, help_text="Name of the external inventory item (required)")
+    external_id = forms.CharField(required=False, help_text="External system identifier")
+    serial_number = forms.CharField(required=False, help_text="Serial number of the item")
+    person_id = forms.CharField(required=False, help_text="Identifier of the responsible person")
+    person_name = forms.CharField(required=False, help_text="Name of the responsible person")
+    location_code = forms.CharField(required=False, help_text="Location code")
+    location = forms.CharField(required=False, help_text="Location name or description")
+    department_code = forms.CharField(required=False, help_text="Department code")
+    project_code = forms.CharField(required=False, help_text="Project code")
+    user_name = forms.CharField(required=False, help_text="Username associated with this item")
+    user_note = forms.CharField(required=False, help_text="User-provided note")
+    split_asset = forms.CharField(required=False, help_text="Split asset identifier (for assets split across multiple entries)")
+    status = forms.CharField(required=False, help_text="Status code as configured in plugin settings")
 
     class Meta:
         model = ExternalInventory

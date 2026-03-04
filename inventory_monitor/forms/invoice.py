@@ -149,20 +149,21 @@ class InvoiceBulkImportForm(NetBoxModelImportForm):
     Form for bulk importing Invoices
     """
 
-    name = forms.CharField(required=True)
-    name_internal = forms.CharField(required=True)
-    contract = CSVModelChoiceField(
+    name = forms.CharField(required=True, help_text="Invoice name (required)")
+    name_internal = forms.CharField(required=True, help_text="Internal invoice reference name (required)")
+    contract_id = CSVModelChoiceField(
         queryset=Contract.objects.all(),
         required=True,
-        to_field_name="name",
+        label="Contract (ID)",
+        help_text="Numeric ID of the contract this invoice belongs to (required)",
     )
-    project = forms.CharField(required=False)
-    price = forms.DecimalField(required=False, decimal_places=2)
-    currency = forms.CharField(required=False)
-    invoicing_start = forms.DateField(required=False)
-    invoicing_end = forms.DateField(required=False)
-    description = forms.CharField(required=False)
-    comments = forms.CharField(required=False)
+    project = forms.CharField(required=False, help_text="Project name this invoice is associated with")
+    price = forms.DecimalField(required=False, decimal_places=2, help_text="Invoice amount (decimal, e.g. 1234.56)")
+    currency = forms.CharField(required=False, help_text="Currency code (e.g. EUR, USD, CZK) — required if price > 0")
+    invoicing_start = forms.DateField(required=False, help_text="Invoicing period start date (YYYY-MM-DD)")
+    invoicing_end = forms.DateField(required=False, help_text="Invoicing period end date (YYYY-MM-DD)")
+    description = forms.CharField(required=False, help_text="Short description of the invoice")
+    comments = forms.CharField(required=False, help_text="Free-text comments")
 
     class Meta:
         model = Invoice
@@ -170,7 +171,6 @@ class InvoiceBulkImportForm(NetBoxModelImportForm):
             "name",
             "name_internal",
             "project",
-            "contract",
             "price",
             "currency",
             "invoicing_start",
@@ -179,3 +179,7 @@ class InvoiceBulkImportForm(NetBoxModelImportForm):
             "comments",
             "tags",
         ]
+
+    def save(self, *args, **kwargs):
+        self.instance.contract = self.cleaned_data.get("contract_id")
+        return super().save(*args, **kwargs)
