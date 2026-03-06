@@ -476,25 +476,66 @@ class AssetBulkImportForm(NetBoxModelImportForm):
     """
 
     # Add required fields for CSV import
-    partnumber = forms.CharField(required=False)
-    serial = forms.CharField(required=True)
-    description = forms.CharField(required=False)
-    type = CSVModelChoiceField(queryset=AssetType.objects.all(), required=False)
-    assignment_status = forms.ChoiceField(choices=AssignmentStatusChoices, required=False)
-    lifecycle_status = forms.ChoiceField(choices=LifecycleStatusChoices, required=False)
-    project = forms.CharField(required=False)
-    vendor = forms.CharField(required=False)
-    order_contract = CSVModelChoiceField(
+    partnumber = forms.CharField(required=False, help_text="Part number / model number of the asset")
+    serial = forms.CharField(required=True, help_text="Serial number of the asset (required, must be unique)")
+    description = forms.CharField(required=False, help_text="Short description of the asset")
+    type = CSVModelChoiceField(
+        queryset=AssetType.objects.all(), required=False, help_text="Asset type name (must match an existing AssetType)"
+    )
+    assignment_status = forms.ChoiceField(
+        choices=AssignmentStatusChoices,
+        required=False,
+        help_text="Assignment status (e.g. available, reserved, deployed)",
+    )
+    lifecycle_status = forms.ChoiceField(
+        choices=LifecycleStatusChoices,
+        required=False,
+        help_text="Lifecycle status (e.g. active, planned, retired)",
+    )
+    project = forms.CharField(required=False, help_text="Project name this asset is associated with")
+    vendor = forms.CharField(required=False, help_text="Vendor or manufacturer name")
+    order_contract_id = CSVModelChoiceField(
         queryset=Contract.objects.all(),
         required=False,
-        to_field_name="name",  # Assuming you want to match by contract name
+        label="Order contract (ID)",
+        help_text="Numeric ID of the contract this asset was ordered under",
     )
-    quantity = forms.IntegerField(required=False)
-    price = forms.DecimalField(required=False, decimal_places=2)
-    currency = forms.CharField(required=False)
-    warranty_start = forms.DateField(required=False)
-    warranty_end = forms.DateField(required=False)
-    comments = forms.CharField(required=False)
+    assigned_site_id = CSVModelChoiceField(
+        queryset=Site.objects.all(),
+        required=False,
+        label="Assigned site (ID)",
+        help_text="Numeric ID of the site to assign this asset to",
+    )
+    assigned_location_id = CSVModelChoiceField(
+        queryset=Location.objects.all(),
+        required=False,
+        label="Assigned location (ID)",
+        help_text="Numeric ID of the location to assign this asset to",
+    )
+    assigned_rack_id = CSVModelChoiceField(
+        queryset=Rack.objects.all(),
+        required=False,
+        label="Assigned rack (ID)",
+        help_text="Numeric ID of the rack to assign this asset to",
+    )
+    assigned_device_id = CSVModelChoiceField(
+        queryset=Device.objects.all(),
+        required=False,
+        label="Assigned device (ID)",
+        help_text="Numeric ID of the device to assign this asset to",
+    )
+    assigned_module_id = CSVModelChoiceField(
+        queryset=Module.objects.all(),
+        required=False,
+        label="Assigned module (ID)",
+        help_text="Numeric ID of the module to assign this asset to",
+    )
+    quantity = forms.IntegerField(required=False, help_text="Quantity (default: 1)")
+    price = forms.DecimalField(required=False, decimal_places=2, help_text="Unit price (decimal, e.g. 1234.56)")
+    currency = forms.CharField(required=False, help_text="Currency code (e.g. EUR, USD, CZK) — required if price > 0")
+    warranty_start = forms.DateField(required=False, help_text="Warranty start date (YYYY-MM-DD)")
+    warranty_end = forms.DateField(required=False, help_text="Warranty end date (YYYY-MM-DD)")
+    comments = forms.CharField(required=False, help_text="Free-text comments")
 
     class Meta:
         model = Asset
@@ -507,7 +548,6 @@ class AssetBulkImportForm(NetBoxModelImportForm):
             "lifecycle_status",
             "project",
             "vendor",
-            "order_contract",
             "quantity",
             "price",
             "currency",
@@ -516,6 +556,39 @@ class AssetBulkImportForm(NetBoxModelImportForm):
             "comments",
             "tags",
         ]
+
+    def clean(self):
+        super().clean()
+        selected = [
+            f
+            for f in (
+                "assigned_site_id",
+                "assigned_location_id",
+                "assigned_rack_id",
+                "assigned_device_id",
+                "assigned_module_id",
+            )
+            if self.cleaned_data.get(f)
+        ]
+        if len(selected) > 1:
+            raise forms.ValidationError("An asset can only be assigned to a single object.")
+
+    def save(self, *args, **kwargs):
+        for field in (
+            "assigned_site_id",
+            "assigned_location_id",
+            "assigned_rack_id",
+            "assigned_device_id",
+            "assigned_module_id",
+        ):
+            obj = self.cleaned_data.get(field)
+            if obj:
+                self.instance.assigned_object = obj
+                break
+        else:
+            self.instance.assigned_object = None
+        self.instance.order_contract = self.cleaned_data.get("order_contract_id")
+        return super().save(*args, **kwargs)
 
 
 class AssetExternalInventoryAssignmentForm(NetBoxModelForm):

@@ -59,14 +59,15 @@ class ContractorBulkImportForm(NetBoxModelImportForm):
     Form for bulk importing Contractors
     """
 
-    name = forms.CharField(required=True)
-    company = forms.CharField(required=False)
-    address = forms.CharField(required=False)
-    description = forms.CharField(required=False)
+    name = forms.CharField(required=True, help_text="Contractor name (required)")
+    company = forms.CharField(required=False, help_text="Company or organization name")
+    address = forms.CharField(required=False, help_text="Contractor's address")
+    description = forms.CharField(required=False, help_text="Short description of the contractor")
     tenant = CSVModelChoiceField(
         queryset=Tenant.objects.all(),
         required=False,
         to_field_name="name",
+        help_text="Tenant name to associate with this contractor",
     )
 
     class Meta:

@@ -226,22 +226,28 @@ class AssetServiceBulkImportForm(NetBoxModelImportForm):
     Form for bulk importing Asset Services
     """
 
-    service_start = forms.DateField(required=False)
-    service_end = forms.DateField(required=False)
-    service_price = forms.DecimalField(required=False, decimal_places=2, min_value=0)
-    service_currency = forms.CharField(required=False)
-    service_category = forms.CharField(required=False)
-    service_category_vendor = forms.CharField(required=False)
-    description = forms.CharField(required=False)
-    comments = forms.CharField(required=False)
+    service_start = forms.DateField(required=False, help_text="Service start date (YYYY-MM-DD)")
+    service_end = forms.DateField(required=False, help_text="Service end date (YYYY-MM-DD)")
+    service_price = forms.DecimalField(
+        required=False, decimal_places=2, min_value=0, help_text="Service price (decimal, e.g. 1234.56)"
+    )
+    service_currency = forms.CharField(
+        required=False, help_text="Currency code (e.g. EUR, USD, CZK) — required if price > 0"
+    )
+    service_category = forms.CharField(required=False, help_text="Service category (e.g. hardware maintenance, support)")
+    service_category_vendor = forms.CharField(required=False, help_text="Vendor-specific service category name")
+    description = forms.CharField(required=False, help_text="Short description of the service")
+    comments = forms.CharField(required=False, help_text="Free-text comments")
     asset = CSVModelChoiceField(
         queryset=Asset.objects.all(),
         required=False,
+        help_text="Asset serial number or ID",
     )
-    contract = CSVModelChoiceField(
+    contract_id = CSVModelChoiceField(
         queryset=Contract.objects.all(),
         required=False,
-        to_field_name="name",
+        label="Contract (ID)",
+        help_text="Numeric ID of the contract this service is associated with",
     )
 
     class Meta:
@@ -256,6 +262,9 @@ class AssetServiceBulkImportForm(NetBoxModelImportForm):
             "description",
             "comments",
             "asset",
-            "contract",
             "tags",
         ]
+
+    def save(self, *args, **kwargs):
+        self.instance.contract = self.cleaned_data.get("contract_id")
+        return super().save(*args, **kwargs)

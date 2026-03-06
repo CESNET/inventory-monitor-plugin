@@ -48,10 +48,10 @@ class AssetTypeBulkImportForm(NetBoxModelImportForm):
     Form for bulk importing Asset Types
     """
 
-    name = forms.CharField(required=True)
-    slug = SlugField(required=True)
-    color = ColorField(required=False)
-    description = forms.CharField(required=False)
+    name = forms.CharField(required=True, help_text="Asset type name (required)")
+    slug = SlugField(required=True, help_text="URL-friendly slug (required)")
+    color = ColorField(required=False, help_text="Color hex code (e.g. aa1409)")
+    description = forms.CharField(required=False, help_text="Short description of the asset type")
 
     class Meta:
         model = AssetType
