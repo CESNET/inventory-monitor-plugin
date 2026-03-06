@@ -1,5 +1,5 @@
-from typing import TYPE_CHECKING, Annotated
 from decimal import Decimal
+from typing import TYPE_CHECKING, Annotated
 
 import strawberry
 import strawberry_django
@@ -86,13 +86,13 @@ class InventoryMonitorAssetFilter(NetBoxModelFilter):
     # Status filters - use BaseFilterLookup for enum fields (NetBox 4.5+ requirement)
     assignment_status: (
         BaseFilterLookup[
-            Annotated["InventoryMonitorAssignmentStatusEnum", strawberry.lazy("inventory_monitor.graphql.enums")]
+            Annotated["InventoryMonitorAssignmentStatusEnum", strawberry.lazy("inventory_monitor.graphql.enums")]  # type: ignore
         ]
         | None
     ) = strawberry_django.filter_field()
     lifecycle_status: (
         BaseFilterLookup[
-            Annotated["InventoryMonitorLifecycleStatusEnum", strawberry.lazy("inventory_monitor.graphql.enums")]
+            Annotated["InventoryMonitorLifecycleStatusEnum", strawberry.lazy("inventory_monitor.graphql.enums")]  # pyright: ignore[reportInvalidTypeForm]
         ]
         | None
     ) = strawberry_django.filter_field()
@@ -107,8 +107,8 @@ class InventoryMonitorAssetFilter(NetBoxModelFilter):
     currency: FilterLookup[str] | None = strawberry_django.filter_field()
 
     # Date filters
-    warranty_start: FilterLookup[str] | None = strawberry_django.filter_field()
-    warranty_end: FilterLookup[str] | None = strawberry_django.filter_field()
+    warranty_start: strawberry.auto = strawberry_django.filter_field()
+    warranty_end: strawberry.auto = strawberry_django.filter_field()
 
     # Related object filters
     type: Annotated["InventoryMonitorAssetTypeFilter", strawberry.lazy("inventory_monitor.graphql.filters")] | None = (
@@ -138,7 +138,7 @@ class InventoryMonitorAssetFilter(NetBoxModelFilter):
     has_external_inventory_items: FilterLookup[bool] | None = strawberry_django.filter_field()
 
     # External Inventory number filter (related field)
-    external_inventory_number: FilterLookup[str] | None = strawberry_django.filter_field()
+    external_inventory_number: BaseFilterLookup[str] | None = strawberry_django.filter_field()
 
 
 @strawberry_django.filter_type(AssetType, lookups=True)
@@ -151,8 +151,8 @@ class InventoryMonitorAssetTypeFilter(NetBoxModelFilter):
 
 @strawberry_django.filter_type(AssetService, lookups=True)
 class InventoryMonitorAssetServiceFilter(NetBoxModelFilter):
-    service_start: FilterLookup[str] | None = strawberry_django.filter_field()
-    service_end: FilterLookup[str] | None = strawberry_django.filter_field()
+    service_start: strawberry.auto = strawberry_django.filter_field()
+    service_end: strawberry.auto = strawberry_django.filter_field()
     service_price: FilterLookup[Decimal] | None = strawberry_django.filter_field()
     service_currency: FilterLookup[str] | None = strawberry_django.filter_field()
     service_category: FilterLookup[str] | None = strawberry_django.filter_field()
@@ -176,16 +176,16 @@ class InventoryMonitorContractFilter(NetBoxModelFilter):
     name_internal: FilterLookup[str] | None = strawberry_django.filter_field()
     type: (
         BaseFilterLookup[
-            Annotated["InventoryMonitorContractTypeEnum", strawberry.lazy("inventory_monitor.graphql.enums")]
+            Annotated["InventoryMonitorContractTypeEnum", strawberry.lazy("inventory_monitor.graphql.enums")]  # pyright: ignore[reportInvalidTypeForm]
         ]
         | None
     ) = strawberry_django.filter_field()
     price: FilterLookup[Decimal] | None = strawberry_django.filter_field()
     currency: FilterLookup[str] | None = strawberry_django.filter_field()
-    signed: FilterLookup[str] | None = strawberry_django.filter_field()
-    accepted: FilterLookup[str] | None = strawberry_django.filter_field()
-    invoicing_start: FilterLookup[str] | None = strawberry_django.filter_field()
-    invoicing_end: FilterLookup[str] | None = strawberry_django.filter_field()
+    signed: strawberry.auto = strawberry_django.filter_field()
+    accepted: strawberry.auto = strawberry_django.filter_field()
+    invoicing_start: strawberry.auto = strawberry_django.filter_field()
+    invoicing_end: strawberry.auto = strawberry_django.filter_field()
 
     # Related object filters
     contractor: (
@@ -218,8 +218,8 @@ class InventoryMonitorInvoiceFilter(NetBoxModelFilter):
     name_internal: FilterLookup[str] | None = strawberry_django.filter_field()
     project: FilterLookup[str] | None = strawberry_django.filter_field()
     price: FilterLookup[Decimal] | None = strawberry_django.filter_field()
-    invoicing_start: FilterLookup[str] | None = strawberry_django.filter_field()
-    invoicing_end: FilterLookup[str] | None = strawberry_django.filter_field()
+    invoicing_start: strawberry.auto = strawberry_django.filter_field()
+    invoicing_end: strawberry.auto = strawberry_django.filter_field()
 
     # Related contract filter
     contract: (
@@ -233,8 +233,8 @@ class InventoryMonitorProbeFilter(NetBoxModelFilter):
     # Note: Probe doesn't inherit from NetBoxModel, so it might need different handling
     # You may need to adjust this based on your actual Probe model
 
-    time: FilterLookup[str] | None = strawberry_django.filter_field()
-    creation_time: FilterLookup[str] | None = strawberry_django.filter_field()
+    time: strawberry.auto = strawberry_django.filter_field()
+    creation_time: strawberry.auto = strawberry_django.filter_field()
     device_descriptor: FilterLookup[str] | None = strawberry_django.filter_field()
     site_descriptor: FilterLookup[str] | None = strawberry_django.filter_field()
     location_descriptor: FilterLookup[str] | None = strawberry_django.filter_field()
@@ -262,11 +262,11 @@ class InventoryMonitorRMAFilter(NetBoxModelFilter):
     original_serial: FilterLookup[str] | None = strawberry_django.filter_field()
     replacement_serial: FilterLookup[str] | None = strawberry_django.filter_field()
     status: (
-        BaseFilterLookup[Annotated["InventoryMonitorRMAStatusEnum", strawberry.lazy("inventory_monitor.graphql.enums")]]
+        BaseFilterLookup[Annotated["InventoryMonitorRMAStatusEnum", strawberry.lazy("inventory_monitor.graphql.enums")]]  # pyright: ignore[reportInvalidTypeForm]
         | None
     ) = strawberry_django.filter_field()
-    date_issued: FilterLookup[str] | None = strawberry_django.filter_field()
-    date_replaced: FilterLookup[str] | None = strawberry_django.filter_field()
+    date_issued: strawberry.auto = strawberry_django.filter_field()
+    date_replaced: strawberry.auto = strawberry_django.filter_field()
 
     # Related asset filter
     asset: Annotated["InventoryMonitorAssetFilter", strawberry.lazy("inventory_monitor.graphql.filters")] | None = (
@@ -275,4 +275,4 @@ class InventoryMonitorRMAFilter(NetBoxModelFilter):
     asset_id: ID | None = strawberry_django.filter_field()
 
     # Custom filter for both serials (like in Django filterset)
-    serial: FilterLookup[str] | None = strawberry_django.filter_field()
+    serial: BaseFilterLookup[str] | None = strawberry_django.filter_field()

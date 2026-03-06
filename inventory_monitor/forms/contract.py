@@ -194,27 +194,29 @@ class ContractBulkImportForm(NetBoxModelImportForm):
     Form for bulk importing Contracts
     """
 
-    name = forms.CharField(required=True)
-    name_internal = forms.CharField(required=True)
-    type = forms.ChoiceField(choices=ContractTypeChoices, required=True)
+    name = forms.CharField(required=True, help_text="Contract name (required)")
+    name_internal = forms.CharField(required=True, help_text="Internal contract reference name (required)")
+    type = forms.ChoiceField(choices=ContractTypeChoices, required=True, help_text="Contract type (required)")
     contractor = CSVModelChoiceField(
         queryset=Contractor.objects.all(),
         required=False,
         to_field_name="name",
+        help_text="Contractor name",
     )
-    parent = CSVModelChoiceField(
+    parent_id = CSVModelChoiceField(
         queryset=Contract.objects.all(),
         required=False,
-        to_field_name="name",
+        label="Parent contract (ID)",
+        help_text="Numeric ID of the parent contract (for subcontracts, one level only)",
     )
-    price = forms.DecimalField(required=False, decimal_places=2)
-    currency = forms.CharField(required=False)
-    signed = forms.DateField(required=False)
-    accepted = forms.DateField(required=False)
-    invoicing_start = forms.DateField(required=False)
-    invoicing_end = forms.DateField(required=False)
-    description = forms.CharField(required=False)
-    comments = forms.CharField(required=False)
+    price = forms.DecimalField(required=False, decimal_places=2, help_text="Contract value (decimal, e.g. 1234.56)")
+    currency = forms.CharField(required=False, help_text="Currency code (e.g. EUR, USD, CZK) — required if price > 0")
+    signed = forms.DateField(required=False, help_text="Date the contract was signed (YYYY-MM-DD)")
+    accepted = forms.DateField(required=False, help_text="Date the contract was accepted (YYYY-MM-DD)")
+    invoicing_start = forms.DateField(required=False, help_text="Invoicing period start date (YYYY-MM-DD)")
+    invoicing_end = forms.DateField(required=False, help_text="Invoicing period end date (YYYY-MM-DD)")
+    description = forms.CharField(required=False, help_text="Short description of the contract")
+    comments = forms.CharField(required=False, help_text="Free-text comments")
 
     class Meta:
         model = Contract
@@ -223,7 +225,6 @@ class ContractBulkImportForm(NetBoxModelImportForm):
             "name_internal",
             "type",
             "contractor",
-            "parent",
             "price",
             "currency",
             "signed",
@@ -234,3 +235,7 @@ class ContractBulkImportForm(NetBoxModelImportForm):
             "comments",
             "tags",
         ]
+
+    def save(self, *args, **kwargs):
+        self.instance.parent = self.cleaned_data.get("parent_id")
+        return super().save(*args, **kwargs)

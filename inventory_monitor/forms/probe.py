@@ -248,31 +248,34 @@ class ProbeBulkImportForm(NetBoxModelImportForm):
     Form for bulk importing Probes
     """
 
-    name = forms.CharField(required=True)
-    serial = forms.CharField(required=True)
-    time = forms.DateTimeField(required=True)
-    creation_time = forms.DateTimeField(required=False)
-    category = forms.CharField(required=False)
-    part = forms.CharField(required=False)
-    device_descriptor = forms.CharField(required=False)
-    site_descriptor = forms.CharField(required=False)
-    location_descriptor = forms.CharField(required=False)
-    description = forms.CharField(required=False)
-    comments = forms.CharField(required=False)
-    device = CSVModelChoiceField(
+    name = forms.CharField(required=True, help_text="Probe/host name (required)")
+    serial = forms.CharField(required=True, help_text="Serial number matched to assets (required)")
+    time = forms.DateTimeField(required=True, help_text="Last probe time (YYYY-MM-DD HH:MM:SS, required)")
+    creation_time = forms.DateTimeField(required=False, help_text="Probe creation time (YYYY-MM-DD HH:MM:SS)")
+    category = forms.CharField(required=False, help_text="Probe category (e.g. server, network)")
+    part = forms.CharField(required=False, help_text="Part number reported by probe")
+    device_descriptor = forms.CharField(required=False, help_text="Raw device descriptor from discovery")
+    site_descriptor = forms.CharField(required=False, help_text="Raw site descriptor from discovery")
+    location_descriptor = forms.CharField(required=False, help_text="Raw location descriptor from discovery")
+    description = forms.CharField(required=False, help_text="Short description of the probe")
+    comments = forms.CharField(required=False, help_text="Free-text comments")
+    device_id = CSVModelChoiceField(
         queryset=Device.objects.all(),
         required=False,
-        to_field_name="name",
+        label="Device (ID)",
+        help_text="Numeric ID of the device to associate with this probe",
     )
-    site = CSVModelChoiceField(
+    site_id = CSVModelChoiceField(
         queryset=Site.objects.all(),
         required=False,
-        to_field_name="name",
+        label="Site (ID)",
+        help_text="Numeric ID of the site to associate with this probe",
     )
-    location = CSVModelChoiceField(
+    location_id = CSVModelChoiceField(
         queryset=Location.objects.all(),
         required=False,
-        to_field_name="name",
+        label="Location (ID)",
+        help_text="Numeric ID of the location to associate with this probe",
     )
 
     class Meta:
@@ -289,8 +292,11 @@ class ProbeBulkImportForm(NetBoxModelImportForm):
             "location_descriptor",
             "description",
             "comments",
-            "device",
-            "site",
-            "location",
             "tags",
         ]
+
+    def save(self, *args, **kwargs):
+        self.instance.device = self.cleaned_data.get("device_id")
+        self.instance.site = self.cleaned_data.get("site_id")
+        self.instance.location = self.cleaned_data.get("location_id")
+        return super().save(*args, **kwargs)

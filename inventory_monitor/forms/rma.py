@@ -121,15 +121,21 @@ class RMABulkImportForm(NetBoxModelImportForm):
     asset = CSVModelChoiceField(
         queryset=Asset.objects.all(),
         required=True,
+        help_text="Asset to create the RMA for (required)",
     )
-    issue_description = forms.CharField(required=True)
-    status = forms.ChoiceField(choices=RMAStatusChoices, required=True)
-    rma_number = forms.CharField(required=False)
-    original_serial = forms.CharField(required=False)
-    replacement_serial = forms.CharField(required=False)
-    date_issued = forms.DateField(required=False)
-    date_replaced = forms.DateField(required=False)
-    vendor_response = forms.CharField(required=False)
+    issue_description = forms.CharField(required=True, help_text="Description of the issue requiring RMA (required)")
+    status = forms.ChoiceField(choices=RMAStatusChoices, required=True, help_text="RMA status (required)")
+    rma_number = forms.CharField(required=False, help_text="RMA reference number (leave blank for draft)")
+    original_serial = forms.CharField(
+        required=False, help_text="Original serial number (auto-populated from asset if blank)"
+    )
+    replacement_serial = forms.CharField(
+        required=False,
+        help_text="Replacement serial number (updates asset serial when status is Completed)",
+    )
+    date_issued = forms.DateField(required=False, help_text="Date the RMA was issued (YYYY-MM-DD)")
+    date_replaced = forms.DateField(required=False, help_text="Date the replacement was received (YYYY-MM-DD)")
+    vendor_response = forms.CharField(required=False, help_text="Vendor response or notes")
 
     class Meta:
         model = RMA
