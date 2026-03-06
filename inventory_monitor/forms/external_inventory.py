@@ -203,7 +203,9 @@ class ExternalInventoryBulkImportForm(NetBoxModelImportForm):
     project_code = forms.CharField(required=False, help_text="Project code")
     user_name = forms.CharField(required=False, help_text="Username associated with this item")
     user_note = forms.CharField(required=False, help_text="User-provided note")
-    split_asset = forms.CharField(required=False, help_text="Split asset identifier (for assets split across multiple entries)")
+    split_asset = forms.CharField(
+        required=False, help_text="Split asset identifier (for assets split across multiple entries)"
+    )
     status = forms.CharField(required=False, help_text="Status code as configured in plugin settings")
 
     class Meta:
