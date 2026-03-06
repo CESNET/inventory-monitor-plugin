@@ -20,14 +20,20 @@ class AssetServiceFilterSet(NetBoxModelFilterSet):
         q (django_filters.CharFilter): Filter for searching by a specific value.
         tag (TagFilter): Filter for filtering by tags.
         service_start (django_filters.DateFilter): Filter for filtering by service start date.
-        service_start__gte (django_filters.DateFilter): Filter for filtering by service start date greater than or equal to a specific value.
-        service_start__lte (django_filters.DateFilter): Filter for filtering by service start date less than or equal to a specific value.
+        service_start__gte (django_filters.DateFilter): Filter for filtering by service start date
+            greater than or equal to a specific value.
+        service_start__lte (django_filters.DateFilter): Filter for filtering by service start date
+            less than or equal to a specific value.
         service_end (django_filters.DateFilter): Filter for filtering by service end date.
-        service_end__gte (django_filters.DateFilter): Filter for filtering by service end date greater than or equal to a specific value.
-        service_end__lte (django_filters.DateFilter): Filter for filtering by service end date less than or equal to a specific value.
+        service_end__gte (django_filters.DateFilter): Filter for filtering by service end date
+            greater than or equal to a specific value.
+        service_end__lte (django_filters.DateFilter): Filter for filtering by service end date
+            less than or equal to a specific value.
         service_price (django_filters.NumberFilter): Filter for filtering by service price.
-        service_price__gte (django_filters.NumberFilter): Filter for filtering by service price greater than or equal to a specific value.
-        service_price__lte (django_filters.NumberFilter): Filter for filtering by service price less than or equal to a specific value.
+        service_price__gte (django_filters.NumberFilter): Filter for filtering by service price
+            greater than or equal to a specific value.
+        service_price__lte (django_filters.NumberFilter): Filter for filtering by service price
+            less than or equal to a specific value.
         service_category (django_filters.CharFilter): Filter for filtering by service category.
         service_category_vendor (django_filters.CharFilter): Filter for filtering by service category vendor.
         asset (django_filters.ModelMultipleChoiceFilter): Filter for filtering by asset.
