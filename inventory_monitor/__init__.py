@@ -22,6 +22,7 @@ class NetBoxInventoryMonitorConfig(PluginConfig):
             ("JPY", "Japanese Yen", "¥"),
         ],
         "default_currency": "EUR",
+        "enable_netbox_attachments": False,
     }
     required_settings = []
     min_version = "4.5.0"

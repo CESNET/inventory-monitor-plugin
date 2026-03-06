@@ -265,7 +265,7 @@ class EnhancedAssetTable(AssetTable):
     class Meta(AssetTable.Meta):
         # Add row attributes for styling based on probe status - using data attributes for CSS targeting
         row_attrs = {
-            "data-probe-status": lambda record: ("recent" if record.is_recently_probed() else "stale"),
+            "data-probe-status": lambda record: "recent" if record.is_recently_probed() else "stale",
             "data-serial": lambda record: record.serial,
             "serial-match-device": lambda record, table: (
                 "true" if _should_highlight_device_serial_match(record, table) else "false"

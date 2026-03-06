@@ -586,6 +586,9 @@ PLUGINS_CONFIG = {
         
         # Custom tooltip template for status display (Optional)
         "external_inventory_tooltip_template": "<span class='badge text-bg-{color}'>{code}</span> {label}",
+
+        # Attachments Integration (Optional)
+        "enable_netbox_attachments": False,  # Requires netbox-attachments >= 11.0.0
     }
 }
 ```
@@ -613,6 +616,9 @@ PLUGINS_CONFIG = {
 - **`external_inventory_status_config`** (optional): Maps status codes to display labels and Bootstrap colors. If not configured, status displays as-is without special formatting.
 - **`external_inventory_tooltip_template`** (optional, default: `"<span class='badge text-bg-{color}'>{code}</span> {label}"`): Template string for formatting status tooltips
 
+#### Attachments Integration
+- **`enable_netbox_attachments`** (default: `False`): Enable attachment count display for Contract and Invoice models. Requires `netbox-attachments >= 11.0.0` to be installed.
+
 **Status Configuration Structure:**
 ```python
 {
@@ -637,11 +643,27 @@ PLUGINS_CONFIG = {
 
 ### Integration with NetBox Attachments
 
-For file attachments, install and configure [netbox-attachments](https://github.com/Kani999/netbox-attachments):
+The plugin supports optional integration with [netbox-attachments](https://github.com/Kani999/netbox-attachments) (compatible with NetBox 4.5.x) to display attachment counts on **Contract** and **Invoice** list views.
+
+**Requirements:** `netbox-attachments >= 11.0.0`
+
+**Installation:**
 
 ```bash
-pip install netbox-attachments
+pip install "netbox-attachments>=11.0.0"
 ```
+
+**Enable in `configuration.py`:**
+
+```python
+PLUGINS_CONFIG = {
+    "inventory_monitor": {
+        "enable_netbox_attachments": True,
+    }
+}
+```
+
+When enabled, Contract and Invoice list views will show an attachment count column. If `netbox-attachments` is not installed, the plugin will still work normally — the attachment integration degrades gracefully and no errors will occur with `enable_netbox_attachments: False` (the default).
 
 ### Customizing Field Choices
 

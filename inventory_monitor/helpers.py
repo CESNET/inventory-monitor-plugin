@@ -1,7 +1,15 @@
+import functools
+import importlib.metadata
+import logging
+
 import django_tables2
 from core.models import ObjectType
+from django.db.models import Count, OuterRef, Subquery, Value
 from netbox.plugins import get_plugin_config
+from packaging.version import Version
 from utilities.templatetags.builtins.filters import register
+
+logger = logging.getLogger("inventory_monitor")
 
 
 def get_currency_choices():
@@ -62,6 +70,54 @@ def get_object_type_or_none(app_label, model):
         return object_type
     except Exception:
         return None
+
+
+@functools.cache
+def _get_attachment_model():
+    """Return NetBoxAttachmentAssignment model class if available, None otherwise."""
+    if not get_plugin_config("inventory_monitor", "enable_netbox_attachments", False):
+        return None
+
+    try:
+        installed = importlib.metadata.version("netbox-attachments")
+    except importlib.metadata.PackageNotFoundError:
+        logger.error("enable_netbox_attachments is True but netbox-attachments is not installed")
+        return None
+
+    if Version(installed) < Version("11.0.0"):
+        logger.error(
+            "netbox-attachments %s is installed but >= 11.0.0 is required",
+            installed,
+        )
+        return None
+
+    try:
+        from netbox_attachments.models import NetBoxAttachmentAssignment
+    except ImportError:
+        logger.error("Failed to import NetBoxAttachmentAssignment from netbox-attachments")
+        return None
+
+    return NetBoxAttachmentAssignment
+
+
+def get_attachments_count_subquery(model_name: str):
+    model = _get_attachment_model()
+    if model is None:
+        return Value(0)
+
+    object_type = get_object_type_or_none("inventory_monitor", model_name)
+    if not object_type:
+        return Value(0)
+
+    try:
+        return Subquery(
+            model.objects.filter(object_id=OuterRef("id"), object_type=object_type)
+            .values("object_id")
+            .annotate(attachments_count=Count("*"))
+            .values("attachments_count")
+        )
+    except Exception:
+        return Value(0)
 
 
 @register.filter()
