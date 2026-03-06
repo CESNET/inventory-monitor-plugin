@@ -8,17 +8,17 @@ ASSOCIATED_ASSETS = """
     <a href="{% url 'plugins:inventory_monitor:asset_list' %}?external_inventory_items={{ record.pk }}">{{ value.count }}</a>
   {% elif value and value.all %}
     {% for asset in value.all %}
-      <a 
-            href="{{ asset.get_absolute_url }}" 
-            class="badge text-bg-{{ asset.get_lifecycle_status_color }}" 
-            data-bs-toggle="tooltip" 
-            data-bs-placement="left" 
+      <a
+            href="{{ asset.get_absolute_url }}"
+            class="badge text-bg-{{ asset.get_lifecycle_status_color }}"
+            data-bs-toggle="tooltip"
+            data-bs-placement="left"
             style="
                 white-space: normal;        /* povolí zalamování řádků */
                 word-break: keep-all;       /* nezalomí slovo, jen mezi slovy */
                 overflow-wrap: normal;      /* defaultní chování, zalamuje jen na mezerách */
                 max-width: 200px;           /* nastavte podle potřeby */
-                display: inline-block;      /* aby šířka fungovala */            
+                display: inline-block;      /* aby šířka fungovala */
             "
             title="{{ asset.get_lifecycle_status_display }}"
         >{{ asset }}</a>

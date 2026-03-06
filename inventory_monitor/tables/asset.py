@@ -42,10 +42,10 @@ ASSOCIATED_EXTERNAL_INVENTORY_ASSETS = """
     <a href="{% url 'plugins:inventory_monitor:externalinventory_list' %}?asset_id={{ record.pk }}">{{ value.count }}</a>
   {% else %}
     {% for item in value.all %}
-        <a 
-            href="{{ item.get_absolute_url }}" 
-            class="badge text-bg-{{ item.get_status_color }}" 
-            data-bs-toggle="tooltip" 
+        <a
+            href="{{ item.get_absolute_url }}"
+            class="badge text-bg-{{ item.get_status_color }}"
+            data-bs-toggle="tooltip"
             data-bs-placement="left"
             style="
                 white-space: normal;        /* povolí zalamování řádků */
