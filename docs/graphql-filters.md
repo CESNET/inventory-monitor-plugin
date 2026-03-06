@@ -10,7 +10,7 @@ The plugin exposes all models via the NetBox GraphQL API at `/graphql/`. Every l
 | DateField | `DateFilterLookup` | `exact`, `gt`, `gte`, `lt`, `lte`, `in` |
 | DateTimeField | `DatetimFilterLookup` | `exact`, `gt`, `gte`, `lt`, `lte`, `in` |
 | IntegerField / DecimalField | `IntFilterLookup` / `DecimalFilterLookup` | `exact`, `gt`, `gte`, `lt`, `lte`, `in` |
-| Custom cross-column | `StrBaseFilterLookup` | `exact`, `gt`, `gte`, `lt`, `lte`, `in` |
+
 
 ## Example queries
 
@@ -38,21 +38,7 @@ The plugin exposes all models via the NetBox GraphQL API at `/graphql/`. Every l
 }
 ```
 
-### Filter RMAs by serial number (cross-column exact match)
-
-The `serial` filter searches across both `original_serial` and `replacement_serial` at once. Only `exact` is supported; for partial matches use the individual fields.
-
-```graphql
-{
-  inventory_monitor_rma_list(filters: { serial: { exact: "ABC123" } }) {
-    id
-    original_serial
-    replacement_serial
-  }
-}
-```
-
-For partial matching on individual serial fields:
+### Filter RMAs by serial number
 
 ```graphql
 {
