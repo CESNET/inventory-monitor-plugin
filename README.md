@@ -2,8 +2,8 @@
 
 A comprehensive NetBox plugin for asset management with semi-automatic discovery processes. This plugin extends NetBox with powerful inventory tracking capabilities, including asset lifecycle management, probe monitoring, contract tracking, and RMA (Return Merchandise Authorization) processing.
 
-[![Version](https://img.shields.io/badge/version-13.0.2-blue.svg)](https://github.com/CESNET/inventory-monitor-plugin)
-[![NetBox](https://img.shields.io/badge/netbox-4.5.x-green.svg)](https://github.com/netbox-community/netbox)
+[![Version](https://img.shields.io/badge/version-13.1.0-blue.svg)](https://github.com/CESNET/inventory-monitor-plugin)
+[![NetBox](https://img.shields.io/badge/netbox-4.5.4%2B-green.svg)](https://github.com/netbox-community/netbox)
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
 
 ---
@@ -448,11 +448,12 @@ Integration with external inventory management systems.
 | 10.2.0 - 10.3.x | 4.3.x      | 4.3.x        |
 | 11.0.0+       | 4.4.x        | 4.4.0        |
 | 12.0.0+       | 4.4.x        | 4.4.0        |
-| 13.0.0+       | 4.5.x        | 4.5.0        |
+| 13.0.0 - 13.0.x | 4.5.0 - 4.5.3 | 4.5.0       |
+| 13.1.0+       | 4.5.4+       | 4.5.4        |
 
 ### Requirements
 
-- NetBox 4.5.0 or higher
+- NetBox 4.5.4 or higher
 - Python 3.12 or higher
 
 ### From PyPI (Recommended)
@@ -586,6 +587,9 @@ PLUGINS_CONFIG = {
         
         # Custom tooltip template for status display (Optional)
         "external_inventory_tooltip_template": "<span class='badge text-bg-{color}'>{code}</span> {label}",
+
+        # Attachments Integration (Optional)
+        "enable_netbox_attachments": False,  # Requires netbox-attachments >= 11.0.0
     }
 }
 ```
@@ -613,6 +617,9 @@ PLUGINS_CONFIG = {
 - **`external_inventory_status_config`** (optional): Maps status codes to display labels and Bootstrap colors. If not configured, status displays as-is without special formatting.
 - **`external_inventory_tooltip_template`** (optional, default: `"<span class='badge text-bg-{color}'>{code}</span> {label}"`): Template string for formatting status tooltips
 
+#### Attachments Integration
+- **`enable_netbox_attachments`** (default: `False`): Enable attachment count display for Contract and Invoice models. Requires `netbox-attachments >= 11.0.0` to be installed.
+
 **Status Configuration Structure:**
 ```python
 {
@@ -637,11 +644,27 @@ PLUGINS_CONFIG = {
 
 ### Integration with NetBox Attachments
 
-For file attachments, install and configure [netbox-attachments](https://github.com/Kani999/netbox-attachments):
+The plugin supports optional integration with [netbox-attachments](https://github.com/Kani999/netbox-attachments) (requires netbox-attachments >= 11.0.0 and NetBox >= 4.5.4) to display attachment counts on **Contract** and **Invoice** list views. See [docs/netbox-attachments.md](docs/netbox-attachments.md) for setup instructions.
+
+**Requirements:** `netbox-attachments >= 11.0.0`
+
+**Installation:**
 
 ```bash
-pip install netbox-attachments
+pip install "netbox-attachments>=11.0.0"
 ```
+
+**Enable in `configuration.py`:**
+
+```python
+PLUGINS_CONFIG = {
+    "inventory_monitor": {
+        "enable_netbox_attachments": True,
+    }
+}
+```
+
+When enabled, Contract and Invoice list views will show an attachment count column. If `netbox-attachments` is not installed, the plugin will still work normally — the attachment integration degrades gracefully and no errors will occur with `enable_netbox_attachments: False` (the default).
 
 ### Customizing Field Choices
 

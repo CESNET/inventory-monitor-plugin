@@ -1,0 +1,46 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [13.1.0] - 2026-03-06
+
+> **Requires NetBox >= 4.5.4** (strawberry-graphql-django >= 0.79.0).
+> NetBox 4.5.0–4.5.3 is **not supported** by this release.
+
+### Breaking Changes
+
+- **Minimum NetBox version raised to 4.5.4.** The GraphQL layer now uses
+  `StrFilterLookup` (introduced in strawberry-graphql-django 0.79.0, shipped with
+  NetBox 4.5.4). Installations running NetBox 4.5.0–4.5.3 will fail to start.
+  Use inventory-monitor v13.0.x for those versions.
+
+- **GraphQL filter types changed.** All `CharField`/`TextField` filter fields
+  migrated from `FilterLookup[str]` to `StrFilterLookup[str]`. This eliminates
+  `DuplicatedTypeName` schema errors introduced in strawberry-graphql-django 0.79.0.
+  Custom GraphQL clients or tooling that relied on the old `FilterLookup` type name
+  in introspection results may need updating.
+
+### Added
+
+- **Optional [netbox-attachments](https://github.com/Kani999/netbox-attachments)
+  integration** (re-introduced; requires netbox-attachments >= 11.0.0).
+  - Enable with `enable_netbox_attachments: True` in plugin config (default: `False`).
+  - Adds attachment counts to Contract and Invoice list views.
+  - Plugin starts normally without netbox-attachments installed when the setting
+    is disabled. See `docs/netbox-attachments.md` for setup instructions.
+  - Note: versions 13.0.x had no netbox-attachments support.
+    If you used netbox-attachments with inventory-monitor 12.x, upgrade
+    netbox-attachments to >= 11.0.0 before enabling this setting.
+
+### Fixed
+
+- Removed undocumented cross-column `serial` GraphQL filter from RMA documentation.
+  The filter had no resolver and would raise a runtime error when queried.
+  Use `original_serial` or `replacement_serial` filters instead.
+
+## [13.0.x]
+
+See git history for changes in the 13.0.x series.

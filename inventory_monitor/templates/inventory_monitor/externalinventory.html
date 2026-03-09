@@ -32,12 +32,12 @@
                                 Status
                                 {% external_inventory_status_tooltip as status_tooltip %}
                                 {% if status_tooltip %}
-                                <i class="mdi mdi-help-circle text-muted ms-1"
-                                   data-bs-toggle="tooltip"
-                                   data-bs-html="true"
-                                   aria-label="{% trans 'Status code explanation' %}"
-                                   title="{{ status_tooltip }}">
-                                </i>
+                                    <i class="mdi mdi-help-circle text-muted ms-1"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-html="true"
+                                       aria-label="{% trans 'Status code explanation' %}"
+                                       title="{{ status_tooltip }}">
+                                    </i>
                                 {% endif %}
                             </th>
                             <td>{{ object.status|placeholder }}</td>

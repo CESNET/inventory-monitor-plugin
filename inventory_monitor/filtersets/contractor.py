@@ -28,7 +28,8 @@ class ContractorFilterSet(NetBoxModelFilterSet):
         fields (tuple): The fields that can be used for filtering.
 
     Methods:
-        search(queryset, name, value): A method for performing a case-insensitive search across the name, company, and address fields.
+        search(queryset, name, value): A method for performing a case-insensitive search
+            across the name, company, and address fields.
 
     """
 

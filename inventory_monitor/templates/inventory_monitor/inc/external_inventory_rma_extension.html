@@ -7,14 +7,14 @@
                 <h5 class="mb-0">RMA's found for External Inventory serial number: {{ object.external_id|placeholder }}</h5>
                 <div class="card-actions">
                     {% if object.external_id %}
-                    <a href="{% url 'plugins:inventory_monitor:rma_list' %}?serial={{ object.external_id|urlencode }}"
-                       class="btn btn-primary btn-sm">
-                        <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i>RMA's List
-                    </a>
+                        <a href="{% url 'plugins:inventory_monitor:rma_list' %}?serial={{ object.external_id|urlencode }}"
+                           class="btn btn-primary btn-sm">
+                            <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i>RMA's List
+                        </a>
                     {% else %}
-                    <button class="btn btn-primary btn-sm disabled" aria-disabled="true" disabled>
-                        <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i>RMA's List
-                    </button>
+                        <button class="btn btn-primary btn-sm disabled" aria-disabled="true" disabled>
+                            <i class="mdi mdi-format-list-bulleted" aria-hidden="true"></i>RMA's List
+                        </button>
                     {% endif %}
                 </div>
             </div>
