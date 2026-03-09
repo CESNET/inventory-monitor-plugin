@@ -25,7 +25,7 @@ class NetBoxInventoryMonitorConfig(PluginConfig):
         "enable_netbox_attachments": False,
     }
     required_settings = []
-    min_version = "4.5.0"
+    min_version = "4.5.4"
     max_version = "4.5.99"
 
 
