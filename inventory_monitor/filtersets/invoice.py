@@ -13,8 +13,8 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
     """
     A filter set for filtering invoices.
 
-    This filter set provides various filters for searching and filtering invoices based on different criteria such as name,
-    project, contract, price, and invoicing dates.
+    This filter set provides various filters for searching and filtering invoices based on
+    different criteria such as name, project, contract, price, and invoicing dates.
 
     Attributes:
         q (django_filters.CharFilter): A filter for searching invoices by name.
@@ -26,12 +26,18 @@ class InvoiceFilterSet(NetBoxModelFilterSet):
         contract_id (django_filters.ModelMultipleChoiceFilter): A filter for filtering invoices by contract ID.
         contract (django_filters.ModelMultipleChoiceFilter): A filter for filtering invoices by contract name.
         price (django_filters.NumberFilter): A filter for filtering invoices by price.
-        invoicing_start__gte (django_filters.DateFilter): A filter for filtering invoices with invoicing start date greater than or equal to a given date.
-        invoicing_start__lte (django_filters.DateFilter): A filter for filtering invoices with invoicing start date less than or equal to a given date.
-        invoicing_start (django_filters.DateFilter): A filter for filtering invoices with invoicing start date containing a given date.
-        invoicing_end__gte (django_filters.DateFilter): A filter for filtering invoices with invoicing end date greater than or equal to a given date.
-        invoicing_end__lte (django_filters.DateFilter): A filter for filtering invoices with invoicing end date less than or equal to a given date.
-        invoicing_end (django_filters.DateFilter): A filter for filtering invoices with invoicing end date containing a given date.
+        invoicing_start__gte (django_filters.DateFilter): A filter for filtering invoices with
+            invoicing start date greater than or equal to a given date.
+        invoicing_start__lte (django_filters.DateFilter): A filter for filtering invoices with
+            invoicing start date less than or equal to a given date.
+        invoicing_start (django_filters.DateFilter): A filter for filtering invoices with
+            invoicing start date containing a given date.
+        invoicing_end__gte (django_filters.DateFilter): A filter for filtering invoices with
+            invoicing end date greater than or equal to a given date.
+        invoicing_end__lte (django_filters.DateFilter): A filter for filtering invoices with
+            invoicing end date less than or equal to a given date.
+        invoicing_end (django_filters.DateFilter): A filter for filtering invoices with
+            invoicing end date containing a given date.
     """
 
     q = django_filters.CharFilter(

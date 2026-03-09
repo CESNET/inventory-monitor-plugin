@@ -1,43 +1,14 @@
-from core.models import ObjectType
-from django.db.models import Count, OuterRef, Subquery, Value
 from netbox.views import generic
 from utilities.views import register_model_view
 
 from inventory_monitor import filtersets, forms, models, tables
-from inventory_monitor.helpers import get_object_type_or_none
-
-# Attempt to import NetBoxAttachment and set a flag based on its availability
-try:
-    from netbox_attachments.models import NetBoxAttachment
-
-    attachments_model_exists = True
-except (ModuleNotFoundError, Exception):
-    attachments_model_exists = False
+from inventory_monitor.helpers import get_attachments_count_subquery
 
 
 def get_invoice_queryset():
-    """
-    Generates the queryset for Invoice objects, optionally annotating with attachment counts.
-    """
-    base_queryset = models.Invoice.objects.select_related("contract")
-    if attachments_model_exists:
-        try:
-            invoice_object_type = get_object_type_or_none(app_label="inventory_monitor", model="invoice")
-
-            if not invoice_object_type:
-                return base_queryset.annotate(attachments_count=Value(0))
-
-            subquery_attachments_count = (
-                NetBoxAttachment.objects.filter(object_id=OuterRef("id"), object_type=invoice_object_type)
-                .values("object_id")
-                .annotate(attachments_count=Count("*"))
-            )
-            return base_queryset.annotate(
-                attachments_count=Subquery(subquery_attachments_count.values("attachments_count"))
-            )
-        except (ObjectType.DoesNotExist, ValueError):
-            pass
-    return base_queryset.annotate(attachments_count=Value(0))
+    return models.Invoice.objects.select_related("contract").annotate(
+        attachments_count=get_attachments_count_subquery("invoice"),
+    )
 
 
 @register_model_view(models.Invoice)

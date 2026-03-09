@@ -90,7 +90,7 @@ class ProbeTable(NetBoxTable):
 
         # Add row attributes for styling based on probe status - using data attributes for CSS targeting
         row_attrs = {
-            "data-probe-status": lambda record: ("recent" if record.is_recently_probed() else "stale"),
+            "data-probe-status": lambda record: "recent" if record.is_recently_probed() else "stale",
             "data-serial": lambda record: record.serial,
         }
 

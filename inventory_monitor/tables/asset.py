@@ -42,10 +42,10 @@ ASSOCIATED_EXTERNAL_INVENTORY_ASSETS = """
     <a href="{% url 'plugins:inventory_monitor:externalinventory_list' %}?asset_id={{ record.pk }}">{{ value.count }}</a>
   {% else %}
     {% for item in value.all %}
-        <a 
-            href="{{ item.get_absolute_url }}" 
-            class="badge text-bg-{{ item.get_status_color }}" 
-            data-bs-toggle="tooltip" 
+        <a
+            href="{{ item.get_absolute_url }}"
+            class="badge text-bg-{{ item.get_status_color }}"
+            data-bs-toggle="tooltip"
             data-bs-placement="left"
             style="
                 white-space: normal;        /* povolí zalamování řádků */
@@ -265,7 +265,7 @@ class EnhancedAssetTable(AssetTable):
     class Meta(AssetTable.Meta):
         # Add row attributes for styling based on probe status - using data attributes for CSS targeting
         row_attrs = {
-            "data-probe-status": lambda record: ("recent" if record.is_recently_probed() else "stale"),
+            "data-probe-status": lambda record: "recent" if record.is_recently_probed() else "stale",
             "data-serial": lambda record: record.serial,
             "serial-match-device": lambda record, table: (
                 "true" if _should_highlight_device_serial_match(record, table) else "false"

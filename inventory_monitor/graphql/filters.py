@@ -5,7 +5,7 @@ import strawberry
 import strawberry_django
 from netbox.graphql.filters import NetBoxModelFilter
 from strawberry.scalars import ID
-from strawberry_django import BaseFilterLookup, FilterLookup
+from strawberry_django import BaseFilterLookup, FilterLookup, StrFilterLookup
 
 if TYPE_CHECKING:
     from core.graphql.filters import ContentTypeFilter
@@ -51,20 +51,20 @@ __all__ = (
 
 @strawberry_django.filter_type(ExternalInventory, lookups=True)
 class InventoryMonitorExternalInventoryFilter(NetBoxModelFilter):
-    external_id: FilterLookup[str] | None = strawberry_django.filter_field()
-    inventory_number: FilterLookup[str] | None = strawberry_django.filter_field()
-    name: FilterLookup[str] | None = strawberry_django.filter_field()
-    serial_number: FilterLookup[str] | None = strawberry_django.filter_field()
-    person_id: FilterLookup[str] | None = strawberry_django.filter_field()
-    person_name: FilterLookup[str] | None = strawberry_django.filter_field()
-    location_code: FilterLookup[str] | None = strawberry_django.filter_field()
-    location: FilterLookup[str] | None = strawberry_django.filter_field()
-    department_code: FilterLookup[str] | None = strawberry_django.filter_field()
-    project_code: FilterLookup[str] | None = strawberry_django.filter_field()
-    user_name: FilterLookup[str] | None = strawberry_django.filter_field()
-    user_note: FilterLookup[str] | None = strawberry_django.filter_field()
-    split_asset: FilterLookup[str] | None = strawberry_django.filter_field()
-    status: FilterLookup[str] | None = strawberry_django.filter_field()
+    external_id: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    inventory_number: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    name: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    serial_number: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    person_id: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    person_name: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    location_code: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    location: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    department_code: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    project_code: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    user_name: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    user_note: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    split_asset: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    status: StrFilterLookup[str] | None = strawberry_django.filter_field()
 
     # Relationship filters
     assets: Annotated["InventoryMonitorAssetFilter", strawberry.lazy("inventory_monitor.graphql.filters")] | None = (
@@ -79,9 +79,9 @@ class InventoryMonitorExternalInventoryFilter(NetBoxModelFilter):
 @strawberry_django.filter_type(Asset, lookups=True)
 class InventoryMonitorAssetFilter(NetBoxModelFilter):
     # Basic identification filters
-    partnumber: FilterLookup[str] | None = strawberry_django.filter_field()
-    description: FilterLookup[str] | None = strawberry_django.filter_field()
-    serial: FilterLookup[str] | None = strawberry_django.filter_field()
+    partnumber: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    description: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    serial: StrFilterLookup[str] | None = strawberry_django.filter_field()
 
     # Status filters - use BaseFilterLookup for enum fields (NetBox 4.5+ requirement)
     assignment_status: (
@@ -98,13 +98,13 @@ class InventoryMonitorAssetFilter(NetBoxModelFilter):
     ) = strawberry_django.filter_field()
 
     # Additional information filters
-    project: FilterLookup[str] | None = strawberry_django.filter_field()
-    vendor: FilterLookup[str] | None = strawberry_django.filter_field()
+    project: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    vendor: StrFilterLookup[str] | None = strawberry_django.filter_field()
 
     # Numeric filters
     quantity: FilterLookup[int] | None = strawberry_django.filter_field()
     price: FilterLookup[Decimal] | None = strawberry_django.filter_field()  # DecimalField
-    currency: FilterLookup[str] | None = strawberry_django.filter_field()
+    currency: StrFilterLookup[str] | None = strawberry_django.filter_field()
 
     # Date filters
     warranty_start: strawberry.auto = strawberry_django.filter_field()
@@ -143,10 +143,10 @@ class InventoryMonitorAssetFilter(NetBoxModelFilter):
 
 @strawberry_django.filter_type(AssetType, lookups=True)
 class InventoryMonitorAssetTypeFilter(NetBoxModelFilter):
-    name: FilterLookup[str] | None = strawberry_django.filter_field()
-    slug: FilterLookup[str] | None = strawberry_django.filter_field()
-    description: FilterLookup[str] | None = strawberry_django.filter_field()
-    color: FilterLookup[str] | None = strawberry_django.filter_field()
+    name: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    slug: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    description: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    color: StrFilterLookup[str] | None = strawberry_django.filter_field()
 
 
 @strawberry_django.filter_type(AssetService, lookups=True)
@@ -154,9 +154,9 @@ class InventoryMonitorAssetServiceFilter(NetBoxModelFilter):
     service_start: strawberry.auto = strawberry_django.filter_field()
     service_end: strawberry.auto = strawberry_django.filter_field()
     service_price: FilterLookup[Decimal] | None = strawberry_django.filter_field()
-    service_currency: FilterLookup[str] | None = strawberry_django.filter_field()
-    service_category: FilterLookup[str] | None = strawberry_django.filter_field()
-    service_category_vendor: FilterLookup[str] | None = strawberry_django.filter_field()
+    service_currency: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    service_category: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    service_category_vendor: StrFilterLookup[str] | None = strawberry_django.filter_field()
 
     # Related object filters
     asset: Annotated["InventoryMonitorAssetFilter", strawberry.lazy("inventory_monitor.graphql.filters")] | None = (
@@ -172,8 +172,8 @@ class InventoryMonitorAssetServiceFilter(NetBoxModelFilter):
 
 @strawberry_django.filter_type(Contract, lookups=True)
 class InventoryMonitorContractFilter(NetBoxModelFilter):
-    name: FilterLookup[str] | None = strawberry_django.filter_field()
-    name_internal: FilterLookup[str] | None = strawberry_django.filter_field()
+    name: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    name_internal: StrFilterLookup[str] | None = strawberry_django.filter_field()
     type: (
         BaseFilterLookup[
             Annotated["InventoryMonitorContractTypeEnum", strawberry.lazy("inventory_monitor.graphql.enums")]  # pyright: ignore[reportInvalidTypeForm]
@@ -181,7 +181,7 @@ class InventoryMonitorContractFilter(NetBoxModelFilter):
         | None
     ) = strawberry_django.filter_field()
     price: FilterLookup[Decimal] | None = strawberry_django.filter_field()
-    currency: FilterLookup[str] | None = strawberry_django.filter_field()
+    currency: StrFilterLookup[str] | None = strawberry_django.filter_field()
     signed: strawberry.auto = strawberry_django.filter_field()
     accepted: strawberry.auto = strawberry_django.filter_field()
     invoicing_start: strawberry.auto = strawberry_django.filter_field()
@@ -201,9 +201,9 @@ class InventoryMonitorContractFilter(NetBoxModelFilter):
 
 @strawberry_django.filter_type(Contractor, lookups=True)
 class InventoryMonitorContractorFilter(NetBoxModelFilter):
-    name: FilterLookup[str] | None = strawberry_django.filter_field()
-    company: FilterLookup[str] | None = strawberry_django.filter_field()
-    address: FilterLookup[str] | None = strawberry_django.filter_field()
+    name: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    company: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    address: StrFilterLookup[str] | None = strawberry_django.filter_field()
 
     # Tenant filter
     tenant: Annotated["TenantFilter", strawberry.lazy("tenancy.graphql.filters")] | None = (
@@ -214,9 +214,9 @@ class InventoryMonitorContractorFilter(NetBoxModelFilter):
 
 @strawberry_django.filter_type(Invoice, lookups=True)
 class InventoryMonitorInvoiceFilter(NetBoxModelFilter):
-    name: FilterLookup[str] | None = strawberry_django.filter_field()
-    name_internal: FilterLookup[str] | None = strawberry_django.filter_field()
-    project: FilterLookup[str] | None = strawberry_django.filter_field()
+    name: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    name_internal: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    project: StrFilterLookup[str] | None = strawberry_django.filter_field()
     price: FilterLookup[Decimal] | None = strawberry_django.filter_field()
     invoicing_start: strawberry.auto = strawberry_django.filter_field()
     invoicing_end: strawberry.auto = strawberry_django.filter_field()
@@ -235,13 +235,13 @@ class InventoryMonitorProbeFilter(NetBoxModelFilter):
 
     time: strawberry.auto = strawberry_django.filter_field()
     creation_time: strawberry.auto = strawberry_django.filter_field()
-    device_descriptor: FilterLookup[str] | None = strawberry_django.filter_field()
-    site_descriptor: FilterLookup[str] | None = strawberry_django.filter_field()
-    location_descriptor: FilterLookup[str] | None = strawberry_django.filter_field()
-    part: FilterLookup[str] | None = strawberry_django.filter_field()
-    name: FilterLookup[str] | None = strawberry_django.filter_field()
-    serial: FilterLookup[str] | None = strawberry_django.filter_field()
-    category: FilterLookup[str] | None = strawberry_django.filter_field()
+    device_descriptor: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    site_descriptor: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    location_descriptor: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    part: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    name: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    serial: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    category: StrFilterLookup[str] | None = strawberry_django.filter_field()
 
     # DCIM relationship filters
     device: Annotated["DeviceFilter", strawberry.lazy("dcim.graphql.filters")] | None = strawberry_django.filter_field()
@@ -258,9 +258,9 @@ class InventoryMonitorProbeFilter(NetBoxModelFilter):
 
 @strawberry_django.filter_type(RMA, lookups=True)
 class InventoryMonitorRMAFilter(NetBoxModelFilter):
-    rma_number: FilterLookup[str] | None = strawberry_django.filter_field()
-    original_serial: FilterLookup[str] | None = strawberry_django.filter_field()
-    replacement_serial: FilterLookup[str] | None = strawberry_django.filter_field()
+    rma_number: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    original_serial: StrFilterLookup[str] | None = strawberry_django.filter_field()
+    replacement_serial: StrFilterLookup[str] | None = strawberry_django.filter_field()
     status: (
         BaseFilterLookup[Annotated["InventoryMonitorRMAStatusEnum", strawberry.lazy("inventory_monitor.graphql.enums")]]  # pyright: ignore[reportInvalidTypeForm]
         | None

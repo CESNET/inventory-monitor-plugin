@@ -2,7 +2,12 @@ from netbox.views import generic
 from utilities.views import register_model_view
 
 from inventory_monitor.filtersets import ExternalInventoryFilterSet
-from inventory_monitor.forms import ExternalInventoryFilterForm, ExternalInventoryForm, ExternalInventoryBulkEditForm, ExternalInventoryBulkImportForm
+from inventory_monitor.forms import (
+    ExternalInventoryFilterForm,
+    ExternalInventoryForm,
+    ExternalInventoryBulkEditForm,
+    ExternalInventoryBulkImportForm,
+)
 from inventory_monitor.models import ExternalInventory
 from inventory_monitor.tables import ExternalInventoryTable
 

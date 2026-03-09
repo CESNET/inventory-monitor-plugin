@@ -13,15 +13,19 @@ class ProbeFilterSet(BaseFilterSet):
     """
     Filter set for the Probe model.
 
-    This filter set provides filtering options for the Probe model based on various fields such as device, site, location, part, name, serial, description, and category.
+    This filter set provides filtering options for the Probe model based on various fields
+    such as device, site, location, part, name, serial, description, and category.
 
     Attributes:
         q (django_filters.CharFilter): A filter for searching based on multiple fields.
         tag (TagFilter): A filter for filtering based on tags.
         serial (django_filters.CharFilter): A filter for filtering based on the serial number.
-        time__gte (django_filters.DateTimeFilter): A filter for filtering based on the time greater than or equal to a specified value.
-        time__lte (django_filters.DateTimeFilter): A filter for filtering based on the time less than or equal to a specified value.
-        latest_only_per_device (django_filters.BooleanFilter): A filter for filtering only the latest inventory per device.
+        time__gte (django_filters.DateTimeFilter): A filter for filtering based on the time
+            greater than or equal to a specified value.
+        time__lte (django_filters.DateTimeFilter): A filter for filtering based on the time
+            less than or equal to a specified value.
+        latest_only_per_device (django_filters.BooleanFilter): A filter for filtering only
+            the latest inventory per device.
         latest_only (django_filters.BooleanFilter): A filter for filtering only the latest inventory.
         device_id (django_filters.ModelMultipleChoiceFilter): A filter for filtering based on the device ID.
         device (django_filters.ModelMultipleChoiceFilter): A filter for filtering based on the device name.

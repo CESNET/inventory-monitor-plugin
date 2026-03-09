@@ -234,7 +234,9 @@ class AssetServiceBulkImportForm(NetBoxModelImportForm):
     service_currency = forms.CharField(
         required=False, help_text="Currency code (e.g. EUR, USD, CZK) — required if price > 0"
     )
-    service_category = forms.CharField(required=False, help_text="Service category (e.g. hardware maintenance, support)")
+    service_category = forms.CharField(
+        required=False, help_text="Service category (e.g. hardware maintenance, support)"
+    )
     service_category_vendor = forms.CharField(required=False, help_text="Vendor-specific service category name")
     description = forms.CharField(required=False, help_text="Short description of the service")
     comments = forms.CharField(required=False, help_text="Free-text comments")
