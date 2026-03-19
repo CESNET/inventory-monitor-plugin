@@ -294,6 +294,8 @@ class EnhancedAssetTable(AssetTable):
             "assigned_object",
             "assignment_status",
             "lifecycle_status",
+            "warranty_status",
+            "services_status",
             "probe_status",
             "last_probe_time",
             "actions",
