@@ -6,6 +6,9 @@ from inventory_monitor.helpers import (
     CurrencyColumn,
     TEMPLATE_SERVICES_CONTRACTS,
     TEMPLATE_SERVICES_END,
+    TEMPLATE_SERVICES_START,
+    TEMPLATE_SERVICES_STATUS,
+    TEMPLATE_WARRANTY_STATUS,
 )
 from inventory_monitor.models import Asset
 
@@ -115,9 +118,7 @@ class AssetTable(NetBoxTable):
 
     # Formatted column for warranty status using a template
     warranty_status = tables.TemplateColumn(
-        template_code="""
-            {% include 'inventory_monitor/inc/status_badge.html' with status_type='warranty' %}
-        """,
+        template_code=TEMPLATE_WARRANTY_STATUS,
         verbose_name="Warranty Status",
         orderable=False,
     )
@@ -148,7 +149,11 @@ class AssetTable(NetBoxTable):
     #
     # Service information columns
     #
+    services_from = tables.TemplateColumn(template_code=TEMPLATE_SERVICES_START, verbose_name="Service Start")
     services_to = columns.TemplateColumn(template_code=TEMPLATE_SERVICES_END, verbose_name="Service End")
+    services_status = tables.TemplateColumn(
+        template_code=TEMPLATE_SERVICES_STATUS, verbose_name="Service Status", orderable=False
+    )
     services_contracts = tables.TemplateColumn(
         template_code=TEMPLATE_SERVICES_CONTRACTS, verbose_name="Service Contracts"
     )
@@ -156,8 +161,8 @@ class AssetTable(NetBoxTable):
     #
     # Warranty information columns
     #
-    warranty_start = tables.Column()
-    warranty_end = tables.Column()
+    warranty_start = tables.Column(verbose_name="Warranty Start")
+    warranty_end = tables.Column(verbose_name="Warranty End")
 
     #
     # Metadata columns
@@ -201,7 +206,9 @@ class AssetTable(NetBoxTable):
             # Service information
             "services_count",
             "services_contracts",
+            "services_from",
             "services_to",
+            "services_status",
             # Metadata
             "comments",
             "tags",
@@ -216,6 +223,8 @@ class AssetTable(NetBoxTable):
             "type",
             "assignment_status",
             "lifecycle_status",
+            "warranty_status",
+            "services_status",
         )
 
 

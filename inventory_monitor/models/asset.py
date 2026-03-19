@@ -409,5 +409,12 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
         return LifecycleStatusChoices.colors.get(self.lifecycle_status, "gray")
 
     def get_warranty_status(self):
-        """Returns the warranty status and color for progress bar"""
-        return self.get_date_status("warranty_start", "warranty_end", "Warranty")
+        """Returns the warranty status and color for progress bar.
+
+        Returns None if warning_days.warranty is not configured.
+        """
+        from inventory_monitor.settings import get_warning_days
+
+        return self.get_date_status(
+            "warranty_start", "warranty_end", "Warranty", warning_days=get_warning_days("warranty")
+        )

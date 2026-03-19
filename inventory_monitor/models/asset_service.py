@@ -110,5 +110,10 @@ class AssetService(NetBoxModel, DateStatusMixin):
             raise ValidationError({"service_price": "Service price is required when currency is set."})
 
     def get_service_status(self):
-        """Returns the service status and color for progress bar"""
-        return self.get_date_status("service_start", "service_end", "Service")
+        """Returns the service status and color for progress bar.
+
+        Returns None if warning_days.service is not configured.
+        """
+        from inventory_monitor.settings import get_warning_days
+
+        return self.get_date_status("service_start", "service_end", "Service", warning_days=get_warning_days("service"))

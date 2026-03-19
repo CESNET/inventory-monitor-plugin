@@ -14,7 +14,7 @@
                         <tr>
                             <td>Service Start</td>
                             {% if object.service_start %}
-                                <td>{{ object.service_start|date:"Y-n-d" }}</td>
+                                <td>{{ object.service_start|date:"Y-m-d" }}</td>
                             {% else %}
                                 <td>{{ ''|placeholder }}</td>
                             {% endif %}
@@ -22,7 +22,7 @@
                         <tr>
                             <td>Service End</td>
                             {% if object.service_end %}
-                                <td>{{ object.service_end|date:"Y-n-d" }}</td>
+                                <td>{{ object.service_end|date:"Y-m-d" }}</td>
                             {% else %}
                                 <td>{{ ''|placeholder }}</td>
                             {% endif %}

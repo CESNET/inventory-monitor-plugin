@@ -6,8 +6,10 @@ from netbox.models import NetBoxModel
 from taggit.managers import TaggableManager
 from utilities.querysets import RestrictedQuerySet
 
+from inventory_monitor.models.mixins import DateStatusMixin
 
-class Invoice(NetBoxModel):
+
+class Invoice(NetBoxModel, DateStatusMixin):
     objects = RestrictedQuerySet.as_manager()
     name = models.CharField(max_length=255, blank=False, null=False)
     name_internal = models.CharField(max_length=255, blank=False, null=False)
@@ -79,6 +81,17 @@ class Invoice(NetBoxModel):
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:invoice", args=[self.pk])
+
+    def get_invoicing_status(self):
+        """Returns the invoicing status and color for progress bar.
+
+        Returns None if warning_days.invoicing is not configured.
+        """
+        from inventory_monitor.settings import get_warning_days
+
+        return self.get_date_status(
+            "invoicing_start", "invoicing_end", "Invoicing", warning_days=get_warning_days("invoicing")
+        )
 
     def clean(self):
         super().clean()

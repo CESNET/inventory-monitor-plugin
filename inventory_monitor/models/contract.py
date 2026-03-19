@@ -7,6 +7,8 @@ from taggit.managers import TaggableManager
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
 
+from inventory_monitor.models.mixins import DateStatusMixin
+
 
 class ContractTypeChoices(ChoiceSet):
     key = "inventory_monitor.Contract.type"
@@ -19,7 +21,7 @@ class ContractTypeChoices(ChoiceSet):
     ]
 
 
-class Contract(NetBoxModel):
+class Contract(NetBoxModel, DateStatusMixin):
     objects = RestrictedQuerySet.as_manager()
     name = models.CharField(max_length=255, blank=False, null=False)
     name_internal = models.CharField(max_length=255, blank=False, null=False)
@@ -116,6 +118,17 @@ class Contract(NetBoxModel):
 
     def get_type_color(self):
         return ContractTypeChoices.colors.get(self.type)
+
+    def get_invoicing_status(self):
+        """Returns the invoicing status and color for progress bar.
+
+        Returns None if warning_days.invoicing is not configured.
+        """
+        from inventory_monitor.settings import get_warning_days
+
+        return self.get_date_status(
+            "invoicing_start", "invoicing_end", "Invoicing", warning_days=get_warning_days("invoicing")
+        )
 
     def get_absolute_url(self):
         return reverse("plugins:inventory_monitor:contract", args=[self.pk])

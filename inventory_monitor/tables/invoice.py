@@ -1,7 +1,7 @@
 import django_tables2 as tables
 from netbox.tables import NetBoxTable, columns
 
-from inventory_monitor.helpers import CurrencyColumn
+from inventory_monitor.helpers import CurrencyColumn, TEMPLATE_INVOICING_STATUS
 from inventory_monitor.models import Invoice
 
 
@@ -11,6 +11,9 @@ class InvoiceTable(NetBoxTable):
     contract = tables.Column(linkify=True)
     attachments_count = tables.Column()
     price = CurrencyColumn(price_field="price", currency_field="currency")
+    invoicing_status = tables.TemplateColumn(
+        template_code=TEMPLATE_INVOICING_STATUS, verbose_name="Invoicing Status", orderable=False
+    )
     tags = columns.TagColumn()
 
     class Meta(NetBoxTable.Meta):
@@ -26,6 +29,7 @@ class InvoiceTable(NetBoxTable):
             "currency",
             "invoicing_start",
             "invoicing_end",
+            "invoicing_status",
             "comments",
             "attachments_count",
             "actions",
@@ -37,8 +41,7 @@ class InvoiceTable(NetBoxTable):
             "name_internal",
             "contract",
             "project",
-            "invoicing_start",
-            "invoicing_end",
+            "invoicing_status",
             "price",
             "attachments_count",
         )

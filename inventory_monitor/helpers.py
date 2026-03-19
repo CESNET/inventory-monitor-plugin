@@ -167,7 +167,42 @@ class CurrencyColumn(django_tables2.Column):
 TEMPLATE_SERVICES_END = """
 {% for service in record.services.all %}
     {% if service.service_end %}
-        <p>{{ service.service_end|date:"Y-n-d" }}</p>
+        <p>{{ service.service_end|date:"Y-m-d" }}</p>
+    {% else %}
+        <p>---</p>
+    {% endif %}
+{% endfor %}
+"""
+
+TEMPLATE_SERVICES_STATUS = (
+    "{% load inventory_monitor %}"
+    "{% for service in record.services.all %}"
+    "{% with status=service|get_status:'service' %}"
+    "{% if status %}"
+    '<div class="progress mb-1" role="progressbar"'
+    ' title=\'{{ service.service_start|date:"Y-m-d"|default:"?" }}'
+    " — "
+    '{{ service.service_end|date:"Y-m-d"|default:"∞" }}\'>'
+    '<div class="progress-bar progress-bar-striped text-bg-{{ status.color }} w-100">'
+    "{{ status.message }}</div></div>"
+    "{% else %}"
+    "{% if service.service_start or service.service_end %}"
+    '<p title=\'{{ service.service_start|date:"Y-m-d"|default:"?" }}'
+    " — "
+    '{{ service.service_end|date:"Y-m-d"|default:"∞" }}\'>'
+    '{{ service.service_start|date:"Y-m-d"|default:"?" }}'
+    " — "
+    '{{ service.service_end|date:"Y-m-d"|default:"∞" }}</p>'
+    "{% endif %}"
+    "{% endif %}"
+    "{% endwith %}"
+    "{% endfor %}"
+)
+
+TEMPLATE_SERVICES_START = """
+{% for service in record.services.all %}
+    {% if service.service_start %}
+        <p>{{ service.service_start|date:"Y-m-d" }}</p>
     {% else %}
         <p>---</p>
     {% endif %}
@@ -183,3 +218,26 @@ TEMPLATE_SERVICES_CONTRACTS = """
     {% endif %}
 {% endfor %}
 """
+
+
+def make_status_template(status_type, start_field, end_field):
+    """Generate a status progress bar template for a date range with tooltip."""
+    return (
+        "{{% load inventory_monitor %}}"
+        "{{% with status=record|get_status:'{status_type}' %}}"
+        "{{% if status %}}"
+        '<div class="progress" role="progressbar"'
+        ' title=\'{{{{ record.{start_field}|date:"Y-m-d"|default:"?" }}}}'
+        " — "
+        '{{{{ record.{end_field}|date:"Y-m-d"|default:"∞" }}}}\'>'
+        '<div class="progress-bar progress-bar-striped text-bg-{{{{ status.color }}}} w-100">'
+        "{{{{ status.message }}}}</div></div>"
+        "{{% else %}}"
+        "{{{{ ''|placeholder }}}}"
+        "{{% endif %}}"
+        "{{% endwith %}}"
+    ).format(status_type=status_type, start_field=start_field, end_field=end_field)
+
+
+TEMPLATE_INVOICING_STATUS = make_status_template("invoicing", "invoicing_start", "invoicing_end")
+TEMPLATE_WARRANTY_STATUS = make_status_template("warranty", "warranty_start", "warranty_end")
