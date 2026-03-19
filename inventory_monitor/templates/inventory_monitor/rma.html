@@ -33,11 +33,11 @@
                         </tr>
                         <tr>
                             <th scope="row">Date Issued</th>
-                            <td>{{ object.date_issued|placeholder }}</td>
+                            <td>{{ object.date_issued|date:"Y-m-d"|default_if_none:""|placeholder }}</td>
                         </tr>
                         <tr>
                             <th scope="row">Date Replaced</th>
-                            <td>{{ object.date_replaced|placeholder }}</td>
+                            <td>{{ object.date_replaced|date:"Y-m-d"|default_if_none:""|placeholder }}</td>
                         </tr>
                     </table>
                 </div>
