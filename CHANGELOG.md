@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.1.1] - 2026-03-19
+
+### Fixed
+
+- **AssetService CSV import:** Asset lookup now uses `serial` field instead of
+  primary key. Previously, importing asset-services via CSV with serial numbers
+  (e.g. `ABCDE39H1AC`) failed with "Object not found" because the form
+  attempted to match the value against the numeric primary key.
+
 ## [13.1.0] - 2026-03-06
 
 > **Requires NetBox >= 4.5.4** (strawberry-graphql-django >= 0.79.0).
