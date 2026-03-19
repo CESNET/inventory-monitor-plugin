@@ -61,4 +61,5 @@ select = ["E", "F", "W"]
 [tool.ruff.lint.per-file-ignores]
 # HTML template strings in tables contain long Django template URLs that cannot be split
 "inventory_monitor/tables/asset.py" = ["E501"]
+"inventory_monitor/tables/asset_service.py" = ["E501"]
 "inventory_monitor/tables/external_inventory.py" = ["E501"]

@@ -32,11 +32,17 @@
                         </tr>
                         <tr>
                             <th scope="row">Invoicing Start</th>
-                            <td>{{ object.invoicing_start }}</td>
+                            <td>{{ object.invoicing_start|date:"Y-m-d"|default_if_none:""|placeholder }}</td>
                         </tr>
                         <tr>
                             <th scope="row">Invoicing End</th>
-                            <td>{{ object.invoicing_end }}</td>
+                            <td>{{ object.invoicing_end|date:"Y-m-d"|default_if_none:""|placeholder }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Invoicing Status</th>
+                            <td>
+                                {% include 'inventory_monitor/inc/status_badge.html' with record=object status_type='invoicing' start_date=object.invoicing_start end_date=object.invoicing_end %}
+                            </td>
                         </tr>
                     </table>
                 </div>

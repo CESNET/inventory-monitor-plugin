@@ -76,5 +76,22 @@ def get_external_inventory_tooltip_template():
     return get_plugin_settings().get("external_inventory_tooltip_template", default_template)
 
 
+def get_warning_days(attribute):
+    """
+    Get the warning days threshold for a specific attribute.
+
+    Args:
+        attribute: The attribute key (e.g., "service", "warranty")
+
+    Returns:
+        int or None: Number of warning days, or None if not configured
+                     (which means no color indicators should be shown)
+    """
+    warning_days = get_plugin_settings().get("warning_days", {})
+    if not isinstance(warning_days, dict):
+        return None
+    return warning_days.get(attribute)
+
+
 # Convenience constants using the settings functions
 PLUGIN_SETTINGS = get_plugin_settings()

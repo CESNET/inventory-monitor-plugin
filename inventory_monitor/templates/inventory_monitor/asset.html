@@ -83,15 +83,17 @@
                         <!-- Warranty Information -->
                         <tr>
                             <th>Warranty Start</th>
-                            <td>{{ object.warranty_start | placeholder }}</td>
+                            <td>{{ object.warranty_start|date:"Y-m-d"|default_if_none:""|placeholder }}</td>
                         </tr>
                         <tr>
                             <th>Warranty End</th>
-                            <td>{{ object.warranty_end | placeholder }}</td>
+                            <td>{{ object.warranty_end|date:"Y-m-d"|default_if_none:""|placeholder }}</td>
                         </tr>
                         <tr>
                             <th scope="row">Warranty Status</th>
-                            <td>{% include 'inventory_monitor/inc/status_badge.html' with record=object status_type='warranty' %}</td>
+                            <td>
+                                {% include 'inventory_monitor/inc/status_badge.html' with record=object status_type='warranty' start_date=object.warranty_start end_date=object.warranty_end %}
+                            </td>
                         </tr>
                         <!-- Financial and Inventory Information -->
                         <tr>

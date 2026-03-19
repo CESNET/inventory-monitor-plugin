@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.3.0] - 2026-03-19
+
+### Breaking Changes
+
+- **Date status indicators now require explicit configuration.** Warranty and
+  Service status progress bars (on detail pages and in table columns) are no
+  longer shown by default. You must configure `warning_days` in plugin settings
+  to enable color-coded progress bars. Without configuration, status columns
+  fall back to displaying the date range (e.g. `2025-03-19 — 2026-12-19`)
+  instead of a placeholder dash. See [Configuration](#configuration) for details.
+
+### Added
+
+- **"Assets (Service Contract)" tab on Contract detail page:** New tab displays
+  assets linked to the contract through asset services (AssetService), complementing
+  the existing "Assets (Order Contract)" tab which shows directly ordered assets.
+  Includes a "Show only active services" toggle to filter out assets whose services
+  have expired (service_end < today). Supports full table configuration and filtering
+  via the standard Asset filterset.
+
+- **Configurable color-coded status columns:** New "Service Status", "Warranty
+  Status", and "Invoicing Status" columns with progress bar indicators
+  (red = expired, orange = expiring within threshold, green = valid, blue =
+  future start). Hover tooltip shows the date range. Date columns (start/end)
+  remain as plain text. Available on Asset, Contract, and Invoice tables.
+  Requires `warning_days` config — each attribute is independently configurable.
+
+- **"Service Start" column in asset tables:** New column showing service start
+  dates alongside the existing "Service End" column.
+
+- **Humanized time deltas:** Status progress bars now show "3 months ago",
+  "2 years ago" instead of raw day counts for large durations
+  (< 90 days → days, < 2 years → months, 2+ years → years).
+
+- **Invoicing status for Contract and Invoice models:** New `DateStatusMixin`
+  on Contract and Invoice with `get_invoicing_status()` method. New
+  "Invoicing Status" column available in Contract and Invoice tables.
+
+### Changed
+
+- **Default table columns updated:** Status columns (`warranty_status`,
+  `services_status`, `invoicing_status`, `service_status`) are now shown by
+  default. Start/end date columns remain available via Configure Table.
+
+- **Consistent date format:** All date displays in the plugin now use
+  `YYYY-MM-DD` format (previously some used `YYYY-M-DD` without leading zero).
+
 ## [13.2.0] - 2026-03-19
 
 ### Added

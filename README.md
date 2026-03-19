@@ -2,7 +2,7 @@
 
 A comprehensive NetBox plugin for asset management with semi-automatic discovery processes. This plugin extends NetBox with powerful inventory tracking capabilities, including asset lifecycle management, probe monitoring, contract tracking, and RMA (Return Merchandise Authorization) processing.
 
-[![Version](https://img.shields.io/badge/version-13.2.0-blue.svg)](https://github.com/CESNET/inventory-monitor-plugin)
+[![Version](https://img.shields.io/badge/version-13.3.0-blue.svg)](https://github.com/CESNET/inventory-monitor-plugin)
 [![NetBox](https://img.shields.io/badge/netbox-4.5.4%2B-green.svg)](https://github.com/netbox-community/netbox)
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
 
@@ -588,6 +588,15 @@ PLUGINS_CONFIG = {
         # Custom tooltip template for status display (Optional)
         "external_inventory_tooltip_template": "<span class='badge text-bg-{color}'>{code}</span> {label}",
 
+        # Date Status Warning Thresholds (Optional)
+        # Controls color-coded progress bars for service/warranty dates.
+        # If not configured, no color indicators are shown.
+        "warning_days": {
+            "service": 60,     # Service End: orange when ≤60 days remain
+            "warranty": 14,    # Warranty End: orange when ≤14 days remain
+            "invoicing": 30,   # Invoicing End: orange when ≤30 days remain
+        },
+
         # Attachments Integration (Optional)
         "enable_netbox_attachments": False,  # Requires netbox-attachments >= 11.0.0
     }
@@ -616,6 +625,15 @@ PLUGINS_CONFIG = {
 #### External Inventory Status Configuration
 - **`external_inventory_status_config`** (optional): Maps status codes to display labels and Bootstrap colors. If not configured, status displays as-is without special formatting.
 - **`external_inventory_tooltip_template`** (optional, default: `"<span class='badge text-bg-{color}'>{code}</span> {label}"`): Template string for formatting status tooltips
+
+#### Date Status Warning Thresholds
+- **`warning_days`** (optional): Dictionary controlling color-coded progress bars for date-based status indicators. Each key maps to a specific date attribute:
+  - `"service"` — Controls "Service Status" column in asset tables and service status on AssetService detail pages
+  - `"warranty"` — Controls "Warranty Status" column in asset tables and warranty status on Asset detail pages
+  - `"invoicing"` — Controls "Invoicing Status" column in contract and invoice tables
+  - Value is the number of days for the **warning** (orange) threshold
+  - **If a key is missing or `warning_days` is not set, no color indicators are shown** for that attribute — status columns fall back to displaying the date range (e.g. `2025-03-19 — 2026-12-19`) or `—` if no dates are set
+  - Color logic: **red** = expired, **orange** = within threshold, **green** = beyond threshold, **blue** = future start
 
 #### Attachments Integration
 - **`enable_netbox_attachments`** (default: `False`): Enable attachment count display for Contract and Invoice models. Requires `netbox-attachments >= 11.0.0` to be installed.
