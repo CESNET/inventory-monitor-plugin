@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.3.0] - 2026-03-19
+
+### Added
+
+- **"Assets (Service Contract)" tab on Contract detail page:** New tab displays
+  assets linked to the contract through asset services (AssetService), complementing
+  the existing "Assets (Order Contract)" tab which shows directly ordered assets.
+  Includes a "Show only active services" toggle to filter out assets whose services
+  have expired (service_end < today). Supports full table configuration and filtering
+  via the standard Asset filterset.
+
 ## [13.2.0] - 2026-03-19
 
 ### Added

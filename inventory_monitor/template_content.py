@@ -8,6 +8,7 @@ This module provides NetBox UI customizations including:
 - Hierarchical asset display across NetBox object relationships
 """
 
+from datetime import date
 from typing import Any, Dict, List, Set, Type
 
 from core.models import ObjectType
@@ -21,7 +22,7 @@ from utilities.views import ViewTab, register_model_view
 
 from inventory_monitor.filtersets import AssetFilterSet, AssetServiceFilterSet, ProbeFilterSet
 from inventory_monitor.models import Asset, AssetService, Contract, Contractor, Probe
-from inventory_monitor.tables import AssetServiceTable, EnhancedAssetTable, EnhancedProbeTable
+from inventory_monitor.tables import AssetServiceTable, AssetTable, EnhancedAssetTable, EnhancedProbeTable
 
 # Load plugin configuration settings
 plugin_settings = settings.PLUGINS_CONFIG.get("inventory_monitor", {})
@@ -335,6 +336,46 @@ class ContractAssetsView(generic.ObjectChildrenView):
     def get_children(self, request: HttpRequest, parent: Contract) -> QuerySet[Asset]:
         """Get assets where this contract is the order_contract."""
         return parent.assets.all()
+
+
+@register_model_view(Contract, name="service_assets", path="service-assets")
+class ContractServiceAssetsView(generic.ObjectChildrenView):
+    """View to display assets linked to this contract through asset services."""
+
+    queryset = Contract.objects.all()
+    child_model = Asset
+    filterset = AssetFilterSet
+    table = AssetTable
+    template_name = "inventory_monitor/contract_service_assets.html"
+    hide_if_empty = False
+    tab = ViewTab(
+        label="Assets (Service Contract)",
+        badge=lambda obj: Asset.objects.filter(services__contract=obj).distinct().count(),
+        permission="inventory_monitor.view_asset",
+    )
+
+    def get_children(self, request: HttpRequest, parent: Contract) -> QuerySet[Asset]:
+        """Get assets linked to this contract via asset services.
+
+        When active_only is set, only assets with at least one active service
+        on this contract are returned. A service is considered active unless
+        its service_end date is in the past.
+        """
+        active_only = request.GET.get("active_only") == "true"
+        today = date.today()
+
+        if active_only:
+            return Asset.objects.filter(
+                Q(services__contract=parent)
+                & (Q(services__service_end__isnull=True) | Q(services__service_end__gte=today))
+            ).distinct()
+
+        return Asset.objects.filter(services__contract=parent).distinct()
+
+    def get_extra_context(self, request, instance):
+        return {
+            "active_only": request.GET.get("active_only") == "true",
+        }
 
 
 @register_model_view(Contract, name="services", path="services")
