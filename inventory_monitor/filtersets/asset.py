@@ -3,7 +3,7 @@ from core.models import ObjectType
 
 # NetBox model imports
 from dcim.models import Device, Location, Module, Rack, Site
-from django.db.models import Q
+from django.db.models import Count, Q
 from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
 from utilities.filtersets import register_filterset
@@ -88,6 +88,11 @@ class AssetFilterSet(NetBoxModelFilterSet):
         label="Has External Inventory items",
     )
 
+    has_duplicates = django_filters.BooleanFilter(
+        method="filter_has_duplicates",
+        label="Has Duplicates",
+    )
+
     #
     # Additional information filters
     #
@@ -167,6 +172,7 @@ class AssetFilterSet(NetBoxModelFilterSet):
             "warranty_start",
             "warranty_end",
             "has_external_inventory_items",
+            "has_duplicates",
             "external_inventory_number",
         )
 
@@ -182,6 +188,27 @@ class AssetFilterSet(NetBoxModelFilterSet):
             return queryset.exclude(external_inventory_items__isnull=False)
         else:
             return queryset
+
+    def filter_has_duplicates(self, queryset, name, value):
+        """
+        Filter assets based on whether their serial number appears on more than one asset.
+
+        True: show only assets with duplicate serials.
+        False: show only assets with unique serials.
+        None: no filtering.
+        """
+        if value is None:
+            return queryset
+        duplicate_serials = (
+            Asset.objects.values("serial")
+            .annotate(serial_count=Count("id"))
+            .filter(serial_count__gt=1)
+            .values("serial")
+        )
+        if value is True:
+            return queryset.filter(serial__in=duplicate_serials)
+        else:
+            return queryset.exclude(serial__in=duplicate_serials)
 
     def search(self, queryset, name, value):
         """
