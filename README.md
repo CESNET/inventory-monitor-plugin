@@ -632,7 +632,7 @@ PLUGINS_CONFIG = {
   - `"warranty"` — Controls "Warranty Status" column in asset tables and warranty status on Asset detail pages
   - `"invoicing"` — Controls "Invoicing Status" column in contract and invoice tables
   - Value is the number of days for the **warning** (orange) threshold
-  - **If a key is missing or `warning_days` is not set, no color indicators are shown** for that attribute (plain text dates only)
+  - **If a key is missing or `warning_days` is not set, no color indicators are shown** for that attribute — status columns fall back to displaying the date range (e.g. `2025-03-19 — 2026-12-19`) or `—` if no dates are set
   - Color logic: **red** = expired, **orange** = within threshold, **green** = beyond threshold, **blue** = future start
 
 #### Attachments Integration

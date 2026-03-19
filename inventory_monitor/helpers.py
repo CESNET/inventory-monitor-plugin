@@ -187,13 +187,10 @@ TEMPLATE_SERVICES_STATUS = (
     "{{ status.message }}</div></div>"
     "{% else %}"
     "{% if service.service_start or service.service_end %}"
-    '<p title=\'{{ service.service_start|date:"Y-m-d"|default:"?" }}'
-    " — "
-    '{{ service.service_end|date:"Y-m-d"|default:"∞" }}\'>'
-    '{{ service.service_start|date:"Y-m-d"|default:"?" }}'
+    '<p>{{ service.service_start|date:"Y-m-d"|default:"?" }}'
     " — "
     '{{ service.service_end|date:"Y-m-d"|default:"∞" }}</p>'
-    "{% endif %}"
+    "{% else %}{{ ''|placeholder }}{% endif %}"
     "{% endif %}"
     "{% endwith %}"
     "{% endfor %}"
@@ -233,7 +230,11 @@ def make_status_template(status_type, start_field, end_field):
         '<div class="progress-bar progress-bar-striped text-bg-{{{{ status.color }}}} w-100">'
         "{{{{ status.message }}}}</div></div>"
         "{{% else %}}"
-        "{{{{ ''|placeholder }}}}"
+        "{{% if record.{start_field} or record.{end_field} %}}"
+        '{{{{ record.{start_field}|date:"Y-m-d"|default:"?" }}}}'
+        " — "
+        '{{{{ record.{end_field}|date:"Y-m-d"|default:"∞" }}}}'
+        "{{% else %}}{{{{ ''|placeholder }}}}{{% endif %}}"
         "{{% endif %}}"
         "{{% endwith %}}"
     ).format(status_type=status_type, start_field=start_field, end_field=end_field)

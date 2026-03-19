@@ -12,7 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Date status indicators now require explicit configuration.** Warranty and
   Service status progress bars (on detail pages and in table columns) are no
   longer shown by default. You must configure `warning_days` in plugin settings
-  to enable them. See [Configuration](#configuration) for details.
+  to enable color-coded progress bars. Without configuration, status columns
+  fall back to displaying the date range (e.g. `2025-03-19 — 2026-12-19`)
+  instead of a placeholder dash. See [Configuration](#configuration) for details.
 
 ### Added
 

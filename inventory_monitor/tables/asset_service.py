@@ -13,7 +13,7 @@ class AssetServiceTable(NetBoxTable):
     service_price = CurrencyColumn(price_field="service_price", currency_field="service_currency")
     service_status = tables.TemplateColumn(
         template_code="""
-            {% include 'inventory_monitor/inc/status_badge.html' with status_type='service' %}
+            {% include 'inventory_monitor/inc/status_badge.html' with status_type='service' start_date=record.service_start end_date=record.service_end %}
         """,
         verbose_name="Service Status",
         orderable=False,

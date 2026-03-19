@@ -4,6 +4,8 @@
         <div class="progress" role="progressbar">
             <div class="progress-bar progress-bar-striped text-bg-{{ status.color }} w-100">{{ status.message }}</div>
         </div>
+    {% elif start_date or end_date %}
+        {{ start_date|date:"Y-m-d"|default:"?" }} — {{ end_date|date:"Y-m-d"|default:"∞" }}
     {% else %}
         {{ ''|placeholder }}
     {% endif %}
