@@ -283,7 +283,7 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
     #
     fieldsets = (
         # Basic search options
-        FieldSet("q", "filter_id", "tag", name=_("Misc")),
+        FieldSet("q", "filter_id", "tag", "has_duplicates", name=_("Misc")),
         # Status fields
         FieldSet("assignment_status", name=_("Assignment Status")),
         FieldSet("lifecycle_status", name=_("Lifecycle Status")),
@@ -403,6 +403,17 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
     warranty_end = forms.DateField(required=False, label=("Warranty End"), widget=DatePicker())
     warranty_end__gte = forms.DateField(required=False, label=("Warranty End: From"), widget=DatePicker())
     warranty_end__lte = forms.DateField(required=False, label=("Warranty End: Till"), widget=DatePicker())
+
+    has_duplicates = forms.ChoiceField(
+        choices=[
+            ("", "All"),
+            ("true", "Yes"),
+            ("false", "No"),
+        ],
+        required=False,
+        label=_("Has Duplicates"),
+        help_text=_("Filter by whether the asset serial number appears on more than one asset"),
+    )
 
     has_external_inventory_items = forms.ChoiceField(
         choices=[

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.2.0] - 2026-03-19
+
+### Added
+
+- **Asset "Has Duplicates" filter:** New boolean filter on the Asset list view
+  (UI filter form and REST API) that identifies assets with duplicate serial
+  numbers. Useful for data hygiene — quickly find assets that were accidentally
+  entered more than once. Supports three states: Yes (show only duplicates),
+  No (show only unique serials), All (no filtering).
+
 ## [13.1.1] - 2026-03-19
 
 ### Fixed
