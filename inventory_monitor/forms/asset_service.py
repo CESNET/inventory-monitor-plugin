@@ -243,7 +243,8 @@ class AssetServiceBulkImportForm(NetBoxModelImportForm):
     asset = CSVModelChoiceField(
         queryset=Asset.objects.all(),
         required=False,
-        help_text="Asset serial number or ID",
+        to_field_name="serial",
+        help_text="Asset serial number",
     )
     contract_id = CSVModelChoiceField(
         queryset=Contract.objects.all(),
