@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.4.0] - 2026-05-11
+
+### Changed
+
+- Expanded NetBox compatibility window to **4.5.4 – 4.6.99**. The plugin now
+  installs on NetBox 4.6.x (Django 6.0) in addition to 4.5.x. No functional or
+  API changes — verified that all NetBox APIs used by the plugin
+  (`NetBoxModel`, `NetBoxModelForm`, `NetBoxTable`, `NetBoxModelFilterSet`,
+  `NetBoxModelSerializer`, `PluginTemplateExtension.models`, `ObjectType`,
+  `RestrictedQuerySet`, `ChoiceSet`) remain stable across both versions.
+- Widened `django` dependency pin to `>=5.0,<7.0` so the pip resolver accepts
+  the Django 6.0 shipped with NetBox 4.6.
+
 ## [13.3.0] - 2026-03-19
 
 ### Breaking Changes
