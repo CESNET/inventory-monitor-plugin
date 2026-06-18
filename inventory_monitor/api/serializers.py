@@ -292,6 +292,7 @@ class InvoiceSerializer(NetBoxModelSerializer):
             "description",
             "contract",
             "price",
+            "currency",
             "invoicing_start",
             "invoicing_end",
             "tags",
