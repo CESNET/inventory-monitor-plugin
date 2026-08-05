@@ -107,6 +107,10 @@ class DateStatusBandTest(TestCase):
                         got,
                         want,
                         f"{attribute}_status={band} does not match the assets badged with that colour. "
-                        f"Only in filter: {sorted(Asset.objects.filter(pk__in=got - want).values_list('serial', flat=True))}. "
-                        f"Only in badges: {sorted(Asset.objects.filter(pk__in=want - got).values_list('serial', flat=True))}.",
+                        f"Only in filter: {self._serials(got - want)}. "
+                        f"Only in badges: {self._serials(want - got)}.",
                     )
+
+    @staticmethod
+    def _serials(pks):
+        return sorted(Asset.objects.filter(pk__in=pks).values_list("serial", flat=True))
