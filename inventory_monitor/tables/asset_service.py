@@ -1,11 +1,12 @@
 import django_tables2 as tables
 from netbox.tables import NetBoxTable, columns
+from tenancy.tables import ContactsColumnMixin
 
 from inventory_monitor.helpers import TEMPLATE_SERVICE_END, CachedTemplateColumn, CurrencyColumn, DateBadgeColumn
 from inventory_monitor.models import AssetService
 
 
-class AssetServiceTable(NetBoxTable):
+class AssetServiceTable(ContactsColumnMixin, NetBoxTable):
     asset = tables.Column(linkify=True)
     contract = tables.Column(linkify=True)
     # DateColumn renders ISO 8601; a plain Column would hand the date object to
@@ -24,6 +25,8 @@ class AssetServiceTable(NetBoxTable):
         verbose_name="Service Status",
         orderable=False,
     )
+    owner = tables.Column(linkify=True, verbose_name="Owner")
+    owner_group = tables.Column(accessor="owner__group", linkify=True, verbose_name="Owner Group")
     tags = columns.TagColumn()
 
     class Meta(NetBoxTable.Meta):
@@ -42,6 +45,9 @@ class AssetServiceTable(NetBoxTable):
             "contract",
             "tags",
             "comments",
+            "contacts",
+            "owner",
+            "owner_group",
             "actions",
         )
         default_columns = (

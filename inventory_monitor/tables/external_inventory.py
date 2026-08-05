@@ -1,5 +1,6 @@
 import django_tables2 as tables
 from netbox.tables import NetBoxTable, columns
+from tenancy.tables import ContactsColumnMixin
 
 from inventory_monitor.models import ExternalInventory
 
@@ -27,7 +28,7 @@ ASSOCIATED_ASSETS = """
 """
 
 
-class ExternalInventoryTable(NetBoxTable):
+class ExternalInventoryTable(ContactsColumnMixin, NetBoxTable):
     """
     Table configuration for displaying External Inventory objects in list views
     """
@@ -51,6 +52,8 @@ class ExternalInventoryTable(NetBoxTable):
         verbose_name="Status",
     )
     assets = tables.TemplateColumn(template_code=ASSOCIATED_ASSETS, orderable=False, verbose_name="Assets")
+    owner = tables.Column(linkify=True, verbose_name="Owner")
+    owner_group = tables.Column(accessor="owner__group", linkify=True, verbose_name="Owner Group")
     tags = columns.TagColumn()
 
     class Meta(NetBoxTable.Meta):
@@ -73,6 +76,9 @@ class ExternalInventoryTable(NetBoxTable):
             "status",
             "tags",
             "assets",
+            "contacts",
+            "owner",
+            "owner_group",
             "actions",
         )
         default_columns = (

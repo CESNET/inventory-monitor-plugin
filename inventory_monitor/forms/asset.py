@@ -9,6 +9,9 @@ from netbox.forms import (
     NetBoxModelForm,
     NetBoxModelImportForm,
 )
+from netbox.forms.bulk_import import OwnerCSVMixin
+from netbox.forms.mixins import OwnerFilterMixin, OwnerMixin
+from tenancy.forms import ContactModelFilterForm
 from utilities.forms.fields import (
     CommentField,
     CSVModelChoiceField,
@@ -31,7 +34,7 @@ from inventory_monitor.models.asset import (
 )
 
 
-class AssetForm(NetBoxModelForm):
+class AssetForm(OwnerMixin, NetBoxModelForm):
     """
     Form for creating and editing Asset objects
     """
@@ -173,6 +176,7 @@ class AssetForm(NetBoxModelForm):
             name=_("Order Contract"),
         ),
         FieldSet("warranty_start", "warranty_end", name=_("Dates")),
+        FieldSet("owner_group", "owner", name=_("Ownership")),
         # Metadata
         FieldSet("tags", name=_("Misc")),
     )
@@ -206,6 +210,8 @@ class AssetForm(NetBoxModelForm):
             # Warranty information
             "warranty_start",
             "warranty_end",
+            # Ownership
+            "owner",
             # Metadata
             "comments",
             "tags",
@@ -272,7 +278,7 @@ class AssetForm(NetBoxModelForm):
             self.instance.assigned_object = None
 
 
-class AssetFilterForm(NetBoxModelFilterSetForm):
+class AssetFilterForm(ContactModelFilterForm, OwnerFilterMixin, NetBoxModelFilterSetForm):
     """
     Filter form for Asset objects, used in list views
     """
@@ -320,6 +326,8 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
         FieldSet("quantity", "quantity__gte", "quantity__lte", name=_("Quantity")),
         FieldSet("price", "price__gte", "price__lte", "price__isnull", "currency", name=_("Price")),
         FieldSet("has_external_inventory_items", name=_("External Inventory")),
+        FieldSet("contact", "contact_role", "contact_group", name=_("Contacts")),
+        FieldSet("owner_group_id", "owner_id", name=_("Ownership")),
     )
 
     #
@@ -443,7 +451,7 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
     )
 
 
-class AssetBulkEditForm(NetBoxModelBulkEditForm):
+class AssetBulkEditForm(OwnerMixin, NetBoxModelBulkEditForm):
     description = forms.CharField(
         required=False,
         label="Description",
@@ -493,11 +501,12 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
         FieldSet("project", "vendor", "order_contract", name=_("Details")),
         FieldSet("price", "currency", name=_("Financial")),
         FieldSet("warranty_start", "warranty_end", name=_("Warranty")),
+        FieldSet("owner_group", "owner", name=_("Ownership")),
         FieldSet("comments", name=_("Comments")),
     )
 
 
-class AssetBulkImportForm(NetBoxModelImportForm):
+class AssetBulkImportForm(OwnerCSVMixin, NetBoxModelImportForm):
     """
     Form for bulk importing Assets
     """
@@ -581,6 +590,7 @@ class AssetBulkImportForm(NetBoxModelImportForm):
             "warranty_start",
             "warranty_end",
             "comments",
+            "owner",
             "tags",
         ]
 

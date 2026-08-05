@@ -2,6 +2,8 @@ import django_filters
 from django.db.models import Q
 from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
+from tenancy.filtersets import ContactModelFilterSet
+from users.filterset_mixins import OwnerFilterMixin
 from utilities.filtersets import register_filterset
 from tenancy.models import Tenant
 
@@ -9,7 +11,7 @@ from inventory_monitor.models import Contractor
 
 
 @register_filterset
-class ContractorFilterSet(NetBoxModelFilterSet):
+class ContractorFilterSet(NetBoxModelFilterSet, ContactModelFilterSet, OwnerFilterMixin):
     """
     Filter set for the Contractor model.
 

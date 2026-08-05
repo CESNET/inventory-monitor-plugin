@@ -1,6 +1,9 @@
 from django import forms
 from django.utils.translation import gettext as _
 from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
+from netbox.forms.bulk_import import OwnerCSVMixin
+from netbox.forms.mixins import OwnerFilterMixin, OwnerMixin
+from tenancy.forms import ContactModelFilterForm
 from utilities.forms.fields import (
     CommentField,
     CSVModelChoiceField,
@@ -16,7 +19,7 @@ from inventory_monitor.helpers import get_currency_choices
 from inventory_monitor.models import Asset, AssetService, Contract
 
 
-class AssetServiceForm(NetBoxModelForm):
+class AssetServiceForm(OwnerMixin, NetBoxModelForm):
     fieldsets = (
         FieldSet("contract", "asset", "description", name=_("Linked")),
         FieldSet("service_start", "service_end", name=_("Dates")),
@@ -26,6 +29,7 @@ class AssetServiceForm(NetBoxModelForm):
             "service_category_vendor",
             name=_("Service Params"),
         ),
+        FieldSet("owner_group", "owner", name=_("Ownership")),
         FieldSet("tags", name=_("Additional Information")),
     )
 
@@ -77,11 +81,12 @@ class AssetServiceForm(NetBoxModelForm):
             "contract",
             "description",
             "comments",
+            "owner",
             "tags",
         )
 
 
-class AssetServiceFilterForm(NetBoxModelFilterSetForm):
+class AssetServiceFilterForm(ContactModelFilterForm, OwnerFilterMixin, NetBoxModelFilterSetForm):
     model = AssetService
 
     fieldsets = (
@@ -106,6 +111,8 @@ class AssetServiceFilterForm(NetBoxModelFilterSetForm):
             "service_category_vendor",
             name=_("Service"),
         ),
+        FieldSet("contact", "contact_role", "contact_group", name=_("Contacts")),
+        FieldSet("owner_group_id", "owner_id", name=_("Ownership")),
     )
 
     tag = TagFilterField(model)
@@ -162,7 +169,7 @@ class AssetServiceFilterForm(NetBoxModelFilterSetForm):
     contract = DynamicModelMultipleChoiceField(queryset=Contract.objects.all(), required=False, label=_("Contract"))
 
 
-class AssetServiceBulkEditForm(NetBoxModelBulkEditForm):
+class AssetServiceBulkEditForm(OwnerMixin, NetBoxModelBulkEditForm):
     service_start = forms.DateField(required=False, label=("Service Start"), widget=DatePicker())
     service_end = forms.DateField(required=False, label=("Service End"), widget=DatePicker())
     service_price = forms.DecimalField(
@@ -209,6 +216,7 @@ class AssetServiceBulkEditForm(NetBoxModelBulkEditForm):
             name=_("Service Params"),
         ),
         FieldSet("asset", "contract", name=_("Linked")),
+        FieldSet("owner_group", "owner", name=_("Ownership")),
     )
     nullable_fields = (
         "service_start",
@@ -221,7 +229,7 @@ class AssetServiceBulkEditForm(NetBoxModelBulkEditForm):
     )
 
 
-class AssetServiceBulkImportForm(NetBoxModelImportForm):
+class AssetServiceBulkImportForm(OwnerCSVMixin, NetBoxModelImportForm):
     """
     Form for bulk importing Asset Services
     """
@@ -265,6 +273,7 @@ class AssetServiceBulkImportForm(NetBoxModelImportForm):
             "description",
             "comments",
             "asset",
+            "owner",
             "tags",
         ]
 

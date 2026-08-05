@@ -1,6 +1,9 @@
 from django import forms
 from django.utils.translation import gettext as _
 from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
+from netbox.forms.bulk_import import OwnerCSVMixin
+from netbox.forms.mixins import OwnerFilterMixin, OwnerMixin
+from tenancy.forms import ContactModelFilterForm
 from utilities.forms.fields import (
     CommentField,
     CSVModelChoiceField,
@@ -16,7 +19,7 @@ from inventory_monitor.helpers import get_currency_choices
 from inventory_monitor.models import Contract, Invoice
 
 
-class InvoiceForm(NetBoxModelForm):
+class InvoiceForm(OwnerMixin, NetBoxModelForm):
     comments = CommentField(label="Comments")
     contract = DynamicModelChoiceField(queryset=Contract.objects.all(), required=True, selector=True)
     currency = forms.ChoiceField(
@@ -31,6 +34,7 @@ class InvoiceForm(NetBoxModelForm):
         FieldSet("name", "name_internal", "project", "contract", "description", name=_("Invoice Details")),
         FieldSet(InlineFields("price", "currency", label=_("Price")), name=_("Financial")),
         FieldSet("invoicing_start", "invoicing_end", name=_("Dates")),
+        FieldSet("owner_group", "owner", name=_("Ownership")),
         FieldSet("tags", name=_("Additional Information")),
     )
 
@@ -53,11 +57,12 @@ class InvoiceForm(NetBoxModelForm):
             "invoicing_end",
             "description",
             "comments",
+            "owner",
             "tags",
         )
 
 
-class InvoiceFilterForm(NetBoxModelFilterSetForm):
+class InvoiceFilterForm(ContactModelFilterForm, OwnerFilterMixin, NetBoxModelFilterSetForm):
     model = Invoice
 
     fieldsets = (
@@ -74,6 +79,8 @@ class InvoiceFilterForm(NetBoxModelFilterSetForm):
             "invoicing_end__lte",
             name=_("Dates"),
         ),
+        FieldSet("contact", "contact_role", "contact_group", name=_("Contacts")),
+        FieldSet("owner_group_id", "owner_id", name=_("Ownership")),
     )
 
     tag = TagFilterField(model)
@@ -110,7 +117,7 @@ class InvoiceFilterForm(NetBoxModelFilterSetForm):
     invoicing_end = forms.DateField(required=False, label=("Invoicing End"), widget=DatePicker())
 
 
-class InvoiceBulkEditForm(NetBoxModelBulkEditForm):
+class InvoiceBulkEditForm(OwnerMixin, NetBoxModelBulkEditForm):
     name = forms.CharField(max_length=100, required=False)
     name_internal = forms.CharField(max_length=100, required=False)
     project = forms.CharField(max_length=100, required=False)
@@ -136,6 +143,7 @@ class InvoiceBulkEditForm(NetBoxModelBulkEditForm):
         FieldSet("name", "name_internal", "project", "description", "contract", name=_("Common")),
         FieldSet("price", "currency", name=_("Financial")),
         FieldSet("invoicing_start", "invoicing_end", name=_("Dates")),
+        FieldSet("owner_group", "owner", name=_("Ownership")),
     )
 
     def __init__(self, *args, **kwargs):
@@ -144,7 +152,7 @@ class InvoiceBulkEditForm(NetBoxModelBulkEditForm):
         self.fields["currency"].choices = add_blank_choice(get_currency_choices())
 
 
-class InvoiceBulkImportForm(NetBoxModelImportForm):
+class InvoiceBulkImportForm(OwnerCSVMixin, NetBoxModelImportForm):
     """
     Form for bulk importing Invoices
     """
@@ -177,6 +185,7 @@ class InvoiceBulkImportForm(NetBoxModelImportForm):
             "invoicing_end",
             "description",
             "comments",
+            "owner",
             "tags",
         ]
 

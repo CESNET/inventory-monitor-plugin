@@ -1,13 +1,16 @@
 import django_tables2 as tables
 from netbox.tables import NetBoxTable, columns
+from tenancy.tables import ContactsColumnMixin
 
 from inventory_monitor.models import RMA
 
 
-class RMATable(NetBoxTable):
+class RMATable(ContactsColumnMixin, NetBoxTable):
     rma_number = tables.Column(linkify=True)
     asset = tables.Column(linkify=True)
     status = columns.ChoiceFieldColumn()
+    owner = tables.Column(linkify=True, verbose_name="Owner")
+    owner_group = tables.Column(accessor="owner__group", linkify=True, verbose_name="Owner Group")
     tags = columns.TagColumn()
 
     class Meta(NetBoxTable.Meta):
@@ -24,6 +27,9 @@ class RMATable(NetBoxTable):
             "date_replaced",
             "issue_description",
             "vendor_response",
+            "contacts",
+            "owner",
+            "owner_group",
             "actions",
         )
         default_columns = (

@@ -2,6 +2,8 @@ import django_filters
 from django.db.models import Q
 from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
+from tenancy.filtersets import ContactModelFilterSet
+from users.filterset_mixins import OwnerFilterMixin
 from utilities.filtersets import register_filterset
 
 from inventory_monitor.models import Contract, Invoice
@@ -9,7 +11,7 @@ from inventory_monitor.helpers import get_currency_choices
 
 
 @register_filterset
-class InvoiceFilterSet(NetBoxModelFilterSet):
+class InvoiceFilterSet(NetBoxModelFilterSet, ContactModelFilterSet, OwnerFilterMixin):
     """
     A filter set for filtering invoices.
 
