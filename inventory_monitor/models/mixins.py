@@ -1,5 +1,7 @@
 from django.utils import timezone
 
+from inventory_monitor.date_status import format_time_delta
+
 
 class DateStatusMixin:
     """Mixin to provide date status functionality for models with start/end dates"""
@@ -7,6 +9,10 @@ class DateStatusMixin:
     def get_date_status(self, start_field, end_field, status_type="", warning_days=None):
         """
         Returns the status and color for progress bar based on start and end dates.
+
+        Memoized per instance: a list row renders the same status twice when both
+        the status column and the end-date column are shown. The cache key
+        includes the date values, so mutating a field invalidates it.
 
         Args:
             start_field (str): Name of the start date field
@@ -18,25 +24,21 @@ class DateStatusMixin:
         if warning_days is None:
             return None
 
-        today = timezone.now().date()
         start_date = getattr(self, start_field)
         end_date = getattr(self, end_field)
 
-        def format_time_delta(days):
-            is_past = days < 0
-            days = abs(days)
-            if days < 90:
-                unit = "day" if days == 1 else "days"
-                value = f"{days} {unit}"
-            elif days < 730:
-                months = round(days / 30.44)
-                unit = "month" if months == 1 else "months"
-                value = f"{months} {unit}"
-            else:
-                years = round(days / 365.25)
-                unit = "year" if years == 1 else "years"
-                value = f"{years} {unit}"
-            return f"{value} ago" if is_past else f"in {value}"
+        cache = self.__dict__.setdefault("_date_status_cache", {})
+        key = (start_field, end_field, warning_days, start_date, end_date)
+        if key in cache:
+            return cache[key]
+
+        status = self._compute_date_status(start_date, end_date, warning_days)
+        cache[key] = status
+        return status
+
+    @staticmethod
+    def _compute_date_status(start_date, end_date, warning_days):
+        today = timezone.now().date()
 
         def get_expiration_status(days_until):
             if days_until <= 0:

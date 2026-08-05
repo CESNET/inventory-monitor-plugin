@@ -109,11 +109,11 @@ class EnhancedProbeTable(ProbeTable):
     probe_status = tables.TemplateColumn(
         template_code="""
         {% if record.is_recently_probed %}
-            <span class="badge text-bg-success" title="Probed within last 7 days">
+            <span class="badge text-bg-success" data-bs-toggle="tooltip" title="Probed within last 7 days">
                 <i class="mdi mdi-check-circle"></i> Recent
             </span>
         {% else %}
-            <span class="badge text-bg-secondary" title="Not probed recently or never">
+            <span class="badge text-bg-secondary" data-bs-toggle="tooltip" title="Not probed recently or never">
                 <i class="mdi mdi-clock-outline"></i> Stale
             </span>
         {% endif %}
@@ -127,13 +127,13 @@ class EnhancedProbeTable(ProbeTable):
         template_code="""
         {% load tz %}
         {% if record.time %}
-            <span title="Last probed: {{ record.time|date:'Y-m-d H:i:s' }}">
+            <span data-bs-toggle="tooltip" title="Last probed: {{ record.time|date:'Y-m-d H:i:s' }}">
                 {{ record.time|date:"Y-m-d H:i" }}
             </span>
             <br>
             <small class="text-muted">{{ record.time|timesince }} ago</small>
         {% else %}
-            <span class="text-muted" title="Never probed">Never</span>
+            <span class="text-muted" data-bs-toggle="tooltip" title="Never probed">Never</span>
         {% endif %}
         """,
         verbose_name="Last Probe Time",

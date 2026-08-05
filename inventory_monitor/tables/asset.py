@@ -3,11 +3,14 @@ from netbox.tables import NetBoxTable, columns
 
 # Helper imports for custom columns and templates
 from inventory_monitor.helpers import (
+    CachedTemplateColumn,
     CurrencyColumn,
+    DateBadgeColumn,
     TEMPLATE_SERVICES_CONTRACTS,
     TEMPLATE_SERVICES_END,
     TEMPLATE_SERVICES_START,
     TEMPLATE_SERVICES_STATUS,
+    TEMPLATE_WARRANTY_END,
     TEMPLATE_WARRANTY_STATUS,
 )
 from inventory_monitor.models import Asset
@@ -77,7 +80,7 @@ class AssetTable(NetBoxTable):
     description = tables.Column()
     serial = tables.Column(linkify=True)
     partnumber = tables.Column()
-    external_inventory_asset_numbers = tables.TemplateColumn(
+    external_inventory_asset_numbers = CachedTemplateColumn(
         template_code="""
         {% if record.get_external_inventory_asset_numbers_display %}
             {{ record.get_external_inventory_asset_numbers_display }}
@@ -92,23 +95,7 @@ class AssetTable(NetBoxTable):
     #
     # Type and classification columns
     #
-    type = columns.TemplateColumn(
-        template_code="""
-        {% if record.type %}
-            <a href="{{ record.type.get_absolute_url }}">
-                {% if record.type.color %}
-                    <span class="badge" style="background-color: #{{ record.type.color }}">
-                        {{ record.type.name }}
-                    </span>
-                {% else %}
-                    {{ record.type.name }}
-                {% endif %}
-            </a>
-        {% endif %}
-        """,
-        verbose_name="Type",
-        orderable=True,
-    )
+    type = columns.ColoredLabelColumn(verbose_name="Type")
 
     #
     # Status columns
@@ -117,7 +104,7 @@ class AssetTable(NetBoxTable):
     lifecycle_status = columns.ChoiceFieldColumn()
 
     # Formatted column for warranty status using a template
-    warranty_status = tables.TemplateColumn(
+    warranty_status = CachedTemplateColumn(
         template_code=TEMPLATE_WARRANTY_STATUS,
         verbose_name="Warranty Status",
         orderable=False,
@@ -127,7 +114,7 @@ class AssetTable(NetBoxTable):
     # Assignment columns
     #
     assigned_object = tables.Column(verbose_name="Assigned Object", orderable=False, linkify=True)
-    external_inventory_items = tables.TemplateColumn(
+    external_inventory_items = CachedTemplateColumn(
         template_code=ASSOCIATED_EXTERNAL_INVENTORY_ASSETS,
         orderable=False,
         verbose_name="External Inventory Items",
@@ -149,20 +136,26 @@ class AssetTable(NetBoxTable):
     #
     # Service information columns
     #
-    services_from = tables.TemplateColumn(template_code=TEMPLATE_SERVICES_START, verbose_name="Service Start")
-    services_to = columns.TemplateColumn(template_code=TEMPLATE_SERVICES_END, verbose_name="Service End")
-    services_status = tables.TemplateColumn(
+    services_from = CachedTemplateColumn(template_code=TEMPLATE_SERVICES_START, verbose_name="Service Start")
+    services_to = CachedTemplateColumn(template_code=TEMPLATE_SERVICES_END, verbose_name="Service End")
+    services_status = CachedTemplateColumn(
         template_code=TEMPLATE_SERVICES_STATUS, verbose_name="Service Status", orderable=False
     )
-    services_contracts = tables.TemplateColumn(
+    services_contracts = CachedTemplateColumn(
         template_code=TEMPLATE_SERVICES_CONTRACTS, verbose_name="Service Contracts"
     )
 
     #
     # Warranty information columns
     #
-    warranty_start = tables.Column(verbose_name="Warranty Start")
-    warranty_end = tables.Column(verbose_name="Warranty End")
+    # DateColumn renders ISO 8601; a plain Column would hand the date object to
+    # the template, which localizes it to "June 3, 2022".
+    warranty_start = columns.DateColumn(verbose_name="Warranty Start")
+    warranty_end = DateBadgeColumn(
+        template_code=TEMPLATE_WARRANTY_END,
+        verbose_name="Warranty End",
+        order_by="warranty_end",
+    )
 
     #
     # Metadata columns
@@ -238,16 +231,16 @@ class EnhancedAssetTable(AssetTable):
         super().__init__(*args, **kwargs)
 
     # Add probe status columns
-    last_probe_time = tables.TemplateColumn(
+    last_probe_time = CachedTemplateColumn(
         template_code="""
         {% load tz %}
         {% with probe_time=record.get_last_probe_time %}
             {% if probe_time %}
-                <span title="Last probed: {{ probe_time|date:'Y-m-d H:i:s' }}">
+                <span data-bs-toggle="tooltip" title="Last probed: {{ probe_time|date:'Y-m-d H:i:s' }}">
                     {{ probe_time|date:"Y-m-d H:i" }}
                 </span>
             {% else %}
-                <span class="text-muted" title="Never probed">Never</span>
+                <span class="text-muted" data-bs-toggle="tooltip" title="Never probed">Never</span>
             {% endif %}
         {% endwith %}
         """,
@@ -255,14 +248,14 @@ class EnhancedAssetTable(AssetTable):
         orderable=False,
     )
 
-    probe_status = tables.TemplateColumn(
+    probe_status = CachedTemplateColumn(
         template_code="""
         {% if record.is_recently_probed %}
-            <span class="badge text-bg-success" title="Probed within last 7 days">
+            <span class="badge text-bg-success" data-bs-toggle="tooltip" title="Probed within last 7 days">
                 <i class="mdi mdi-check-circle"></i> Recent
             </span>
         {% else %}
-            <span class="badge text-bg-secondary" title="Not probed recently or never">
+            <span class="badge text-bg-secondary" data-bs-toggle="tooltip" title="Not probed recently or never">
                 <i class="mdi mdi-clock-outline"></i> Stale
             </span>
         {% endif %}

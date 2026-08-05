@@ -1,0 +1,38 @@
+{% load inventory_monitor %}
+{% comment %}
+    Renders a single end date as a colored badge.
+
+    record      -- object carrying the dates (must expose get_<status_type>_status)
+    status_type -- warning threshold key, e.g. 'service' or 'warranty'
+    date_value  -- the end date used as the badge label (may be None)
+
+    The color comes from the same get_<status_type>_status() that the status bar
+    uses, so the two columns can never disagree. An object with no dates at all
+    has no status and falls back to the placeholder; an object with a start but
+    no end is active coverage and is labelled with an infinity sign.
+
+    The icon is not decoration: it carries the "needs attention" states for
+    readers who cannot rely on the badge color (color blindness, greyscale
+    printing). See WCAG 1.4.1.
+{% endcomment %}
+{% with status=record|get_status:status_type date_text=date_value|date:"Y-m-d"|default:"∞" %}
+    {% if status %}
+        <span class="badge text-bg-{{ status.color }}"
+              role="img"
+              data-bs-toggle="tooltip"
+              data-bs-placement="left"
+              title="{{ status.message }}"
+              aria-label="{{ date_text }}: {{ status.message }}">
+            {% if status.color == 'danger' %}
+                <i class="mdi mdi-close-circle" aria-hidden="true"></i>
+            {% elif status.color == 'warning' %}
+                <i class="mdi mdi-clock-outline" aria-hidden="true"></i>
+            {% endif %}
+            {{ date_text }}
+        </span>
+    {% elif date_value %}
+        {{ date_text }}
+    {% else %}
+        {{ ''|placeholder }}
+    {% endif %}
+{% endwith %}

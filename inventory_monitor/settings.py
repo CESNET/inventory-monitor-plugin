@@ -7,6 +7,15 @@ and helper functions for commonly used settings.
 
 from django.conf import settings
 
+# Warning thresholds applied when ``warning_days`` does not mention an
+# attribute at all. Setting the key explicitly to None disables colour
+# indicators for that attribute.
+DEFAULT_WARNING_DAYS = {
+    "service": 60,
+    "warranty": 60,
+    "invoicing": 30,
+}
+
 
 def get_plugin_settings():
     """
@@ -80,17 +89,25 @@ def get_warning_days(attribute):
     """
     Get the warning days threshold for a specific attribute.
 
+    An attribute that is not mentioned in ``warning_days`` falls back to
+    DEFAULT_WARNING_DAYS, so color indicators work without configuration.
+    To turn them off, set the key explicitly to None.
+
     Args:
         attribute: The attribute key (e.g., "service", "warranty")
 
     Returns:
-        int or None: Number of warning days, or None if not configured
+        int or None: Number of warning days, or None if explicitly disabled
                      (which means no color indicators should be shown)
     """
     warning_days = get_plugin_settings().get("warning_days", {})
     if not isinstance(warning_days, dict):
+        # e.g. "warning_days": None — the natural way to disable every indicator.
         return None
-    return warning_days.get(attribute)
+    if attribute in warning_days:
+        # An explicit value wins, including None which disables indicators.
+        return warning_days[attribute]
+    return DEFAULT_WARNING_DAYS.get(attribute)
 
 
 # Convenience constants using the settings functions

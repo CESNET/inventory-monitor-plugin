@@ -41,11 +41,15 @@
                 <h5 class="card-header">
                     Timing Information
                     {% if object.is_recently_probed %}
-                        <span class="badge text-bg-success ms-2" title="Probed within last 7 days">
+                        <span class="badge text-bg-success ms-2"
+                              data-bs-toggle="tooltip"
+                              title="Probed within last 7 days">
                             <i class="mdi mdi-check-circle" aria-hidden="true"></i> Recent
                         </span>
                     {% else %}
-                        <span class="badge text-bg-secondary ms-2" title="Not probed recently">
+                        <span class="badge text-bg-secondary ms-2"
+                              data-bs-toggle="tooltip"
+                              title="Not probed recently">
                             <i class="mdi mdi-clock-outline" aria-hidden="true"></i> Stale
                         </span>
                     {% endif %}

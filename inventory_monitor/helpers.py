@@ -5,6 +5,8 @@ import logging
 import django_tables2
 from core.models import ObjectType
 from django.db.models import Count, OuterRef, Subquery, Value
+from django.template import Context, Template
+from django.utils.functional import cached_property
 from netbox.plugins import get_plugin_config
 from packaging.version import Version
 from utilities.templatetags.builtins.filters import register
@@ -164,35 +166,74 @@ class CurrencyColumn(django_tables2.Column):
         return format_price_with_currency(price, currency)
 
 
-TEMPLATE_SERVICES_END = """
-{% for service in record.services.all %}
-    {% if service.service_end %}
-        <p>{{ service.service_end|date:"Y-m-d" }}</p>
-    {% else %}
-        <p>---</p>
-    {% endif %}
-{% endfor %}
-"""
+class CachedTemplateColumn(django_tables2.TemplateColumn):
+    """A TemplateColumn that compiles its template_code once, not once per cell.
+
+    django-tables2 does ``Template(self.template_code).render(context)`` inside
+    render(), so a 50-row table re-lexes the same string 50 times. Compiling
+    once also lets the {% include %} render cache actually hit, since the
+    IncludeNode is no longer rebuilt for every cell.
+    """
+
+    @cached_property
+    def compiled_template(self):
+        return Template(self.template_code)
+
+    def render(self, record, table, value, bound_column, **kwargs):
+        # Mirrors TemplateColumn.render(); the only change is reusing
+        # compiled_template instead of building a Template per cell.
+        if not self.template_code:
+            return super().render(record, table, value, bound_column, **kwargs)
+
+        context = getattr(table, "context", Context())
+        additional_context = {
+            "default": bound_column.default,
+            "column": bound_column,
+            "record": record,
+            "value": value,
+            "row_counter": kwargs["bound_row"].row_counter,
+        }
+        additional_context.update(self.extra_context)
+        with context.update(additional_context):
+            context["request"] = getattr(table, "request", None)
+            return self.compiled_template.render(context)
+
+
+class DateBadgeColumn(CachedTemplateColumn):
+    """A date rendered as a colored badge, but exported as a plain ISO date.
+
+    TemplateColumn.value() strips tags off the rendered cell, which would put
+    the placeholder entity or the infinity sign into CSV exports. Export the
+    underlying date instead, matching columns.DateColumn.
+    """
+
+    def value(self, value, **kwargs):
+        return value.isoformat() if value else None
+
+
+# One badge per service, so the lines stay aligned with the Service Start,
+# Service Status and Service Contracts columns.
+TEMPLATE_SERVICES_END = (
+    "{% for service in record.services.all %}"
+    "<p>"
+    "{% include 'inventory_monitor/inc/date_badge.html' with record=service "
+    "date_value=service.service_end status_type='service' %}"
+    "</p>"
+    "{% endfor %}"
+)
+
+TEMPLATE_WARRANTY_END = (
+    "{% include 'inventory_monitor/inc/date_badge.html' with date_value=record.warranty_end status_type='warranty' %}"
+)
+
+TEMPLATE_SERVICE_END = (
+    "{% include 'inventory_monitor/inc/date_badge.html' with date_value=record.service_end status_type='service' %}"
+)
 
 TEMPLATE_SERVICES_STATUS = (
-    "{% load inventory_monitor %}"
     "{% for service in record.services.all %}"
-    "{% with status=service|get_status:'service' %}"
-    "{% if status %}"
-    '<div class="progress mb-1" role="progressbar"'
-    ' title=\'{{ service.service_start|date:"Y-m-d"|default:"?" }}'
-    " — "
-    '{{ service.service_end|date:"Y-m-d"|default:"∞" }}\'>'
-    '<div class="progress-bar progress-bar-striped text-bg-{{ status.color }} w-100">'
-    "{{ status.message }}</div></div>"
-    "{% else %}"
-    "{% if service.service_start or service.service_end %}"
-    '<p>{{ service.service_start|date:"Y-m-d"|default:"?" }}'
-    " — "
-    '{{ service.service_end|date:"Y-m-d"|default:"∞" }}</p>'
-    "{% else %}{{ ''|placeholder }}{% endif %}"
-    "{% endif %}"
-    "{% endwith %}"
+    "{% include 'inventory_monitor/inc/status_badge.html' with record=service "
+    "status_type='service' start_date=service.service_start end_date=service.service_end %}"
     "{% endfor %}"
 )
 
@@ -218,26 +259,11 @@ TEMPLATE_SERVICES_CONTRACTS = """
 
 
 def make_status_template(status_type, start_field, end_field):
-    """Generate a status progress bar template for a date range with tooltip."""
+    """Render a date range as a colored status bar via the shared include."""
     return (
-        "{{% load inventory_monitor %}}"
-        "{{% with status=record|get_status:'{status_type}' %}}"
-        "{{% if status %}}"
-        '<div class="progress" role="progressbar"'
-        ' title=\'{{{{ record.{start_field}|date:"Y-m-d"|default:"?" }}}}'
-        " — "
-        '{{{{ record.{end_field}|date:"Y-m-d"|default:"∞" }}}}\'>'
-        '<div class="progress-bar progress-bar-striped text-bg-{{{{ status.color }}}} w-100">'
-        "{{{{ status.message }}}}</div></div>"
-        "{{% else %}}"
-        "{{% if record.{start_field} or record.{end_field} %}}"
-        '{{{{ record.{start_field}|date:"Y-m-d"|default:"?" }}}}'
-        " — "
-        '{{{{ record.{end_field}|date:"Y-m-d"|default:"∞" }}}}'
-        "{{% else %}}{{{{ ''|placeholder }}}}{{% endif %}}"
-        "{{% endif %}}"
-        "{{% endwith %}}"
-    ).format(status_type=status_type, start_field=start_field, end_field=end_field)
+        "{% include 'inventory_monitor/inc/status_badge.html' "
+        f"with status_type='{status_type}' start_date=record.{start_field} end_date=record.{end_field} %}}"
+    )
 
 
 TEMPLATE_INVOICING_STATUS = make_status_template("invoicing", "invoicing_start", "invoicing_end")
