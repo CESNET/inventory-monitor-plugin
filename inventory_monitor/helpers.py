@@ -199,6 +199,18 @@ class CachedTemplateColumn(django_tables2.TemplateColumn):
             return self.compiled_template.render(context)
 
 
+class DateBadgeColumn(CachedTemplateColumn):
+    """A date rendered as a colored badge, but exported as a plain ISO date.
+
+    TemplateColumn.value() strips tags off the rendered cell, which would put
+    the placeholder entity or the infinity sign into CSV exports. Export the
+    underlying date instead, matching columns.DateColumn.
+    """
+
+    def value(self, value, **kwargs):
+        return value.isoformat() if value else None
+
+
 # One badge per service, so the lines stay aligned with the Service Start,
 # Service Status and Service Contracts columns.
 TEMPLATE_SERVICES_END = (

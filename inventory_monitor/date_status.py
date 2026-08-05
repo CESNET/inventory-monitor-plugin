@@ -47,22 +47,31 @@ class ServiceStatusChoices(DateStatusChoices):
     ]
 
 
-def date_status_q(field_name, warning_days):
-    """Return the ORM lookup for each band of an end-date field.
+def date_status_q(start_field, end_field, warning_days):
+    """Return the ORM lookup for each band of a date range.
 
-    These are the same cut points DateStatusMixin.get_date_status() applies in
-    Python, where days_until = (end_date - today).days:
+    This is the SQL mirror of DateStatusMixin._compute_date_status(), branch for
+    branch. Keep the two in step: the badge colour and the filter band for the
+    same record must agree.
+
+        Python branch                         colour   SQL band
+        no dates set                          (none)   none
+        no start, end set                     by end   by end
+        start in the future                   info     valid
+        both set, started                     by end   by end
+        start set, no end ("Active")          success  valid
+
+    Cut points by end date, where days_until = (end_date - today).days:
 
         days_until <= 0             -> expired    end_date <= today
         days_until <= warning_days  -> expiring   today < end_date <= threshold
         otherwise                   -> valid      end_date > threshold
 
-    Note the boundary: a period ending *today* is expired, not expiring. Keep
-    the two implementations in step — the badge colour and the filter band for
-    the same record must agree.
+    Note the boundary: a period ending *today* is expired, not expiring.
 
     Args:
-        field_name (str): End-date field the lookups apply to.
+        start_field (str): Start-date field.
+        end_field (str): End-date field.
         warning_days (int or None): Orange threshold. None (colour indicators
             disabled) collapses the expiring band to empty rather than folding
             it into valid, so the bands stay disjoint.
@@ -72,10 +81,22 @@ def date_status_q(field_name, warning_days):
     """
     today = timezone.now().date()
     threshold = today + timedelta(days=warning_days or 0)
+
+    # A NULL start counts as started. Spelled out rather than negating
+    # "start > today", because SQL NOT(NULL > date) is NULL and drops the row.
+    started = Q(**{f"{start_field}__isnull": True}) | Q(**{f"{start_field}__lte": today})
+    not_started = Q(**{f"{start_field}__gt": today})
+    open_ended = Q(**{f"{end_field}__isnull": True, f"{start_field}__isnull": False})
+
     return {
-        DateStatusChoices.EXPIRED: Q(**{f"{field_name}__lte": today}),
-        DateStatusChoices.EXPIRING: Q(**{f"{field_name}__gt": today, f"{field_name}__lte": threshold}),
-        DateStatusChoices.VALID: Q(**{f"{field_name}__gt": threshold}),
+        DateStatusChoices.EXPIRED: started & Q(**{f"{end_field}__lte": today}),
+        DateStatusChoices.EXPIRING: started & Q(**{f"{end_field}__gt": today, f"{end_field}__lte": threshold}),
+        DateStatusChoices.VALID: (
+            (started & Q(**{f"{end_field}__gt": threshold}))
+            | (not_started & Q(**{f"{end_field}__isnull": False}))
+            | open_ended
+        ),
+        DateStatusChoices.NONE: Q(**{f"{end_field}__isnull": True, f"{start_field}__isnull": True}),
     }
 
 

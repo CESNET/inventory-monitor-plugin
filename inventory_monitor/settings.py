@@ -102,7 +102,8 @@ def get_warning_days(attribute):
     """
     warning_days = get_plugin_settings().get("warning_days", {})
     if not isinstance(warning_days, dict):
-        return DEFAULT_WARNING_DAYS.get(attribute)
+        # e.g. "warning_days": None — the natural way to disable every indicator.
+        return None
     if attribute in warning_days:
         # An explicit value wins, including None which disables indicators.
         return warning_days[attribute]

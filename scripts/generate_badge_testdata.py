@@ -66,6 +66,12 @@ def case(serial, description, **kwargs):
 
 
 # Boundaries of the orange band. today+N is the last orange day; today+N+1 is green.
+if svc_days is None or war_days is None:
+    raise SystemExit(
+        "warning_days is disabled for service or warranty, so there are no band edges to "
+        "generate. Set both keys to an integer before running this script."
+    )
+
 svc_edge_in, svc_edge_out = d(svc_days), d(svc_days + 1)
 war_edge_in, war_edge_out = d(war_days), d(war_days + 1)
 

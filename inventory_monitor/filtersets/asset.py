@@ -257,16 +257,16 @@ class AssetFilterSet(NetBoxModelFilterSet):
         Semantics are "any service matches" - an asset with one expired and one
         valid service appears under both bands.
         """
-        bands = date_status_q("service_end", get_warning_days("service"))
-        # An open ended service is still active coverage.
-        bands[DateStatusChoices.VALID] |= Q(service_end__isnull=True)
+        bands = date_status_q("service_start", "service_end", get_warning_days("service"))
+        # For an asset, "none" means no service records at all, not a service
+        # row that happens to carry no dates.
+        del bands[DateStatusChoices.NONE]
 
         # One correlated subquery for the whole selection, not one per band.
         service_q = self._selected_bands(bands, value)
         condition = Q(Exists(AssetService.objects.filter(Q(asset=OuterRef("pk")) & service_q))) if service_q else Q()
 
         if DateStatusChoices.NONE in value:
-            # No AssetService rows at all, as opposed to an expired one.
             condition |= ~Exists(AssetService.objects.filter(asset=OuterRef("pk")))
 
         return queryset.filter(condition)
@@ -277,8 +277,7 @@ class AssetFilterSet(NetBoxModelFilterSet):
 
         No subquery needed here - warranty_end is a plain field on Asset.
         """
-        bands = date_status_q("warranty_end", get_warning_days("warranty"))
-        bands[DateStatusChoices.NONE] = Q(warranty_end__isnull=True)
+        bands = date_status_q("warranty_start", "warranty_end", get_warning_days("warranty"))
 
         return queryset.filter(self._selected_bands(bands, value))
 

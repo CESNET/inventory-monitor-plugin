@@ -18,6 +18,7 @@
 {% with status=record|get_status:status_type date_text=date_value|date:"Y-m-d"|default:"∞" %}
     {% if status %}
         <span class="badge text-bg-{{ status.color }}"
+              role="img"
               data-bs-toggle="tooltip"
               data-bs-placement="left"
               title="{{ status.message }}"

@@ -13,6 +13,7 @@
 {% with status=record|get_status:status_type from_text=start_date|date:"Y-m-d"|default:"?" to_text=end_date|date:"Y-m-d"|default:"∞" %}
     {% if status %}
         <div class="progress mb-1"
+             role="img"
              data-bs-toggle="tooltip"
              data-bs-placement="left"
              title="{{ from_text }} — {{ to_text }}"

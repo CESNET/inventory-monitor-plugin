@@ -1,7 +1,7 @@
 import django_tables2 as tables
 from netbox.tables import NetBoxTable, columns
 
-from inventory_monitor.helpers import TEMPLATE_SERVICE_END, CachedTemplateColumn, CurrencyColumn
+from inventory_monitor.helpers import TEMPLATE_SERVICE_END, CachedTemplateColumn, CurrencyColumn, DateBadgeColumn
 from inventory_monitor.models import AssetService
 
 
@@ -11,7 +11,7 @@ class AssetServiceTable(NetBoxTable):
     # DateColumn renders ISO 8601; a plain Column would hand the date object to
     # the template, which localizes it to "June 3, 2022".
     service_start = columns.DateColumn(verbose_name="Service Start")
-    service_end = CachedTemplateColumn(
+    service_end = DateBadgeColumn(
         template_code=TEMPLATE_SERVICE_END,
         verbose_name="Service End",
         order_by="service_end",

@@ -17,8 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   human-readable message as the status bars ("Expired 11 years ago",
   "Expires in 45 days"). Assets with several services get one badge per
   service, aligned with the `Service Start` and `Service Status` columns. A
-  service with no end date is open-ended coverage and shows a green `∞` badge;
-  an unset `Warranty End` is missing data and keeps the usual placeholder. (#22)
+  period with a start but no end is open-ended coverage and shows a green `∞`
+  badge; a record with no dates at all keeps the usual placeholder. The badges
+  export as plain ISO dates, matching the other date columns. (#22)
 - Asset type badges in the asset table now pick black or white text based on
   the type color, using NetBox's `fgcolor` filter. Dark type colors such as
   blue or purple were previously unreadable. (#22)

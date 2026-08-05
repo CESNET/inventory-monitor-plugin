@@ -637,7 +637,7 @@ PLUGINS_CONFIG = {
   | `"invoicing"` | `30` | "Invoicing Status" column in contract and invoice tables |
 
   - **Omitted keys use the defaults above**, so color indicators work without any configuration.
-  - **Set a key to `None` to turn color indicators off** for that attribute — e.g. `"warning_days": {"service": None}`. Status columns then fall back to displaying the date range (e.g. `2025-03-19 — 2026-12-19`) or `—` if no dates are set, and date columns show plain dates.
+  - **Set a key to `None` to turn color indicators off** for that attribute — e.g. `"warning_days": {"service": None}`. Set `"warning_days": None` to turn them off entirely. Status columns then fall back to displaying the date range (e.g. `2025-03-19 — 2026-12-19`) or `—` if no dates are set, and date columns show plain dates.
   - Color logic: **red** = expired, **orange** = within threshold, **green** = beyond threshold (or no end date set), **blue** = future start (status bars only).
 
 **Status columns vs. date columns:** the `Service Status` / `Warranty Status` columns and the `Service End` / `Warranty End` columns render the *same* status — both read `get_<type>_status()`, so their colors always agree — just swapped between the cell and its tooltip. Status columns show the message inline with the date range on hover; date columns show the date inline with the message on hover, and are sortable and exportable as plain dates. Pick whichever suits the view rather than enabling both. Only the status columns are shown by default.
@@ -651,10 +651,12 @@ The Asset list provides two multi-select filters that match the color bands abov
 
 | Choice | Service Status | Warranty Status |
 |---|---|---|
-| Expired | has a service whose end date has passed | `warranty_end` has passed |
+| Expired | has a service whose end date has passed (a period ending *today* counts as expired) | `warranty_end` has passed |
 | Expiring soon | has a service ending within `warning_days["service"]` | `warranty_end` within `warning_days["warranty"]` |
-| Valid | has a service ending beyond the threshold, or with no end date | `warranty_end` beyond the threshold |
-| No service records / Not set | no AssetService records at all | `warranty_end` is empty |
+| Valid | has a service ending beyond the threshold, not started yet, or open-ended | same, for the warranty dates |
+| No service records / Not set | no AssetService records at all | no warranty dates at all |
+
+Each choice matches exactly the records whose badge carries the matching colour — the bands are derived from the same status function that colours the badge, so the filter can never select a different set than the colours suggest.
 
 Service Status uses **any-match** semantics: an asset with one expired and one valid service appears under *both* Expired and Valid. Selecting several choices returns their union.
 
