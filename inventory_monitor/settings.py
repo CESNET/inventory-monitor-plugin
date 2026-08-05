@@ -7,6 +7,15 @@ and helper functions for commonly used settings.
 
 from django.conf import settings
 
+# Warning thresholds applied when ``warning_days`` does not mention an
+# attribute at all. Setting the key explicitly to None disables colour
+# indicators for that attribute.
+DEFAULT_WARNING_DAYS = {
+    "service": 60,
+    "warranty": 60,
+    "invoicing": 30,
+}
+
 
 def get_plugin_settings():
     """
@@ -91,8 +100,6 @@ def get_warning_days(attribute):
         int or None: Number of warning days, or None if explicitly disabled
                      (which means no color indicators should be shown)
     """
-    from inventory_monitor.date_status import DEFAULT_WARNING_DAYS
-
     warning_days = get_plugin_settings().get("warning_days", {})
     if not isinstance(warning_days, dict):
         return DEFAULT_WARNING_DAYS.get(attribute)

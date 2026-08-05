@@ -10,6 +10,10 @@ class DateStatusMixin:
         """
         Returns the status and color for progress bar based on start and end dates.
 
+        Memoized per instance: a list row renders the same status twice when both
+        the status column and the end-date column are shown. The cache key
+        includes the date values, so mutating a field invalidates it.
+
         Args:
             start_field (str): Name of the start date field
             end_field (str): Name of the end date field
@@ -20,9 +24,21 @@ class DateStatusMixin:
         if warning_days is None:
             return None
 
-        today = timezone.now().date()
         start_date = getattr(self, start_field)
         end_date = getattr(self, end_field)
+
+        cache = self.__dict__.setdefault("_date_status_cache", {})
+        key = (start_field, end_field, warning_days, start_date, end_date)
+        if key in cache:
+            return cache[key]
+
+        status = self._compute_date_status(start_date, end_date, warning_days)
+        cache[key] = status
+        return status
+
+    @staticmethod
+    def _compute_date_status(start_date, end_date, warning_days):
+        today = timezone.now().date()
 
         def get_expiration_status(days_until):
             if days_until <= 0:

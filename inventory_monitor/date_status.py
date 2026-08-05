@@ -1,59 +1,82 @@
 """
-Date status helpers for the Inventory Monitor plugin.
+Date status bands for the Inventory Monitor plugin.
 
-This module is deliberately free of model and template imports so it can be
-shared by ``models.mixins`` and ``filtersets`` without creating import cycles.
+A date range falls into one of three bands — expired, expiring soon, valid —
+decided by the ``warning_days`` threshold for its attribute. The band has to be
+computed two ways: in Python for a single object (to colour a badge) and in SQL
+for a whole queryset (to filter a list). :func:`date_status_q` is the SQL half
+and :meth:`DateStatusMixin.get_date_status` is the Python half; the cut points
+are documented together in :func:`date_status_q` so the two cannot drift.
 
-Colour and message for a date range are produced by a single function,
-:meth:`DateStatusMixin.get_date_status`. The status bars and the date badges
-both read it through the ``get_status`` template filter, so they cannot
-disagree. What lives here is the surrounding vocabulary: the default warning
-thresholds, the relative time formatter, and the same colour bands expressed
-as filter choices.
+This module imports no plugin models, so ``models.mixins`` can use it during
+app loading without an import cycle. That is also why :func:`format_time_delta`
+lives here rather than in ``helpers``, which pulls in ``core.models``.
 """
 
+from datetime import timedelta
+
+from django.db.models import Q
+from django.utils import timezone
 from utilities.choices import ChoiceSet
 
-# Warning thresholds applied when ``warning_days`` does not mention an
-# attribute at all. Setting the key explicitly to ``None`` disables colour
-# indicators for that attribute — see ``settings.get_warning_days``.
-DEFAULT_WARNING_DAYS = {
-    "service": 60,
-    "warranty": 60,
-    "invoicing": 30,
-}
 
-
-class DateStatusChoices:
-    """Status band values shared by the Service and Warranty status filters.
-
-    Deliberately not a ChoiceSet — NetBox's ChoiceSet metaclass requires a
-    CHOICES attribute on every class, so the shared constants live here and
-    the two concrete ChoiceSets below supply their own labels.
-    """
+class DateStatusChoices(ChoiceSet):
+    """Bands a date range can fall into, as filter choices."""
 
     EXPIRED = "expired"
     EXPIRING = "expiring"
     VALID = "valid"
     NONE = "none"
 
-
-class ServiceStatusChoices(ChoiceSet):
     CHOICES = [
-        (DateStatusChoices.EXPIRED, "Expired", "red"),
-        (DateStatusChoices.EXPIRING, "Expiring soon", "orange"),
-        (DateStatusChoices.VALID, "Valid", "green"),
-        (DateStatusChoices.NONE, "No service records", "gray"),
+        (EXPIRED, "Expired"),
+        (EXPIRING, "Expiring soon"),
+        (VALID, "Valid"),
+        (NONE, "Not set"),
     ]
 
 
-class WarrantyStatusChoices(ChoiceSet):
+class ServiceStatusChoices(DateStatusChoices):
+    """As above, but "not set" means the asset has no service records at all."""
+
     CHOICES = [
-        (DateStatusChoices.EXPIRED, "Expired", "red"),
-        (DateStatusChoices.EXPIRING, "Expiring soon", "orange"),
-        (DateStatusChoices.VALID, "Valid", "green"),
-        (DateStatusChoices.NONE, "Not set", "gray"),
+        (DateStatusChoices.EXPIRED, "Expired"),
+        (DateStatusChoices.EXPIRING, "Expiring soon"),
+        (DateStatusChoices.VALID, "Valid"),
+        (DateStatusChoices.NONE, "No service records"),
     ]
+
+
+def date_status_q(field_name, warning_days):
+    """Return the ORM lookup for each band of an end-date field.
+
+    These are the same cut points DateStatusMixin.get_date_status() applies in
+    Python, where days_until = (end_date - today).days:
+
+        days_until <= 0             -> expired    end_date <= today
+        days_until <= warning_days  -> expiring   today < end_date <= threshold
+        otherwise                   -> valid      end_date > threshold
+
+    Note the boundary: a period ending *today* is expired, not expiring. Keep
+    the two implementations in step — the badge colour and the filter band for
+    the same record must agree.
+
+    Args:
+        field_name (str): End-date field the lookups apply to.
+        warning_days (int or None): Orange threshold. None (colour indicators
+            disabled) collapses the expiring band to empty rather than folding
+            it into valid, so the bands stay disjoint.
+
+    Returns:
+        dict: Band value -> Q object.
+    """
+    today = timezone.now().date()
+    threshold = today + timedelta(days=warning_days or 0)
+    return {
+        DateStatusChoices.EXPIRED: Q(**{f"{field_name}__lte": today}),
+        DateStatusChoices.EXPIRING: Q(**{f"{field_name}__gt": today, f"{field_name}__lte": threshold}),
+        DateStatusChoices.VALID: Q(**{f"{field_name}__gt": threshold}),
+    }
 
 
 def format_time_delta(days):

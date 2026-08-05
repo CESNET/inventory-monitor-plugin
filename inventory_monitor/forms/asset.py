@@ -21,7 +21,7 @@ from utilities.forms.utils import add_blank_choice
 from utilities.forms.widgets.datetime import DatePicker
 
 # Local application imports
-from inventory_monitor.date_status import ServiceStatusChoices, WarrantyStatusChoices
+from inventory_monitor.date_status import DateStatusChoices, ServiceStatusChoices
 from inventory_monitor.helpers import get_currency_choices
 from inventory_monitor.models import Asset, AssetType, Contract, ExternalInventory
 from inventory_monitor.models.asset import (
@@ -355,7 +355,7 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
     )
 
     warranty_status = forms.MultipleChoiceField(
-        choices=WarrantyStatusChoices,
+        choices=DateStatusChoices,
         required=False,
         label=_("Warranty Status"),
     )

@@ -15,22 +15,22 @@
     readers who cannot rely on the badge color (color blindness, greyscale
     printing). See WCAG 1.4.1.
 {% endcomment %}
-{% with status=record|get_status:status_type %}
+{% with status=record|get_status:status_type date_text=date_value|date:"Y-m-d"|default:"∞" %}
     {% if status %}
         <span class="badge text-bg-{{ status.color }}"
               data-bs-toggle="tooltip"
               data-bs-placement="left"
               title="{{ status.message }}"
-              aria-label="{{ date_value|date:'Y-m-d'|default:'no end date' }}: {{ status.message }}">
+              aria-label="{{ date_text }}: {{ status.message }}">
             {% if status.color == 'danger' %}
                 <i class="mdi mdi-close-circle" aria-hidden="true"></i>
             {% elif status.color == 'warning' %}
                 <i class="mdi mdi-clock-outline" aria-hidden="true"></i>
             {% endif %}
-            {{ date_value|date:"Y-m-d"|default:"∞" }}
+            {{ date_text }}
         </span>
     {% elif date_value %}
-        {{ date_value|date:"Y-m-d" }}
+        {{ date_text }}
     {% else %}
         {{ ''|placeholder }}
     {% endif %}

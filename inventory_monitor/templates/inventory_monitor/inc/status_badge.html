@@ -10,20 +10,18 @@
     Pairs with date_badge.html, which renders the same status against a single
     date. Both read get_<status_type>_status(), so the two can never disagree.
 {% endcomment %}
-{% with status=record|get_status:status_type %}
-    {% with from_text=start_date|date:"Y-m-d"|default:"?" to_text=end_date|date:"Y-m-d"|default:"no end date" %}
-        {% if status %}
-            <div class="progress mb-1"
-                 data-bs-toggle="tooltip"
-                 data-bs-placement="left"
-                 title="{{ from_text }} — {{ to_text }}"
-                 aria-label="{{ status.message }} ({{ from_text }} — {{ to_text }})">
-                <div class="progress-bar progress-bar-striped text-bg-{{ status.color }} w-100">{{ status.message }}</div>
-            </div>
-        {% elif start_date or end_date %}
-            {{ from_text }} — {{ end_date|date:"Y-m-d"|default:"∞" }}
-        {% else %}
-            {{ ''|placeholder }}
-        {% endif %}
-    {% endwith %}
+{% with status=record|get_status:status_type from_text=start_date|date:"Y-m-d"|default:"?" to_text=end_date|date:"Y-m-d"|default:"∞" %}
+    {% if status %}
+        <div class="progress mb-1"
+             data-bs-toggle="tooltip"
+             data-bs-placement="left"
+             title="{{ from_text }} — {{ to_text }}"
+             aria-label="{{ status.message }} ({{ from_text }} — {{ to_text }})">
+            <div class="progress-bar progress-bar-striped text-bg-{{ status.color }} w-100">{{ status.message }}</div>
+        </div>
+    {% elif start_date or end_date %}
+        {{ from_text }} — {{ to_text }}
+    {% else %}
+        {{ ''|placeholder }}
+    {% endif %}
 {% endwith %}
