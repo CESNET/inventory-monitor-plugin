@@ -164,7 +164,9 @@ class AssetTable(NetBoxTable):
     #
     # Warranty information columns
     #
-    warranty_start = tables.Column(verbose_name="Warranty Start")
+    # DateColumn renders ISO 8601; a plain Column would hand the date object to
+    # the template, which localizes it to "June 3, 2022".
+    warranty_start = columns.DateColumn(verbose_name="Warranty Start")
     warranty_end = tables.TemplateColumn(
         template_code=TEMPLATE_WARRANTY_END,
         verbose_name="Warranty End",

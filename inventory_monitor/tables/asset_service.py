@@ -8,7 +8,9 @@ from inventory_monitor.models import AssetService
 class AssetServiceTable(NetBoxTable):
     asset = tables.Column(linkify=True)
     contract = tables.Column(linkify=True)
-    service_start = tables.Column(verbose_name="Service Start")
+    # DateColumn renders ISO 8601; a plain Column would hand the date object to
+    # the template, which localizes it to "June 3, 2022".
+    service_start = columns.DateColumn(verbose_name="Service Start")
     service_end = tables.TemplateColumn(
         template_code=TEMPLATE_SERVICE_END,
         verbose_name="Service End",

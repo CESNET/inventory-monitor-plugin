@@ -31,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `Warranty Start` (asset tables) and `Service Start` (asset service tables)
+  rendered dates in the localized long format, e.g. "June 3, 2022", while every
+  other date in the plugin uses ISO `YYYY-MM-DD`. Both now use NetBox's
+  `DateColumn`, so all date columns and CSV exports agree. (#22)
 - Date status messages said "Expired in 0 days" for a date falling on today.
   They now read "Expired today" / "Expires today". This also affects the
   existing Service, Warranty and Invoicing status bars.
