@@ -98,7 +98,9 @@ class AssetTable(NetBoxTable):
         {% if record.type %}
             <a href="{{ record.type.get_absolute_url }}">
                 {% if record.type.color %}
-                    <span class="badge" style="background-color: #{{ record.type.color }}">
+                    <span class="badge"
+                          style="background-color: #{{ record.type.color }};
+                                 color: {{ record.type.color|fgcolor }}">
                         {{ record.type.name }}
                     </span>
                 {% else %}

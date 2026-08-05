@@ -16,13 +16,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when it is further out or open-ended. Hovering a badge shows the same
   human-readable message as the status bars ("Expired 11 years ago",
   "Expires in 45 days"). Assets with several services get one badge per
-  service, aligned with the `Service Start` and `Service Status` columns. (#22)
+  service, aligned with the `Service Start` and `Service Status` columns. A
+  service with no end date is open-ended coverage and shows a green `∞` badge;
+  an unset `Warranty End` is missing data and keeps the usual placeholder. (#22)
+- Asset type badges in the asset table now pick black or white text based on
+  the type color, using NetBox's `fgcolor` filter. Dark type colors such as
+  blue or purple were previously unreadable. (#22)
 - **`Service Status` and `Warranty Status` filters** on the Asset list, matching
   the color bands above: *Expired* / *Expiring soon* / *Valid* / *No service
   records* (*Not set* for warranty). Both are multi-select and return the union
   of the selected bands. Service Status uses any-match semantics — an asset with
   one expired and one valid service appears under both. Available in the UI and
   over REST (`?service_status=expired`). (#22)
+
+### Fixed
+
+- Date status messages said "Expired in 0 days" for a date falling on today.
+  They now read "Expired today" / "Expires today". This also affects the
+  existing Service, Warranty and Invoicing status bars.
 
 ### Changed
 

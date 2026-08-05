@@ -1,16 +1,24 @@
 {% load inventory_monitor %}
+{% comment %}
+    Renders an end date as a colored badge.
+
+    date_value  -- the end date (may be None)
+    status_type -- warning threshold key, e.g. 'service' or 'warranty'
+    open_ended  -- when true, a missing date means "no end date yet" and is
+                   shown as a green infinity badge. When false (the default) a
+                   missing date means "not recorded" and shows a placeholder.
+{% endcomment %}
 {% with status=date_value|end_date_status:status_type %}
-    {% if status %}
+    {% if status and date_value %}
         <span class="badge text-bg-{{ status.color }}"
               data-bs-toggle="tooltip"
               data-bs-placement="left"
-              title="{{ status.message }}">
-            {% if date_value %}
-                {{ date_value|date:"Y-m-d" }}
-            {% else %}
-                ∞
-            {% endif %}
-        </span>
+              title="{{ status.message }}">{{ date_value|date:"Y-m-d" }}</span>
+    {% elif status and open_ended %}
+        <span class="badge text-bg-{{ status.color }}"
+              data-bs-toggle="tooltip"
+              data-bs-placement="left"
+              title="{{ status.message }}">∞</span>
     {% elif date_value %}
         {{ date_value|date:"Y-m-d" }}
     {% else %}

@@ -164,20 +164,25 @@ class CurrencyColumn(django_tables2.Column):
         return format_price_with_currency(price, currency)
 
 
-TEMPLATE_SERVICES_END = """
-{% for service in record.services.all %}
-    <p>
-        {% include 'inventory_monitor/inc/date_badge.html' with date_value=service.service_end status_type='service' %}
-    </p>
-{% endfor %}
-"""
+# A service record with no end date is open ended coverage, so it gets an
+# infinity badge. A missing warranty_end is simply not recorded, so it falls
+# back to the usual placeholder.
+TEMPLATE_SERVICES_END = (
+    "{% for service in record.services.all %}"
+    "<p>"
+    "{% include 'inventory_monitor/inc/date_badge.html' "
+    "with date_value=service.service_end status_type='service' open_ended=True %}"
+    "</p>"
+    "{% endfor %}"
+)
 
 TEMPLATE_WARRANTY_END = (
     "{% include 'inventory_monitor/inc/date_badge.html' with date_value=record.warranty_end status_type='warranty' %}"
 )
 
 TEMPLATE_SERVICE_END = (
-    "{% include 'inventory_monitor/inc/date_badge.html' with date_value=record.service_end status_type='service' %}"
+    "{% include 'inventory_monitor/inc/date_badge.html' "
+    "with date_value=record.service_end status_type='service' open_ended=True %}"
 )
 
 TEMPLATE_SERVICES_STATUS = (

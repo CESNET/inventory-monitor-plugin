@@ -65,8 +65,10 @@ def format_time_delta(days):
         days (int): Days until the date; negative values are in the past.
 
     Returns:
-        str: e.g. "in 45 days", "3 months ago", "in 2 years"
+        str: e.g. "in 45 days", "3 months ago", "in 2 years", "today"
     """
+    if days == 0:
+        return "today"
     is_past = days < 0
     days = abs(days)
     if days < 90:
@@ -89,6 +91,12 @@ def get_end_date_status(end_date, attribute):
     Unlike :meth:`DateStatusMixin.get_date_status` this looks at the end date
     only — there is no "Starts in X" branch, which would be misleading in a
     column that shows nothing but the end date.
+
+    A missing end date is reported as open ended coverage. Whether that is
+    meaningful depends on the caller: a service record without an end date is
+    genuinely open ended, while a missing ``Asset.warranty_end`` just means the
+    date was never recorded. The ``date_badge.html`` include decides via its
+    ``open_ended`` flag.
 
     Args:
         end_date (datetime.date or None): The end date to evaluate.
