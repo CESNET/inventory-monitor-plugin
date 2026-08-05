@@ -9,6 +9,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from netbox.models import ImageAttachmentsMixin, NetBoxModel
+from netbox.models.features import ContactsMixin
+from netbox.models.mixins import OwnerMixin
 from taggit.managers import TaggableManager
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
@@ -65,7 +67,7 @@ class LifecycleStatusChoices(ChoiceSet):
     ]
 
 
-class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
+class Asset(ContactsMixin, OwnerMixin, NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
     objects = RestrictedQuerySet.as_manager()
 
     #

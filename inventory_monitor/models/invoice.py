@@ -3,13 +3,15 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 from netbox.models import NetBoxModel
+from netbox.models.features import ContactsMixin
+from netbox.models.mixins import OwnerMixin
 from taggit.managers import TaggableManager
 from utilities.querysets import RestrictedQuerySet
 
 from inventory_monitor.models.mixins import DateStatusMixin
 
 
-class Invoice(NetBoxModel, DateStatusMixin):
+class Invoice(ContactsMixin, OwnerMixin, NetBoxModel, DateStatusMixin):
     objects = RestrictedQuerySet.as_manager()
     name = models.CharField(max_length=255, blank=False, null=False)
     name_internal = models.CharField(max_length=255, blank=False, null=False)

@@ -3,13 +3,15 @@ from django.db.models.deletion import ProtectedError
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from netbox.models import NetBoxModel
+from netbox.models.features import ContactsMixin
+from netbox.models.mixins import OwnerMixin
 from taggit.managers import TaggableManager
 
 from inventory_monitor.models.asset import Asset
 from inventory_monitor.settings import get_external_inventory_status_config_safe
 
 
-class ExternalInventory(NetBoxModel):
+class ExternalInventory(ContactsMixin, OwnerMixin, NetBoxModel):
     """
     Model representing inventory items imported from external inventory management system
 

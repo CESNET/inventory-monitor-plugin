@@ -2,11 +2,13 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from netbox.models import NetBoxModel
+from netbox.models.features import ContactsMixin
+from netbox.models.mixins import OwnerMixin
 from taggit.managers import TaggableManager
 from utilities.querysets import RestrictedQuerySet
 
 
-class Contractor(NetBoxModel):
+class Contractor(ContactsMixin, OwnerMixin, NetBoxModel):
     objects = RestrictedQuerySet.as_manager()
     name = models.CharField(max_length=255, blank=False, null=False)
     company = models.CharField(max_length=255, blank=True, null=True)
