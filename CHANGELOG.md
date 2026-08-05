@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Contacts on plugin objects.** Asset, Asset Service, Contract, Contractor, External Inventory,
+  Invoice and RMA now support NetBox contacts. Each gains a **Contacts** tab on its detail page
+  where `tenancy.Contact` records can be assigned with a role and priority, plus `contact`,
+  `contact_role` and `contact_group` filters in the UI, REST API and export templates, an optional
+  `Contacts` table column, and a `contacts` field in GraphQL. Contacts are stored as
+  `ContactAssignment` rows, so this adds no database columns. Contacts are intentionally *not*
+  exposed on the plugin's REST serializers, matching NetBox core — read and write them through
+  `/api/tenancy/contact-assignments/`.
+
+  Assignment roles are not created by the plugin. To record the ABRA responsible person, create a
+  **Owner** contact role under *Organization → Contact Roles*.
+
+- **Ownership on plugin objects.** The same seven models gain NetBox's `owner` field
+  (`users.Owner` — a named set of NetBox users and groups, distinct from tenancy). Available on the
+  edit form in an **Ownership** fieldset, in bulk edit (nullable), in CSV import by Owner name, as
+  optional `Owner` and `Owner Group` table columns, as `owner`/`owner_id`/`owner_group`/
+  `owner_group_id` filters, in the REST API, and in GraphQL. API list endpoints `select_related`
+  the owner to avoid an extra query per row.
+
+  Migration `0006` adds a nullable `owner` foreign key to each of the seven tables.
+
+- **Note for the ABRA importer.** `ExternalInventory.person_id` stores ABRA's `personalnumber`, not
+  ABRA's `person_id`. The `abra_contact_id` custom field on `tenancy.Contact` is named after the
+  latter, so joining the two matches zero rows.
+
+- `tests/test_contacts.py` pinning the feature registration, the Contacts URL wiring (which fails
+  silently when broken), and the contact/owner filters.
+
 ## [13.5.0] - 2026-08-05
 
 ### Added
