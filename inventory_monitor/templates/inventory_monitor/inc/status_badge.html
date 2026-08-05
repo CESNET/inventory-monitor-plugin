@@ -1,12 +1,29 @@
 {% load inventory_monitor %}
+{% comment %}
+    Renders a date range as a colored status bar.
+
+    record      -- object carrying the dates (must expose get_<status_type>_status)
+    status_type -- warning threshold key, e.g. 'service' or 'warranty'
+    start_date  -- period start, shown in the tooltip
+    end_date    -- period end, shown in the tooltip
+
+    Pairs with date_badge.html, which renders the same status against a single
+    date. Both read get_<status_type>_status(), so the two can never disagree.
+{% endcomment %}
 {% with status=record|get_status:status_type %}
-    {% if status %}
-        <div class="progress" role="progressbar">
-            <div class="progress-bar progress-bar-striped text-bg-{{ status.color }} w-100">{{ status.message }}</div>
-        </div>
-    {% elif start_date or end_date %}
-        {{ start_date|date:"Y-m-d"|default:"?" }} — {{ end_date|date:"Y-m-d"|default:"∞" }}
-    {% else %}
-        {{ ''|placeholder }}
-    {% endif %}
+    {% with from_text=start_date|date:"Y-m-d"|default:"?" to_text=end_date|date:"Y-m-d"|default:"no end date" %}
+        {% if status %}
+            <div class="progress mb-1"
+                 data-bs-toggle="tooltip"
+                 data-bs-placement="left"
+                 title="{{ from_text }} — {{ to_text }}"
+                 aria-label="{{ status.message }} ({{ from_text }} — {{ to_text }})">
+                <div class="progress-bar progress-bar-striped text-bg-{{ status.color }} w-100">{{ status.message }}</div>
+            </div>
+        {% elif start_date or end_date %}
+            {{ from_text }} — {{ end_date|date:"Y-m-d"|default:"∞" }}
+        {% else %}
+            {{ ''|placeholder }}
+        {% endif %}
+    {% endwith %}
 {% endwith %}

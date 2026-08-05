@@ -23,17 +23,6 @@ def get_status(obj, status_type):
     return None
 
 
-@register.filter
-def end_date_status(value, attribute):
-    """
-    Gets the color/message for a bare end date.
-    Example: {{ service.service_end|end_date_status:'service' }}
-    """
-    from inventory_monitor.date_status import get_end_date_status
-
-    return get_end_date_status(value, attribute)
-
-
 @register.simple_tag
 def external_inventory_status_tooltip():
     """

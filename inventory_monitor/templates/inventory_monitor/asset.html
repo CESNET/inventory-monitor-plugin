@@ -138,11 +138,13 @@
                     Probe Information
                     {% if object.is_recently_probed %}
                         <span class="badge text-bg-success ms-2"
+                              data-bs-toggle="tooltip"
                               title="Probed within last {{ object.get_probe_recent_days_setting }} days">
                             <i class="mdi mdi-check-circle"></i> Recent
                         </span>
                     {% else %}
                         <span class="badge text-bg-secondary ms-2"
+                              data-bs-toggle="tooltip"
                               title="Not probed recently or never">
                             <i class="mdi mdi-clock-outline"></i> Stale
                         </span>

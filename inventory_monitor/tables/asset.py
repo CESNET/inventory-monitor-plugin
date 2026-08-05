@@ -252,11 +252,11 @@ class EnhancedAssetTable(AssetTable):
         {% load tz %}
         {% with probe_time=record.get_last_probe_time %}
             {% if probe_time %}
-                <span title="Last probed: {{ probe_time|date:'Y-m-d H:i:s' }}">
+                <span data-bs-toggle="tooltip" title="Last probed: {{ probe_time|date:'Y-m-d H:i:s' }}">
                     {{ probe_time|date:"Y-m-d H:i" }}
                 </span>
             {% else %}
-                <span class="text-muted" title="Never probed">Never</span>
+                <span class="text-muted" data-bs-toggle="tooltip" title="Never probed">Never</span>
             {% endif %}
         {% endwith %}
         """,
@@ -267,11 +267,11 @@ class EnhancedAssetTable(AssetTable):
     probe_status = tables.TemplateColumn(
         template_code="""
         {% if record.is_recently_probed %}
-            <span class="badge text-bg-success" title="Probed within last 7 days">
+            <span class="badge text-bg-success" data-bs-toggle="tooltip" title="Probed within last 7 days">
                 <i class="mdi mdi-check-circle"></i> Recent
             </span>
         {% else %}
-            <span class="badge text-bg-secondary" title="Not probed recently or never">
+            <span class="badge text-bg-secondary" data-bs-toggle="tooltip" title="Not probed recently or never">
                 <i class="mdi mdi-clock-outline"></i> Stale
             </span>
         {% endif %}

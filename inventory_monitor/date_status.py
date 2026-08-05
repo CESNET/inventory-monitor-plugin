@@ -2,18 +2,16 @@
 Date status helpers for the Inventory Monitor plugin.
 
 This module is deliberately free of model and template imports so it can be
-shared by ``models.mixins``, ``templatetags.inventory_monitor`` and
-``filtersets`` without creating import cycles.
+shared by ``models.mixins`` and ``filtersets`` without creating import cycles.
 
-Two related concepts live here:
-
-* :func:`get_end_date_status` — the colour/message for a *single* end date
-  (used by the coloured date badges in list tables).
-* :class:`ServiceStatusChoices` / :class:`WarrantyStatusChoices` — the same
-  bands expressed as filter choices.
+Colour and message for a date range are produced by a single function,
+:meth:`DateStatusMixin.get_date_status`. The status bars and the date badges
+both read it through the ``get_status`` template filter, so they cannot
+disagree. What lives here is the surrounding vocabulary: the default warning
+thresholds, the relative time formatter, and the same colour bands expressed
+as filter choices.
 """
 
-from django.utils import timezone
 from utilities.choices import ChoiceSet
 
 # Warning thresholds applied when ``warning_days`` does not mention an
@@ -83,52 +81,3 @@ def format_time_delta(days):
         unit = "year" if years == 1 else "years"
         value = f"{years} {unit}"
     return f"{value} ago" if is_past else f"in {value}"
-
-
-def get_end_date_status(end_date, attribute):
-    """Return the colour and message for a bare end date.
-
-    Unlike :meth:`DateStatusMixin.get_date_status` this looks at the end date
-    only — there is no "Starts in X" branch, which would be misleading in a
-    column that shows nothing but the end date.
-
-    A missing end date is reported as open ended coverage. Whether that is
-    meaningful depends on the caller: a service record without an end date is
-    genuinely open ended, while a missing ``Asset.warranty_end`` just means the
-    date was never recorded. The ``date_badge.html`` include decides via its
-    ``open_ended`` flag.
-
-    Args:
-        end_date (datetime.date or None): The end date to evaluate.
-        attribute (str): Warning threshold key ("service", "warranty", ...).
-
-    Returns:
-        dict or None: ``{"color": ..., "message": ...}``, or None when colour
-        indicators are disabled for this attribute.
-    """
-    from inventory_monitor.settings import get_warning_days
-
-    warning_days = get_warning_days(attribute)
-    if warning_days is None:
-        return None
-
-    # Open ended — no end date means the coverage has not been bounded yet.
-    if end_date is None:
-        return {"color": "success", "message": "Active (no end date)"}
-
-    days_until = (end_date - timezone.now().date()).days
-
-    if days_until <= 0:
-        return {
-            "color": "danger",
-            "message": f"Expired {format_time_delta(days_until)}",
-        }
-    if days_until <= warning_days:
-        return {
-            "color": "warning",
-            "message": f"Expires {format_time_delta(days_until)}",
-        }
-    return {
-        "color": "success",
-        "message": f"Valid until {end_date.strftime('%Y-%m-%d')}",
-    }

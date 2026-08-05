@@ -1,24 +1,34 @@
 {% load inventory_monitor %}
 {% comment %}
-    Renders an end date as a colored badge.
+    Renders a single end date as a colored badge.
 
-    date_value  -- the end date (may be None)
+    record      -- object carrying the dates (must expose get_<status_type>_status)
     status_type -- warning threshold key, e.g. 'service' or 'warranty'
-    open_ended  -- when true, a missing date means "no end date yet" and is
-                   shown as a green infinity badge. When false (the default) a
-                   missing date means "not recorded" and shows a placeholder.
+    date_value  -- the end date used as the badge label (may be None)
+
+    The color comes from the same get_<status_type>_status() that the status bar
+    uses, so the two columns can never disagree. An object with no dates at all
+    has no status and falls back to the placeholder; an object with a start but
+    no end is active coverage and is labelled with an infinity sign.
+
+    The icon is not decoration: it carries the "needs attention" states for
+    readers who cannot rely on the badge color (color blindness, greyscale
+    printing). See WCAG 1.4.1.
 {% endcomment %}
-{% with status=date_value|end_date_status:status_type %}
-    {% if status and date_value %}
+{% with status=record|get_status:status_type %}
+    {% if status %}
         <span class="badge text-bg-{{ status.color }}"
               data-bs-toggle="tooltip"
               data-bs-placement="left"
-              title="{{ status.message }}">{{ date_value|date:"Y-m-d" }}</span>
-    {% elif status and open_ended %}
-        <span class="badge text-bg-{{ status.color }}"
-              data-bs-toggle="tooltip"
-              data-bs-placement="left"
-              title="{{ status.message }}">∞</span>
+              title="{{ status.message }}"
+              aria-label="{{ date_value|date:'Y-m-d'|default:'no end date' }}: {{ status.message }}">
+            {% if status.color == 'danger' %}
+                <i class="mdi mdi-close-circle" aria-hidden="true"></i>
+            {% elif status.color == 'warning' %}
+                <i class="mdi mdi-clock-outline" aria-hidden="true"></i>
+            {% endif %}
+            {{ date_value|date:"Y-m-d"|default:"∞" }}
+        </span>
     {% elif date_value %}
         {{ date_value|date:"Y-m-d" }}
     {% else %}

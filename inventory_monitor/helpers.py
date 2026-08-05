@@ -164,46 +164,33 @@ class CurrencyColumn(django_tables2.Column):
         return format_price_with_currency(price, currency)
 
 
-# A service record with no end date is open ended coverage, so it gets an
-# infinity badge. A missing warranty_end is simply not recorded, so it falls
-# back to the usual placeholder.
+def make_date_badge_template(status_type, end_field):
+    """Render an object's end date as a colored badge via the shared include."""
+    return (
+        "{% include 'inventory_monitor/inc/date_badge.html' with record=record "
+        f"date_value=record.{end_field} status_type='{status_type}' %}}"
+    )
+
+
+# One badge per service, so the lines stay aligned with the Service Start,
+# Service Status and Service Contracts columns.
 TEMPLATE_SERVICES_END = (
     "{% for service in record.services.all %}"
     "<p>"
-    "{% include 'inventory_monitor/inc/date_badge.html' "
-    "with date_value=service.service_end status_type='service' open_ended=True %}"
+    "{% include 'inventory_monitor/inc/date_badge.html' with record=service "
+    "date_value=service.service_end status_type='service' %}"
     "</p>"
     "{% endfor %}"
 )
 
-TEMPLATE_WARRANTY_END = (
-    "{% include 'inventory_monitor/inc/date_badge.html' with date_value=record.warranty_end status_type='warranty' %}"
-)
+TEMPLATE_WARRANTY_END = make_date_badge_template("warranty", "warranty_end")
 
-TEMPLATE_SERVICE_END = (
-    "{% include 'inventory_monitor/inc/date_badge.html' "
-    "with date_value=record.service_end status_type='service' open_ended=True %}"
-)
+TEMPLATE_SERVICE_END = make_date_badge_template("service", "service_end")
 
 TEMPLATE_SERVICES_STATUS = (
-    "{% load inventory_monitor %}"
     "{% for service in record.services.all %}"
-    "{% with status=service|get_status:'service' %}"
-    "{% if status %}"
-    '<div class="progress mb-1" role="progressbar"'
-    ' title=\'{{ service.service_start|date:"Y-m-d"|default:"?" }}'
-    " — "
-    '{{ service.service_end|date:"Y-m-d"|default:"∞" }}\'>'
-    '<div class="progress-bar progress-bar-striped text-bg-{{ status.color }} w-100">'
-    "{{ status.message }}</div></div>"
-    "{% else %}"
-    "{% if service.service_start or service.service_end %}"
-    '<p>{{ service.service_start|date:"Y-m-d"|default:"?" }}'
-    " — "
-    '{{ service.service_end|date:"Y-m-d"|default:"∞" }}</p>'
-    "{% else %}{{ ''|placeholder }}{% endif %}"
-    "{% endif %}"
-    "{% endwith %}"
+    "{% include 'inventory_monitor/inc/status_badge.html' with record=service "
+    "status_type='service' start_date=service.service_start end_date=service.service_end %}"
     "{% endfor %}"
 )
 
@@ -229,26 +216,11 @@ TEMPLATE_SERVICES_CONTRACTS = """
 
 
 def make_status_template(status_type, start_field, end_field):
-    """Generate a status progress bar template for a date range with tooltip."""
+    """Render a date range as a colored status bar via the shared include."""
     return (
-        "{{% load inventory_monitor %}}"
-        "{{% with status=record|get_status:'{status_type}' %}}"
-        "{{% if status %}}"
-        '<div class="progress" role="progressbar"'
-        ' title=\'{{{{ record.{start_field}|date:"Y-m-d"|default:"?" }}}}'
-        " — "
-        '{{{{ record.{end_field}|date:"Y-m-d"|default:"∞" }}}}\'>'
-        '<div class="progress-bar progress-bar-striped text-bg-{{{{ status.color }}}} w-100">'
-        "{{{{ status.message }}}}</div></div>"
-        "{{% else %}}"
-        "{{% if record.{start_field} or record.{end_field} %}}"
-        '{{{{ record.{start_field}|date:"Y-m-d"|default:"?" }}}}'
-        " — "
-        '{{{{ record.{end_field}|date:"Y-m-d"|default:"∞" }}}}'
-        "{{% else %}}{{{{ ''|placeholder }}}}{{% endif %}}"
-        "{{% endif %}}"
-        "{{% endwith %}}"
-    ).format(status_type=status_type, start_field=start_field, end_field=end_field)
+        "{% include 'inventory_monitor/inc/status_badge.html' with record=record "
+        f"status_type='{status_type}' start_date=record.{start_field} end_date=record.{end_field} %}}"
+    )
 
 
 TEMPLATE_INVOICING_STATUS = make_status_template("invoicing", "invoicing_start", "invoicing_end")

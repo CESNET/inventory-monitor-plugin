@@ -640,7 +640,11 @@ PLUGINS_CONFIG = {
   - **Set a key to `None` to turn color indicators off** for that attribute — e.g. `"warning_days": {"service": None}`. Status columns then fall back to displaying the date range (e.g. `2025-03-19 — 2026-12-19`) or `—` if no dates are set, and date columns show plain dates.
   - Color logic: **red** = expired, **orange** = within threshold, **green** = beyond threshold (or no end date set), **blue** = future start (status bars only).
 
-**Status columns vs. date columns:** the `Service Status` / `Warranty Status` columns and the `Service End` / `Warranty End` columns carry the same color and the same message, just swapped between the cell and its tooltip — status columns show the message inline with the date range on hover, date columns show the date inline with the message on hover. Pick whichever suits the view rather than enabling both. Status columns additionally show the start date and a blue *"Starts in X"* state for a period that has not begun; date columns are sortable and export as plain dates. Only the status columns are shown by default.
+**Status columns vs. date columns:** the `Service Status` / `Warranty Status` columns and the `Service End` / `Warranty End` columns render the *same* status — both read `get_<type>_status()`, so their colors always agree — just swapped between the cell and its tooltip. Status columns show the message inline with the date range on hover; date columns show the date inline with the message on hover, and are sortable and exportable as plain dates. Pick whichever suits the view rather than enabling both. Only the status columns are shown by default.
+
+Colors: **red** expired, **orange** expiring within the threshold, **green** valid or open-ended, **blue** not started yet. Expired and expiring badges also carry an icon, so the states that need attention do not depend on color alone.
+
+Note that the **Service Status filter has no "not started" band** — a period that has not begun is not expired and not expiring, so it matches *Valid*, while its badge shows blue.
 
 #### Service & Warranty Status Filters
 The Asset list provides two multi-select filters that match the color bands above:
