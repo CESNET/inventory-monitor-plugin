@@ -1,0 +1,19 @@
+{% load inventory_monitor %}
+{% with status=date_value|end_date_status:status_type %}
+    {% if status %}
+        <span class="badge text-bg-{{ status.color }}"
+              data-bs-toggle="tooltip"
+              data-bs-placement="left"
+              title="{{ status.message }}">
+            {% if date_value %}
+                {{ date_value|date:"Y-m-d" }}
+            {% else %}
+                ∞
+            {% endif %}
+        </span>
+    {% elif date_value %}
+        {{ date_value|date:"Y-m-d" }}
+    {% else %}
+        {{ ''|placeholder }}
+    {% endif %}
+{% endwith %}

@@ -80,17 +80,26 @@ def get_warning_days(attribute):
     """
     Get the warning days threshold for a specific attribute.
 
+    An attribute that is not mentioned in ``warning_days`` falls back to
+    DEFAULT_WARNING_DAYS, so color indicators work without configuration.
+    To turn them off, set the key explicitly to None.
+
     Args:
         attribute: The attribute key (e.g., "service", "warranty")
 
     Returns:
-        int or None: Number of warning days, or None if not configured
+        int or None: Number of warning days, or None if explicitly disabled
                      (which means no color indicators should be shown)
     """
+    from inventory_monitor.date_status import DEFAULT_WARNING_DAYS
+
     warning_days = get_plugin_settings().get("warning_days", {})
     if not isinstance(warning_days, dict):
-        return None
-    return warning_days.get(attribute)
+        return DEFAULT_WARNING_DAYS.get(attribute)
+    if attribute in warning_days:
+        # An explicit value wins, including None which disables indicators.
+        return warning_days[attribute]
+    return DEFAULT_WARNING_DAYS.get(attribute)
 
 
 # Convenience constants using the settings functions

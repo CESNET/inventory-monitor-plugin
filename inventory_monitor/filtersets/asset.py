@@ -1,9 +1,12 @@
+from datetime import timedelta
+
 import django_filters
 from core.models import ObjectType
 
 # NetBox model imports
 from dcim.models import Device, Location, Module, Rack, Site
-from django.db.models import Count, Q
+from django.db.models import Count, Exists, OuterRef, Q
+from django.utils import timezone
 from extras.filters import TagFilter
 from netbox.filtersets import NetBoxModelFilterSet
 from utilities.filtersets import register_filterset
@@ -12,8 +15,14 @@ from utilities.filters import (
     MultiValueNumberFilter,
 )
 
+from inventory_monitor.date_status import (
+    DateStatusChoices,
+    ServiceStatusChoices,
+    WarrantyStatusChoices,
+)
 from inventory_monitor.helpers import get_currency_choices
-from inventory_monitor.models import Asset, AssetType, Contract, ExternalInventory
+from inventory_monitor.models import Asset, AssetService, AssetType, Contract, ExternalInventory
+from inventory_monitor.settings import get_warning_days
 
 
 @register_filterset
@@ -52,6 +61,25 @@ class AssetFilterSet(NetBoxModelFilterSet):
     )
     lifecycle_status = django_filters.MultipleChoiceFilter(
         choices=Asset.lifecycle_status.field.choices,
+    )
+
+    #
+    # Date status filters (color bands of the Service End / Warranty End columns)
+    #
+    service_status = django_filters.MultipleChoiceFilter(
+        choices=ServiceStatusChoices,
+        method="filter_service_status",
+        label="Service Status",
+        help_text=(
+            "Match assets by the color band of their Service End dates. "
+            "An asset with both an expired and a valid service matches both."
+        ),
+    )
+    warranty_status = django_filters.MultipleChoiceFilter(
+        choices=WarrantyStatusChoices,
+        method="filter_warranty_status",
+        label="Warranty Status",
+        help_text="Match assets by the color band of their Warranty End date.",
     )
 
     #
@@ -164,6 +192,8 @@ class AssetFilterSet(NetBoxModelFilterSet):
             "description",
             "assignment_status",
             "lifecycle_status",
+            "service_status",
+            "warranty_status",
             "project",
             "vendor",
             "price",
@@ -209,6 +239,98 @@ class AssetFilterSet(NetBoxModelFilterSet):
             return queryset.filter(serial__in=duplicate_serials)
         else:
             return queryset.exclude(serial__in=duplicate_serials)
+
+    @staticmethod
+    def _date_status_bands(attribute, field_name):
+        """
+        Build a Q object per status band for an end-date field.
+
+        The bands mirror the color logic of get_end_date_status(): expired is
+        red, expiring is orange, valid is green. When color indicators are
+        disabled (warning_days set to None) there is no orange band, so
+        expiring collapses into valid rather than silently matching nothing.
+
+        Args:
+            attribute (str): Warning threshold key ("service", "warranty")
+            field_name (str): End-date field the lookups apply to
+
+        Returns:
+            dict: Status value -> Q object
+        """
+        today = timezone.now().date()
+        warning_days = get_warning_days(attribute)
+
+        if warning_days is None:
+            return {
+                DateStatusChoices.EXPIRED: Q(**{f"{field_name}__lt": today}),
+                DateStatusChoices.EXPIRING: Q(**{f"{field_name}__gte": today}),
+                DateStatusChoices.VALID: Q(**{f"{field_name}__gte": today}),
+            }
+
+        threshold = today + timedelta(days=warning_days)
+        return {
+            DateStatusChoices.EXPIRED: Q(**{f"{field_name}__lt": today}),
+            DateStatusChoices.EXPIRING: Q(**{f"{field_name}__gte": today, f"{field_name}__lte": threshold}),
+            DateStatusChoices.VALID: Q(**{f"{field_name}__gt": threshold}),
+        }
+
+    def filter_service_status(self, queryset, name, value):
+        """
+        Filter assets by the status of their services' end dates.
+
+        Uses Exists() rather than a join-based filter: the Asset list queryset
+        already carries Count("services") and ArrayAgg("services__service_end")
+        annotations, and an extra join would multiply rows and skew them.
+
+        Semantics are "any service matches" - an asset with one expired and one
+        valid service appears under both bands.
+        """
+        if not value:
+            return queryset
+
+        bands = self._date_status_bands("service", "service_end")
+        condition = Q()
+
+        for status in value:
+            if status == DateStatusChoices.NONE:
+                # No AssetService rows at all, as opposed to an expired one.
+                condition |= ~Exists(AssetService.objects.filter(asset=OuterRef("pk")))
+                continue
+
+            band = bands.get(status)
+            if band is None:
+                continue
+
+            if status == DateStatusChoices.VALID:
+                # An open ended service is still active coverage.
+                band |= Q(service_end__isnull=True)
+
+            condition |= Q(Exists(AssetService.objects.filter(Q(asset=OuterRef("pk")) & band)))
+
+        return queryset.filter(condition) if condition else queryset
+
+    def filter_warranty_status(self, queryset, name, value):
+        """
+        Filter assets by the status of their own warranty_end date.
+
+        No subquery needed here - warranty_end is a plain field on Asset.
+        """
+        if not value:
+            return queryset
+
+        bands = self._date_status_bands("warranty", "warranty_end")
+        condition = Q()
+
+        for status in value:
+            if status == DateStatusChoices.NONE:
+                condition |= Q(warranty_end__isnull=True)
+                continue
+
+            band = bands.get(status)
+            if band is not None:
+                condition |= band
+
+        return queryset.filter(condition) if condition else queryset
 
     def search(self, queryset, name, value):
         """

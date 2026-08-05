@@ -8,6 +8,7 @@ from inventory_monitor.helpers import (
     TEMPLATE_SERVICES_END,
     TEMPLATE_SERVICES_START,
     TEMPLATE_SERVICES_STATUS,
+    TEMPLATE_WARRANTY_END,
     TEMPLATE_WARRANTY_STATUS,
 )
 from inventory_monitor.models import Asset
@@ -162,7 +163,11 @@ class AssetTable(NetBoxTable):
     # Warranty information columns
     #
     warranty_start = tables.Column(verbose_name="Warranty Start")
-    warranty_end = tables.Column(verbose_name="Warranty End")
+    warranty_end = tables.TemplateColumn(
+        template_code=TEMPLATE_WARRANTY_END,
+        verbose_name="Warranty End",
+        order_by="warranty_end",
+    )
 
     #
     # Metadata columns

@@ -166,13 +166,19 @@ class CurrencyColumn(django_tables2.Column):
 
 TEMPLATE_SERVICES_END = """
 {% for service in record.services.all %}
-    {% if service.service_end %}
-        <p>{{ service.service_end|date:"Y-m-d" }}</p>
-    {% else %}
-        <p>---</p>
-    {% endif %}
+    <p>
+        {% include 'inventory_monitor/inc/date_badge.html' with date_value=service.service_end status_type='service' %}
+    </p>
 {% endfor %}
 """
+
+TEMPLATE_WARRANTY_END = (
+    "{% include 'inventory_monitor/inc/date_badge.html' with date_value=record.warranty_end status_type='warranty' %}"
+)
+
+TEMPLATE_SERVICE_END = (
+    "{% include 'inventory_monitor/inc/date_badge.html' with date_value=record.service_end status_type='service' %}"
+)
 
 TEMPLATE_SERVICES_STATUS = (
     "{% load inventory_monitor %}"

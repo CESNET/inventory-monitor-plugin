@@ -1,5 +1,7 @@
 from django.utils import timezone
 
+from inventory_monitor.date_status import format_time_delta
+
 
 class DateStatusMixin:
     """Mixin to provide date status functionality for models with start/end dates"""
@@ -21,22 +23,6 @@ class DateStatusMixin:
         today = timezone.now().date()
         start_date = getattr(self, start_field)
         end_date = getattr(self, end_field)
-
-        def format_time_delta(days):
-            is_past = days < 0
-            days = abs(days)
-            if days < 90:
-                unit = "day" if days == 1 else "days"
-                value = f"{days} {unit}"
-            elif days < 730:
-                months = round(days / 30.44)
-                unit = "month" if months == 1 else "months"
-                value = f"{months} {unit}"
-            else:
-                years = round(days / 365.25)
-                unit = "year" if years == 1 else "years"
-                value = f"{years} {unit}"
-            return f"{value} ago" if is_past else f"in {value}"
 
         def get_expiration_status(days_until):
             if days_until <= 0:

@@ -21,6 +21,7 @@ from utilities.forms.utils import add_blank_choice
 from utilities.forms.widgets.datetime import DatePicker
 
 # Local application imports
+from inventory_monitor.date_status import ServiceStatusChoices, WarrantyStatusChoices
 from inventory_monitor.helpers import get_currency_choices
 from inventory_monitor.models import Asset, AssetType, Contract, ExternalInventory
 from inventory_monitor.models.asset import (
@@ -287,6 +288,7 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
         # Status fields
         FieldSet("assignment_status", name=_("Assignment Status")),
         FieldSet("lifecycle_status", name=_("Lifecycle Status")),
+        FieldSet("service_status", "warranty_status", name=_("Service & Warranty Status")),
         # Related objects for filtering
         FieldSet(
             "order_contract",
@@ -342,6 +344,20 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
 
     lifecycle_status = forms.ChoiceField(
         choices=[("", "None")] + list(LifecycleStatusChoices), required=False, initial=None
+    )
+
+    # Date status filters (color bands of the Service End / Warranty End columns)
+    service_status = forms.MultipleChoiceField(
+        choices=ServiceStatusChoices,
+        required=False,
+        label=_("Service Status"),
+        help_text=_("An asset with both an expired and a valid service matches both bands."),
+    )
+
+    warranty_status = forms.MultipleChoiceField(
+        choices=WarrantyStatusChoices,
+        required=False,
+        label=_("Warranty Status"),
     )
 
     # Type filter

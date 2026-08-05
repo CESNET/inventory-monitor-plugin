@@ -1,7 +1,7 @@
 import django_tables2 as tables
 from netbox.tables import NetBoxTable, columns
 
-from inventory_monitor.helpers import CurrencyColumn
+from inventory_monitor.helpers import TEMPLATE_SERVICE_END, CurrencyColumn
 from inventory_monitor.models import AssetService
 
 
@@ -9,7 +9,11 @@ class AssetServiceTable(NetBoxTable):
     asset = tables.Column(linkify=True)
     contract = tables.Column(linkify=True)
     service_start = tables.Column(verbose_name="Service Start")
-    service_end = tables.Column(verbose_name="Service End")
+    service_end = tables.TemplateColumn(
+        template_code=TEMPLATE_SERVICE_END,
+        verbose_name="Service End",
+        order_by="service_end",
+    )
     service_price = CurrencyColumn(price_field="service_price", currency_field="service_currency")
     service_status = tables.TemplateColumn(
         template_code="""

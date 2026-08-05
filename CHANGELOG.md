@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.5.0] - 2026-08-05
+
+### Added
+
+- **Color-coded Service End and Warranty End dates.** The `Service End` and
+  `Warranty End` columns in asset tables (and `Service End` in asset service
+  tables) now render each date as a badge — **red** when the date has passed,
+  **orange** when it falls within the configured warning window, **green**
+  when it is further out or open-ended. Hovering a badge shows the same
+  human-readable message as the status bars ("Expired 11 years ago",
+  "Expires in 45 days"). Assets with several services get one badge per
+  service, aligned with the `Service Start` and `Service Status` columns. (#22)
+- **`Service Status` and `Warranty Status` filters** on the Asset list, matching
+  the color bands above: *Expired* / *Expiring soon* / *Valid* / *No service
+  records* (*Not set* for warranty). Both are multi-select and return the union
+  of the selected bands. Service Status uses any-match semantics — an asset with
+  one expired and one valid service appears under both. Available in the UI and
+  over REST (`?service_status=expired`). (#22)
+
+### Changed
+
+- **`warning_days` now falls back to defaults** (`service: 60`, `warranty: 60`,
+  `invoicing: 30`) when a key is not configured, so color indicators work out of
+  the box. Previously a missing key meant no colors at all. **Deployments that
+  relied on omitting `warning_days` to suppress color indicators will now see
+  them** — set the key explicitly to `None` (e.g. `"warning_days": {"service":
+  None}`) to keep them off.
+
 ## [13.4.1] - 2026-06-18
 
 ### Fixed
