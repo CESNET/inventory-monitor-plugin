@@ -15,12 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `users.0016_default_ordering_indexes`, which first ships in NetBox 4.6.0. On 4.5.x, `migrate`
   aborts with `NodeNotFoundError` before applying anything.
 - **The seven inventory models now inherit `PrimaryModel`** instead of `NetBoxModel`. `description`
-  narrows from 255 to 200 characters — migration `0007` performs an in-place `AlterField`, so data
-  is preserved, but PostgreSQL **aborts the migration** if any existing row exceeds 200 characters.
-  Check before upgrading:
+  narrows from 255 to 200 characters. **No description is ever shortened for you.** Migration
+  `0007` checks every row first and, if any exceeds 200 characters, rolls back and lists the
+  offending model, primary key and length so you can decide what to keep — move the overflow into
+  `comments`, or trim it. Re-run `migrate` afterwards. To see the same list before upgrading:
 
   ```
-  Asset.objects.annotate(l=Length('description')).filter(l__gt=200).count()
+  Asset.objects.annotate(l=Length('description')).filter(l__gt=200).values_list('pk', 'description')
   ```
 
   Repeat for `AssetService`, `Contract`, `Contractor` and `Invoice`.
