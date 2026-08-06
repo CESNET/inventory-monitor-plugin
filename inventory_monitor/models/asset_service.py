@@ -2,16 +2,15 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
-from netbox.models import NetBoxModel
+from netbox.models import PrimaryModel
 from netbox.models.features import ContactsMixin
-from netbox.models.mixins import OwnerMixin
 from taggit.managers import TaggableManager
 from utilities.querysets import RestrictedQuerySet
 
 from inventory_monitor.models.mixins import DateStatusMixin
 
 
-class AssetService(ContactsMixin, OwnerMixin, NetBoxModel, DateStatusMixin):
+class AssetService(ContactsMixin, PrimaryModel, DateStatusMixin):
     objects = RestrictedQuerySet.as_manager()
     service_start = models.DateField(
         blank=True,
@@ -49,8 +48,6 @@ class AssetService(ContactsMixin, OwnerMixin, NetBoxModel, DateStatusMixin):
         blank=True,
         null=True,
     )
-    description = models.CharField(max_length=255, blank=True, default="")
-    comments = models.TextField(blank=True)
 
     # Override tags field to avoid reverse accessor clash with other plugins
     tags = TaggableManager(

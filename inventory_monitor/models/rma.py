@@ -1,8 +1,7 @@
 from django.db import models, transaction
 from django.urls import reverse
-from netbox.models import NetBoxModel
+from netbox.models import PrimaryModel
 from netbox.models.features import ContactsMixin
-from netbox.models.mixins import OwnerMixin
 from taggit.managers import TaggableManager
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
@@ -30,7 +29,7 @@ class RMAStatusChoices(ChoiceSet):
     ]
 
 
-class RMA(ContactsMixin, OwnerMixin, NetBoxModel):
+class RMA(ContactsMixin, PrimaryModel):
     objects = RestrictedQuerySet.as_manager()
 
     rma_number = models.CharField(
