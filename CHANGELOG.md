@@ -74,6 +74,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in a `FieldSet` emitted the widget twice. On submit the browser sent both values and the second
   overwrote the user's choice. Affected six of the seven edit forms plus three bulk-edit forms.
 
+- **`docs/graphql-filters.md` documented lookup names that do not exist.** `icontains`,
+  `startswith`, `endswith` and `in` are really `i_contains`, `starts_with`, `ends_with` and
+  `in_list`, so every string-filter example in that document failed schema validation. The document
+  now also covers the owner and contact filters, the `AND`/`OR`/`NOT` combinators, and which models
+  support contacts and ownership. Every example in it is executed against the live schema.
+
 ### Changed
 
 - Filtersets, forms, tables and serializers now inherit NetBox's `PrimaryModel*` base classes
