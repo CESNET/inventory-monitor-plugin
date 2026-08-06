@@ -10,9 +10,8 @@ from dcim.graphql.types import (
     SiteType,
 )
 from extras.graphql.mixins import ContactsMixin as GQLContactsMixin
-from netbox.graphql.types import NetBoxObjectType
+from netbox.graphql.types import NetBoxObjectType, PrimaryObjectType
 from tenancy.graphql.types import TenantType
-from users.graphql.mixins import OwnerMixin as GQLOwnerMixin
 
 import inventory_monitor.models as models
 
@@ -36,7 +35,7 @@ from .filters import (
 
 
 @strawberry_django.type(models.ExternalInventory, fields="__all__", filters=InventoryMonitorExternalInventoryFilter)
-class InventoryMonitorExternalInventoryType(GQLContactsMixin, GQLOwnerMixin, NetBoxObjectType):
+class InventoryMonitorExternalInventoryType(GQLContactsMixin, PrimaryObjectType):
     external_id: str | None
     inventory_number: str
     name: str
@@ -57,7 +56,7 @@ class InventoryMonitorExternalInventoryType(GQLContactsMixin, GQLOwnerMixin, Net
 
 
 @strawberry_django.type(models.Asset, fields="__all__", filters=InventoryMonitorAssetFilter)
-class InventoryMonitorAssetType(GQLContactsMixin, GQLOwnerMixin, NetBoxObjectType):
+class InventoryMonitorAssetType(GQLContactsMixin, PrimaryObjectType):
     # Basic identification fields
     partnumber: str | None
     description: str | None
@@ -113,7 +112,7 @@ class InventoryMonitorAssetTypeType(NetBoxObjectType):
 
 
 @strawberry_django.type(models.AssetService, fields="__all__", filters=InventoryMonitorAssetServiceFilter)
-class InventoryMonitorAssetServiceType(GQLContactsMixin, GQLOwnerMixin, NetBoxObjectType):
+class InventoryMonitorAssetServiceType(GQLContactsMixin, PrimaryObjectType):
     service_start: str | None  # DateField as string
     service_end: str | None  # DateField as string
     service_price: Decimal | None  # DecimalField - preserves precision for service pricing
@@ -128,7 +127,7 @@ class InventoryMonitorAssetServiceType(GQLContactsMixin, GQLOwnerMixin, NetBoxOb
 
 
 @strawberry_django.type(models.Contract, fields="__all__", filters=InventoryMonitorContractFilter)
-class InventoryMonitorContractType(GQLContactsMixin, GQLOwnerMixin, NetBoxObjectType):
+class InventoryMonitorContractType(GQLContactsMixin, PrimaryObjectType):
     name: str
     name_internal: str
     type: Annotated["InventoryMonitorContractTypeEnum", strawberry.lazy("inventory_monitor.graphql.enums")] | None
@@ -152,7 +151,7 @@ class InventoryMonitorContractType(GQLContactsMixin, GQLOwnerMixin, NetBoxObject
 
 
 @strawberry_django.type(models.Contractor, fields="__all__", filters=InventoryMonitorContractorFilter)
-class InventoryMonitorContractorType(GQLContactsMixin, GQLOwnerMixin, NetBoxObjectType):
+class InventoryMonitorContractorType(GQLContactsMixin, PrimaryObjectType):
     name: str
     company: str | None
     address: str | None
@@ -166,7 +165,7 @@ class InventoryMonitorContractorType(GQLContactsMixin, GQLOwnerMixin, NetBoxObje
 
 
 @strawberry_django.type(models.Invoice, fields="__all__", filters=InventoryMonitorInvoiceFilter)
-class InventoryMonitorInvoiceType(GQLContactsMixin, GQLOwnerMixin, NetBoxObjectType):
+class InventoryMonitorInvoiceType(GQLContactsMixin, PrimaryObjectType):
     name: str
     name_internal: str
     project: str | None
@@ -201,7 +200,7 @@ class InventoryMonitorProbeType(NetBoxObjectType):
 
 
 @strawberry_django.type(models.RMA, fields="__all__", filters=InventoryMonitorRMAFilter)
-class InventoryMonitorRMAType(GQLContactsMixin, GQLOwnerMixin, NetBoxObjectType):
+class InventoryMonitorRMAType(GQLContactsMixin, PrimaryObjectType):
     rma_number: str | None
     original_serial: str | None
     replacement_serial: str | None
