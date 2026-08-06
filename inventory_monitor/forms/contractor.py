@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
+from netbox.forms import PrimaryModelBulkEditForm, PrimaryModelFilterSetForm, PrimaryModelForm, PrimaryModelImportForm
+from tenancy.forms import ContactModelFilterForm
 from tenancy.models import Tenant
 from utilities.forms.fields import (
     CommentField,
@@ -18,17 +19,17 @@ COMPANY_MAX = Contractor._meta.get_field("company").max_length
 ADDRESS_MAX = Contractor._meta.get_field("address").max_length
 
 
-class ContractorForm(NetBoxModelForm):
+class ContractorForm(PrimaryModelForm):
     tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), selector=True, required=False)
 
     comments = CommentField(label="Comments")
 
     class Meta:
         model = Contractor
-        fields = ("name", "company", "address", "description", "tenant", "tags", "comments")
+        fields = ("name", "company", "address", "description", "tenant", "owner", "tags", "comments")
 
 
-class ContractorFilterForm(NetBoxModelFilterSetForm):
+class ContractorFilterForm(ContactModelFilterForm, PrimaryModelFilterSetForm):
     model = Contractor
     tag = TagFilterField(model)
     name = forms.CharField(required=False)
@@ -41,10 +42,12 @@ class ContractorFilterForm(NetBoxModelFilterSetForm):
         FieldSet("q", "filter_id", "tag", name=_("Misc")),
         FieldSet("name", "company", "address", "description", name=_("Common")),
         FieldSet("tenant_id", name=_("Linked")),
+        FieldSet("contact", "contact_role", "contact_group", name=_("Contacts")),
+        FieldSet("owner_group_id", "owner_id", name=_("Ownership")),
     )
 
 
-class ContractorBulkEditForm(NetBoxModelBulkEditForm):
+class ContractorBulkEditForm(PrimaryModelBulkEditForm):
     company = forms.CharField(max_length=COMPANY_MAX, required=False)
     address = forms.CharField(max_length=ADDRESS_MAX, required=False)
     description = forms.CharField(required=False)
@@ -54,7 +57,7 @@ class ContractorBulkEditForm(NetBoxModelBulkEditForm):
     nullable_fields = ("company", "address", "description", "tenant")
 
 
-class ContractorBulkImportForm(NetBoxModelImportForm):
+class ContractorBulkImportForm(PrimaryModelImportForm):
     """
     Form for bulk importing Contractors
     """
@@ -78,5 +81,6 @@ class ContractorBulkImportForm(NetBoxModelImportForm):
             "address",
             "description",
             "tenant",
+            "owner",
             "tags",
         ]

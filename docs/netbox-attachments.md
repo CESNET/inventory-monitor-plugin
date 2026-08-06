@@ -7,7 +7,7 @@ to display attachment counts on Contract and Invoice list views.
 ## Requirements
 
 - netbox-attachments **>= 11.0.0**
-- NetBox **>= 4.5.4**
+- NetBox **>= 4.6.0**
 - inventory-monitor **>= 13.1.0**
 
 > **Note:** inventory-monitor 13.0.x does not support netbox-attachments.

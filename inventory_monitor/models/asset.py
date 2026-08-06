@@ -8,7 +8,8 @@ from django.db.models import Case, OuterRef, ProtectedError, Q, Subquery, Value,
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from netbox.models import ImageAttachmentsMixin, NetBoxModel
+from netbox.models import ImageAttachmentsMixin, PrimaryModel
+from netbox.models.features import ContactsMixin
 from taggit.managers import TaggableManager
 from utilities.choices import ChoiceSet
 from utilities.querysets import RestrictedQuerySet
@@ -65,14 +66,13 @@ class LifecycleStatusChoices(ChoiceSet):
     ]
 
 
-class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
+class Asset(ContactsMixin, PrimaryModel, DateStatusMixin, ImageAttachmentsMixin):
     objects = RestrictedQuerySet.as_manager()
 
     #
     # Basic identification fields
     #
     partnumber = models.CharField(max_length=64, blank=True, null=True)
-    description = models.CharField(max_length=255, blank=True, default="")
     serial = models.CharField(max_length=255, blank=False, null=False)
     #
     # Status fields
@@ -159,11 +159,6 @@ class Asset(NetBoxModel, DateStatusMixin, ImageAttachmentsMixin):
         blank=True,
         null=True,
     )
-
-    #
-    # Notes
-    #
-    comments = models.TextField(blank=True)
 
     # Override tags field to avoid reverse accessor clash with other plugins
     tags = TaggableManager(

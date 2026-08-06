@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
+from netbox.forms import PrimaryModelBulkEditForm, PrimaryModelFilterSetForm, PrimaryModelForm, PrimaryModelImportForm
+from tenancy.forms import ContactModelFilterForm
 from utilities.forms.fields import (
     CommentField,
     DynamicModelMultipleChoiceField,
@@ -12,7 +13,7 @@ from inventory_monitor.models import Asset, ExternalInventory
 from inventory_monitor.settings import get_external_inventory_status_config_safe
 
 
-class ExternalInventoryForm(NetBoxModelForm):
+class ExternalInventoryForm(PrimaryModelForm):
     """
     Form for creating and editing External Inventory objects
     """
@@ -41,6 +42,7 @@ class ExternalInventoryForm(NetBoxModelForm):
             "inventory_number",
             "name",
             "serial_number",
+            "description",
             name=_("Asset Identification"),
         ),
         FieldSet(
@@ -102,12 +104,14 @@ class ExternalInventoryForm(NetBoxModelForm):
             "split_asset",
             "status",
             "assets",
+            "description",
+            "owner",
             "tags",
             "comments",
         )
 
 
-class ExternalInventoryBulkEditForm(NetBoxModelBulkEditForm):
+class ExternalInventoryBulkEditForm(PrimaryModelBulkEditForm):
     name = forms.CharField(required=False, label="Name")
     person_name = forms.CharField(required=False, label="Person Name")
     location = forms.CharField(required=False, label="Location")
@@ -118,7 +122,7 @@ class ExternalInventoryBulkEditForm(NetBoxModelBulkEditForm):
     nullable_fields = ("name", "person_name", "location", "status", "comments")
 
 
-class ExternalInventoryFilterForm(NetBoxModelFilterSetForm):
+class ExternalInventoryFilterForm(ContactModelFilterForm, PrimaryModelFilterSetForm):
     """
     Filter form for External Inventory objects
     """
@@ -157,6 +161,8 @@ class ExternalInventoryFilterForm(NetBoxModelFilterSetForm):
             "has_assets",
             name=_("Status"),
         ),
+        FieldSet("contact", "contact_role", "contact_group", name=_("Contacts")),
+        FieldSet("owner_group_id", "owner_id", name=_("Ownership")),
     )
 
     tag = TagFilterField(model)
@@ -186,7 +192,7 @@ class ExternalInventoryFilterForm(NetBoxModelFilterSetForm):
     )
 
 
-class ExternalInventoryBulkImportForm(NetBoxModelImportForm):
+class ExternalInventoryBulkImportForm(PrimaryModelImportForm):
     """
     Form for bulk importing External Inventory items
     """
@@ -225,5 +231,7 @@ class ExternalInventoryBulkImportForm(NetBoxModelImportForm):
             "user_note",
             "split_asset",
             "status",
+            "description",
+            "owner",
             "tags",
         ]

@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
+from netbox.forms import PrimaryModelBulkEditForm, PrimaryModelFilterSetForm, PrimaryModelForm, PrimaryModelImportForm
+from tenancy.forms import ContactModelFilterForm
 from utilities.forms.fields import CommentField, CSVModelChoiceField, DynamicModelChoiceField, TagFilterField
 from utilities.forms.rendering import FieldSet
 from utilities.forms.utils import add_blank_choice
@@ -10,7 +11,7 @@ from inventory_monitor.models import RMA, Asset
 from inventory_monitor.models.rma import RMAStatusChoices
 
 
-class RMAForm(NetBoxModelForm):
+class RMAForm(PrimaryModelForm):
     rma_number = forms.CharField(
         required=False,
         empty_value=None,
@@ -25,6 +26,7 @@ class RMAForm(NetBoxModelForm):
             "status",
             "original_serial",
             "replacement_serial",
+            "description",
             name="RMA Information",
         ),
         FieldSet("date_issued", "date_replaced", name="Dates"),
@@ -51,6 +53,8 @@ class RMAForm(NetBoxModelForm):
             "date_replaced",
             "issue_description",
             "vendor_response",
+            "description",
+            "owner",
             "tags",
             "comments",
         )
@@ -62,7 +66,7 @@ class RMAForm(NetBoxModelForm):
         }
 
 
-class RMAFilterForm(NetBoxModelFilterSetForm):
+class RMAFilterForm(ContactModelFilterForm, PrimaryModelFilterSetForm):
     model = RMA
     fieldsets = (
         FieldSet("q", "filter_id", "tag", name="General"),
@@ -83,6 +87,8 @@ class RMAFilterForm(NetBoxModelFilterSetForm):
             "serial",
             name="Serial Numbers",
         ),
+        FieldSet("contact", "contact_role", "contact_group", name="Contacts"),
+        FieldSet("owner_group_id", "owner_id", name="Ownership"),
     )
 
     rma_number = forms.CharField(required=False)
@@ -99,7 +105,7 @@ class RMAFilterForm(NetBoxModelFilterSetForm):
     date_replaced = forms.DateField(required=False, widget=DatePicker())
 
 
-class RMABulkEditForm(NetBoxModelBulkEditForm):
+class RMABulkEditForm(PrimaryModelBulkEditForm):
     status = forms.ChoiceField(choices=add_blank_choice(RMAStatusChoices), required=False)
     date_issued = forms.DateField(required=False, widget=DatePicker())
     date_replaced = forms.DateField(required=False, widget=DatePicker())
@@ -113,7 +119,7 @@ class RMABulkEditForm(NetBoxModelBulkEditForm):
     nullable_fields = ("date_issued", "date_replaced")
 
 
-class RMABulkImportForm(NetBoxModelImportForm):
+class RMABulkImportForm(PrimaryModelImportForm):
     """
     Form for bulk importing RMAs
     """
@@ -149,5 +155,7 @@ class RMABulkImportForm(NetBoxModelImportForm):
             "date_issued",
             "date_replaced",
             "vendor_response",
+            "description",
+            "owner",
             "tags",
         ]

@@ -15,7 +15,10 @@ class ContractorListView(generic.ObjectListView):
     queryset = (
         models.Contractor.objects.select_related("tenant")
         .prefetch_related("tags")
-        .annotate(contracts_count=Count("contracts"))
+        .prefetch_related("contacts__contact")
+        # distinct=True is mandatory: the tag and contact filters join their own to-many
+        # tables into this query, which would otherwise multiply every contract row.
+        .annotate(contracts_count=Count("contracts", distinct=True))
     )
     filterset = filtersets.ContractorFilterSet
     filterset_form = forms.ContractorFilterForm

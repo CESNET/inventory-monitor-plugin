@@ -4,11 +4,13 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from netbox.forms import (
-    NetBoxModelBulkEditForm,
-    NetBoxModelFilterSetForm,
     NetBoxModelForm,
-    NetBoxModelImportForm,
+    PrimaryModelBulkEditForm,
+    PrimaryModelFilterSetForm,
+    PrimaryModelForm,
+    PrimaryModelImportForm,
 )
+from tenancy.forms import ContactModelFilterForm
 from utilities.forms.fields import (
     CommentField,
     CSVModelChoiceField,
@@ -31,7 +33,7 @@ from inventory_monitor.models.asset import (
 )
 
 
-class AssetForm(NetBoxModelForm):
+class AssetForm(PrimaryModelForm):
     """
     Form for creating and editing Asset objects
     """
@@ -206,6 +208,8 @@ class AssetForm(NetBoxModelForm):
             # Warranty information
             "warranty_start",
             "warranty_end",
+            # Ownership
+            "owner",
             # Metadata
             "comments",
             "tags",
@@ -272,7 +276,7 @@ class AssetForm(NetBoxModelForm):
             self.instance.assigned_object = None
 
 
-class AssetFilterForm(NetBoxModelFilterSetForm):
+class AssetFilterForm(ContactModelFilterForm, PrimaryModelFilterSetForm):
     """
     Filter form for Asset objects, used in list views
     """
@@ -320,6 +324,8 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
         FieldSet("quantity", "quantity__gte", "quantity__lte", name=_("Quantity")),
         FieldSet("price", "price__gte", "price__lte", "price__isnull", "currency", name=_("Price")),
         FieldSet("has_external_inventory_items", name=_("External Inventory")),
+        FieldSet("contact", "contact_role", "contact_group", name=_("Contacts")),
+        FieldSet("owner_group_id", "owner_id", name=_("Ownership")),
     )
 
     #
@@ -443,7 +449,7 @@ class AssetFilterForm(NetBoxModelFilterSetForm):
     )
 
 
-class AssetBulkEditForm(NetBoxModelBulkEditForm):
+class AssetBulkEditForm(PrimaryModelBulkEditForm):
     description = forms.CharField(
         required=False,
         label="Description",
@@ -497,7 +503,7 @@ class AssetBulkEditForm(NetBoxModelBulkEditForm):
     )
 
 
-class AssetBulkImportForm(NetBoxModelImportForm):
+class AssetBulkImportForm(PrimaryModelImportForm):
     """
     Form for bulk importing Assets
     """
@@ -581,6 +587,7 @@ class AssetBulkImportForm(NetBoxModelImportForm):
             "warranty_start",
             "warranty_end",
             "comments",
+            "owner",
             "tags",
         ]
 

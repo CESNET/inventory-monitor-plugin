@@ -7,7 +7,7 @@ from dcim.api.serializers import (
 )
 from drf_spectacular.utils import extend_schema_field
 from netbox.api.fields import ContentTypeField, SerializedPKRelatedField
-from netbox.api.serializers import NetBoxModelSerializer
+from netbox.api.serializers import NetBoxModelSerializer, PrimaryModelSerializer
 from rest_framework import serializers
 from tenancy.api.serializers import TenantSerializer
 from utilities.api import get_serializer_for_model
@@ -62,7 +62,7 @@ class AssetTypeSerializer(NetBoxModelSerializer):
         ]
 
 
-class ContractorSerializer(NetBoxModelSerializer):
+class ContractorSerializer(PrimaryModelSerializer):
     """Serializer for Contractor objects"""
 
     url = serializers.HyperlinkedIdentityField(view_name="plugins-api:inventory_monitor-api:contractor-detail")
@@ -79,6 +79,7 @@ class ContractorSerializer(NetBoxModelSerializer):
             "address",
             "description",
             "tenant",
+            "owner",
             "tags",
             "comments",
             "custom_fields",
@@ -87,7 +88,7 @@ class ContractorSerializer(NetBoxModelSerializer):
         brief_fields = ["id", "url", "display", "name", "company", "address", "description"]
 
 
-class ContractSerializer(NetBoxModelSerializer):
+class ContractSerializer(PrimaryModelSerializer):
     """Serializer for Contract objects"""
 
     url = serializers.HyperlinkedIdentityField(view_name="plugins-api:inventory_monitor-api:contract-detail")
@@ -112,6 +113,7 @@ class ContractSerializer(NetBoxModelSerializer):
             "invoicing_start",
             "invoicing_end",
             "parent",
+            "owner",
             "tags",
             "comments",
             "custom_fields",
@@ -137,7 +139,7 @@ class ContractSerializer(NetBoxModelSerializer):
 #
 
 
-class AssetSerializer(NetBoxModelSerializer):
+class AssetSerializer(PrimaryModelSerializer):
     """
     Serializer for Asset objects supporting GenericForeignKey relationships
     """
@@ -186,6 +188,8 @@ class AssetSerializer(NetBoxModelSerializer):
             # Warranty information
             "warranty_start",
             "warranty_end",
+            # Ownership
+            "owner",
             # Notes and metadata
             "comments",
             "custom_fields",
@@ -274,7 +278,7 @@ class ProbeSerializer(NetBoxModelSerializer):
         ]
 
 
-class InvoiceSerializer(NetBoxModelSerializer):
+class InvoiceSerializer(PrimaryModelSerializer):
     """Serializer for Invoice objects"""
 
     url = serializers.HyperlinkedIdentityField(view_name="plugins-api:inventory_monitor-api:invoice-detail")
@@ -295,6 +299,7 @@ class InvoiceSerializer(NetBoxModelSerializer):
             "currency",
             "invoicing_start",
             "invoicing_end",
+            "owner",
             "tags",
             "comments",
             "custom_fields",
@@ -303,7 +308,7 @@ class InvoiceSerializer(NetBoxModelSerializer):
         brief_fields = ["id", "url", "display", "name", "name_internal", "description"]
 
 
-class AssetServiceSerializer(NetBoxModelSerializer):
+class AssetServiceSerializer(PrimaryModelSerializer):
     """Serializer for AssetService objects"""
 
     url = serializers.HyperlinkedIdentityField(view_name="plugins-api:inventory_monitor-api:assetservice-detail")
@@ -325,6 +330,7 @@ class AssetServiceSerializer(NetBoxModelSerializer):
             "description",
             "asset",
             "contract",
+            "owner",
             "tags",
             "comments",
             "custom_fields",
@@ -343,7 +349,7 @@ class AssetServiceSerializer(NetBoxModelSerializer):
         ]
 
 
-class RMASerializer(NetBoxModelSerializer):
+class RMASerializer(PrimaryModelSerializer):
     """Serializer for RMA (Return Merchandise Authorization) objects"""
 
     url = serializers.HyperlinkedIdentityField(view_name="plugins-api:inventory_monitor-api:rma-detail")
@@ -364,6 +370,9 @@ class RMASerializer(NetBoxModelSerializer):
             "date_replaced",
             "issue_description",
             "vendor_response",
+            "description",
+            "comments",
+            "owner",
             "tags",
             "custom_fields",
             "created",
@@ -384,7 +393,7 @@ class RMASerializer(NetBoxModelSerializer):
         ]
 
 
-class ExternalInventorySerializer(NetBoxModelSerializer):
+class ExternalInventorySerializer(PrimaryModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name="plugins-api:inventory_monitor-api:externalinventory-detail")
     assets = SerializedPKRelatedField(
         queryset=Asset.objects.all(),
@@ -415,6 +424,9 @@ class ExternalInventorySerializer(NetBoxModelSerializer):
             "split_asset",
             "status",
             "assets",
+            "description",
+            "comments",
+            "owner",
             "tags",
             "custom_fields",
             "created",

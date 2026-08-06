@@ -1,11 +1,12 @@
 import django_tables2 as tables
-from netbox.tables import NetBoxTable, columns
+from netbox.tables import PrimaryModelTable, columns
+from tenancy.tables import ContactsColumnMixin
 
 from inventory_monitor.helpers import CurrencyColumn, TEMPLATE_INVOICING_STATUS
 from inventory_monitor.models import Invoice
 
 
-class InvoiceTable(NetBoxTable):
+class InvoiceTable(ContactsColumnMixin, PrimaryModelTable):
     name = tables.Column(linkify=True, verbose_name="Invoice Number")
     name_internal = tables.Column(verbose_name="Internal ID")
     contract = tables.Column(linkify=True)
@@ -16,7 +17,7 @@ class InvoiceTable(NetBoxTable):
     )
     tags = columns.TagColumn()
 
-    class Meta(NetBoxTable.Meta):
+    class Meta(PrimaryModelTable.Meta):
         model = Invoice
         fields = (
             "pk",
@@ -32,6 +33,9 @@ class InvoiceTable(NetBoxTable):
             "invoicing_status",
             "comments",
             "attachments_count",
+            "contacts",
+            "owner",
+            "owner_group",
             "actions",
             "tags",
         )

@@ -1,5 +1,6 @@
 import django_tables2 as tables
-from netbox.tables import NetBoxTable, columns
+from netbox.tables import PrimaryModelTable, columns
+from tenancy.tables import ContactsColumnMixin
 
 # Helper imports for custom columns and templates
 from inventory_monitor.helpers import (
@@ -69,7 +70,7 @@ ASSOCIATED_EXTERNAL_INVENTORY_ASSETS = """
 """
 
 
-class AssetTable(NetBoxTable):
+class AssetTable(ContactsColumnMixin, PrimaryModelTable):
     """
     Table configuration for displaying Asset objects in list views
     """
@@ -161,9 +162,8 @@ class AssetTable(NetBoxTable):
     # Metadata columns
     #
     tags = columns.TagColumn()
-    comments = tables.Column()
 
-    class Meta(NetBoxTable.Meta):
+    class Meta(PrimaryModelTable.Meta):
         model = Asset
 
         # Define all available fields that can be displayed in the table
@@ -202,6 +202,10 @@ class AssetTable(NetBoxTable):
             "services_from",
             "services_to",
             "services_status",
+            # Contacts & ownership
+            "contacts",
+            "owner",
+            "owner_group",
             # Metadata
             "comments",
             "tags",

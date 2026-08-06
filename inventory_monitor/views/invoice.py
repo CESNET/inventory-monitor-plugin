@@ -6,8 +6,12 @@ from inventory_monitor.helpers import get_attachments_count_subquery
 
 
 def get_invoice_queryset():
-    return models.Invoice.objects.select_related("contract").annotate(
-        attachments_count=get_attachments_count_subquery("invoice"),
+    return (
+        models.Invoice.objects.select_related("contract")
+        .prefetch_related("contacts__contact")
+        .annotate(
+            attachments_count=get_attachments_count_subquery("invoice"),
+        )
     )
 
 

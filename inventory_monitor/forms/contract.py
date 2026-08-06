@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
+from netbox.forms import PrimaryModelBulkEditForm, PrimaryModelFilterSetForm, PrimaryModelForm, PrimaryModelImportForm
+from tenancy.forms import ContactModelFilterForm
 from utilities.forms.fields import (
     CommentField,
     CSVModelChoiceField,
@@ -16,7 +17,7 @@ from inventory_monitor.helpers import get_currency_choices
 from inventory_monitor.models import Contract, Contractor, ContractTypeChoices
 
 
-class ContractForm(NetBoxModelForm):
+class ContractForm(PrimaryModelForm):
     comments = CommentField(label="Comments")
     contractor = DynamicModelChoiceField(queryset=Contractor.objects.all(), required=True, selector=True)
     parent = DynamicModelChoiceField(
@@ -72,11 +73,12 @@ class ContractForm(NetBoxModelForm):
             "parent",
             "description",
             "comments",
+            "owner",
             "tags",
         )
 
 
-class ContractFilterForm(NetBoxModelFilterSetForm):
+class ContractFilterForm(ContactModelFilterForm, PrimaryModelFilterSetForm):
     model = Contract
 
     fieldsets = (
@@ -99,6 +101,8 @@ class ContractFilterForm(NetBoxModelFilterSetForm):
             "invoicing_end__lte",
             name=_("Dates"),
         ),
+        FieldSet("contact", "contact_role", "contact_group", name=_("Contacts")),
+        FieldSet("owner_group_id", "owner_id", name=_("Ownership")),
     )
     tag = TagFilterField(model)
 
@@ -158,7 +162,7 @@ class ContractFilterForm(NetBoxModelFilterSetForm):
     invoicing_end = forms.DateField(required=False, label=("Invoicing End"), widget=DatePicker())
 
 
-class ContractBulkEditForm(NetBoxModelBulkEditForm):
+class ContractBulkEditForm(PrimaryModelBulkEditForm):
     name = forms.CharField(max_length=100, required=False)
     name_internal = forms.CharField(max_length=100, required=False)
     description = forms.CharField(required=False)
@@ -189,7 +193,7 @@ class ContractBulkEditForm(NetBoxModelBulkEditForm):
     )
 
 
-class ContractBulkImportForm(NetBoxModelImportForm):
+class ContractBulkImportForm(PrimaryModelImportForm):
     """
     Form for bulk importing Contracts
     """
@@ -233,6 +237,7 @@ class ContractBulkImportForm(NetBoxModelImportForm):
             "invoicing_end",
             "description",
             "comments",
+            "owner",
             "tags",
         ]
 

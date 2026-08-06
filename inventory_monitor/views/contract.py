@@ -7,10 +7,14 @@ from inventory_monitor.helpers import get_attachments_count_subquery
 
 
 def annotate_queryset_with_counts(queryset):
-    queryset = queryset.select_related("contractor", "parent").annotate(
-        subcontracts_count=Count("subcontracts", distinct=True),
-        invoices_count=Count("invoices", distinct=True),
-        attachments_count=get_attachments_count_subquery("contract"),
+    queryset = (
+        queryset.select_related("contractor", "parent")
+        .prefetch_related("contacts__contact")
+        .annotate(
+            subcontracts_count=Count("subcontracts", distinct=True),
+            invoices_count=Count("invoices", distinct=True),
+            attachments_count=get_attachments_count_subquery("contract"),
+        )
     )
     return queryset
 

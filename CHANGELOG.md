@@ -5,6 +5,89 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [14.0.0] - 2026-08-06
+
+> **Requires NetBox >= 4.6.0.** NetBox 4.5.x is **not supported** by this release.
+
+### Breaking Changes
+
+- **Minimum NetBox raised from 4.5.4 to 4.6.0.** Migration `0006` depends on
+  `users.0016_default_ordering_indexes`, which first ships in NetBox 4.6.0. On 4.5.x, `migrate`
+  aborts with `NodeNotFoundError` before applying anything.
+- **The seven inventory models now inherit `PrimaryModel`** instead of `NetBoxModel`. `description`
+  narrows from 255 to 200 characters. **No description is ever shortened for you.** Migration
+  `0007` checks every row first and, if any exceeds 200 characters, rolls back and lists the
+  offending model, primary key and length so you can decide what to keep — move the overflow into
+  `comments`, or trim it. Re-run `migrate` afterwards. To see the same list before upgrading:
+
+  ```
+  Asset.objects.annotate(l=Length('description')).filter(l__gt=200).values_list('pk', 'description')
+  ```
+
+  Repeat for `AssetService`, `Contract`, `Contractor` and `Invoice`.
+
+### Added
+
+- **Contacts on plugin objects.** Asset, Asset Service, Contract, Contractor, External Inventory,
+  Invoice and RMA now support NetBox contacts. Each gains a **Contacts** tab on its detail page
+  where `tenancy.Contact` records can be assigned with a role and priority, plus `contact`,
+  `contact_role` and `contact_group` filters in the UI and REST API, an optional `Contacts` table
+  column, and `contacts` in GraphQL as both an output field and a filter. Contacts are stored as
+  `ContactAssignment` rows, so this adds no database columns. Contacts are intentionally *not*
+  exposed on the plugin's REST serializers, matching NetBox core — read and write them through
+  `/api/tenancy/contact-assignments/`.
+
+  Assignment roles are not created by the plugin. To record the ABRA responsible person, create a
+  **Owner** contact role under *Organization → Contact Roles*.
+
+- **Ownership on plugin objects.** The same seven models gain NetBox's `owner` field
+  (`users.Owner` — a named set of NetBox users and groups, distinct from tenancy). Available on the
+  edit form, in bulk edit (nullable), in CSV import by Owner name, as optional `Owner` and
+  `Owner Group` table columns, as `owner`/`owner_id`/`owner_group`/`owner_group_id` filters, in the
+  REST API, and in GraphQL as both an output field and a filter. API list endpoints
+  `select_related` the owner to avoid an extra query per row.
+
+  Migration `0006` adds a nullable `owner` foreign key to each of the seven tables.
+
+- **`description` and `comments` on External Inventory and RMA.** Both models previously lacked
+  these columns while their forms offered a comments box, so anything typed there was silently
+  discarded on save. Migration `0007` adds the columns and the fields now persist.
+
+- **GraphQL filtering by owner and contacts.** NetBox 4.6 exposes `owner` as an output field but
+  ships no owner *filter* mixin, so the plugin provides `inventory_monitor.graphql.filter_mixins
+  .OwnerFilterMixin`. Owner-group filtering works by nesting: `owner: { group: { name: ... } }`.
+
+- **Contacts prefetching on list views.** `BaseTable._set_prefetches` stops at the GenericRelation,
+  so enabling the Contacts column previously cost one query per contact assignment.
+
+- `inventory_monitor/tests/test_contacts.py` pinning the feature registration, the Contacts URL
+  wiring (which fails silently when broken), the contact/owner filters, and that each edit form
+  renders exactly one owner widget.
+
+- **Note for the ABRA importer.** `ExternalInventory.person_id` stores ABRA's `personalnumber`, not
+  ABRA's `person_id`. The `abra_contact_id` custom field on `tenancy.Contact` is named after the
+  latter, so joining the two matches zero rows.
+
+### Fixed
+
+- **Duplicate owner field on edit forms.** `templates/htmx/form.html` and
+  `templates/generic/bulk_edit.html` render `owner`/`owner_group` unconditionally, so listing them
+  in a `FieldSet` emitted the widget twice. On submit the browser sent both values and the second
+  overwrote the user's choice. Affected six of the seven edit forms plus three bulk-edit forms.
+
+- **`docs/graphql-filters.md` documented lookup names that do not exist.** `icontains`,
+  `startswith`, `endswith` and `in` are really `i_contains`, `starts_with`, `ends_with` and
+  `in_list`, so every string-filter example in that document failed schema validation. The document
+  now also covers the owner and contact filters, the `AND`/`OR`/`NOT` combinators, and which models
+  support contacts and ownership. Every example in it is executed against the live schema.
+
+### Changed
+
+- Filtersets, forms, tables and serializers now inherit NetBox's `PrimaryModel*` base classes
+  instead of hand-assembled owner mixins, which also fixes the mixin MRO to match core's ordering.
+- `StrFilterLookup[str]` replaced with the bare `StrFilterLookup` throughout the GraphQL filters;
+  strawberry-django 0.86.4 defines it as non-generic and warns that the type argument is ignored.
+
 ## [13.5.0] - 2026-08-05
 
 ### Added

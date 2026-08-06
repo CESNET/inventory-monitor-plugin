@@ -1,14 +1,15 @@
 import django_filters
 from django.db.models import Q
 from extras.filters import TagFilter
-from netbox.filtersets import NetBoxModelFilterSet
+from netbox.filtersets import PrimaryModelFilterSet
+from tenancy.filtersets import ContactModelFilterSet
 from utilities.filtersets import register_filterset
 
 from inventory_monitor.models import Contract, Contractor, ContractTypeChoices
 
 
 @register_filterset
-class ContractFilterSet(NetBoxModelFilterSet):
+class ContractFilterSet(PrimaryModelFilterSet, ContactModelFilterSet):
     """
     Filter set for the Contract model.
 

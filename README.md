@@ -2,8 +2,8 @@
 
 A comprehensive NetBox plugin for asset management with semi-automatic discovery processes. This plugin extends NetBox with powerful inventory tracking capabilities, including asset lifecycle management, probe monitoring, contract tracking, and RMA (Return Merchandise Authorization) processing.
 
-[![Version](https://img.shields.io/badge/version-13.3.0-blue.svg)](https://github.com/CESNET/inventory-monitor-plugin)
-[![NetBox](https://img.shields.io/badge/netbox-4.5.4%2B-green.svg)](https://github.com/netbox-community/netbox)
+[![Version](https://img.shields.io/badge/version-14.0.0-blue.svg)](https://github.com/CESNET/inventory-monitor-plugin)
+[![NetBox](https://img.shields.io/badge/netbox-4.6.0%2B-green.svg)](https://github.com/netbox-community/netbox)
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
 
 ---
@@ -450,11 +450,12 @@ Integration with external inventory management systems.
 | 12.0.0+       | 4.4.x        | 4.4.0        |
 | 13.0.0 - 13.0.x | 4.5.0 - 4.5.3 | 4.5.0       |
 | 13.1.0 - 13.3.x | 4.5.4 - 4.5.99 | 4.5.4      |
-| 13.4.0+       | 4.5.4 - 4.6.99 | 4.6.0       |
+| 13.4.0 - 13.5.x | 4.5.4 - 4.6.99 | 4.6.0      |
+| 14.0.0+       | 4.6.0 - 4.6.99 | 4.6.4       |
 
 ### Requirements
 
-- NetBox 4.5.4 or higher
+- NetBox 4.6.0 or higher
 - Python 3.12 or higher
 
 ### From PyPI (Recommended)
@@ -689,7 +690,7 @@ Both filters are available over REST and in the UI, e.g. `?service_status=expire
 
 ### Integration with NetBox Attachments
 
-The plugin supports optional integration with [netbox-attachments](https://github.com/Kani999/netbox-attachments) (requires netbox-attachments >= 11.0.0 and NetBox >= 4.5.4) to display attachment counts on **Contract** and **Invoice** list views. See [docs/netbox-attachments.md](docs/netbox-attachments.md) for setup instructions.
+The plugin supports optional integration with [netbox-attachments](https://github.com/Kani999/netbox-attachments) (requires netbox-attachments >= 11.0.0 and NetBox >= 4.6.0) to display attachment counts on **Contract** and **Invoice** list views. See [docs/netbox-attachments.md](docs/netbox-attachments.md) for setup instructions.
 
 **Requirements:** `netbox-attachments >= 11.0.0`
 

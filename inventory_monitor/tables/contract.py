@@ -1,11 +1,12 @@
 import django_tables2 as tables
-from netbox.tables import ChoiceFieldColumn, NetBoxTable, columns
+from netbox.tables import ChoiceFieldColumn, PrimaryModelTable, columns
+from tenancy.tables import ContactsColumnMixin
 
 from inventory_monitor.helpers import CurrencyColumn, TEMPLATE_INVOICING_STATUS
 from inventory_monitor.models import Contract
 
 
-class ContractTable(NetBoxTable):
+class ContractTable(ContactsColumnMixin, PrimaryModelTable):
     name = tables.Column(linkify=True)
     contractor = tables.Column(linkify=True)
     subcontracts_count = tables.Column()
@@ -21,7 +22,7 @@ class ContractTable(NetBoxTable):
     )
     tags = columns.TagColumn()
 
-    class Meta(NetBoxTable.Meta):
+    class Meta(PrimaryModelTable.Meta):
         model = Contract
         fields = (
             "pk",
@@ -43,6 +44,9 @@ class ContractTable(NetBoxTable):
             "invoices_count",
             "subcontracts_count",
             "attachments_count",
+            "contacts",
+            "owner",
+            "owner_group",
             "actions",
         )
         default_columns = (

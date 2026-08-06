@@ -23,25 +23,25 @@ class ProbeViewSet(NetBoxModelViewSet):
 
 
 class ContractorViewSet(NetBoxModelViewSet):
-    queryset = models.Contractor.objects.select_related("tenant").prefetch_related("tags")
+    queryset = models.Contractor.objects.select_related("tenant", "owner__group").prefetch_related("tags")
     serializer_class = ContractorSerializer
     filterset_class = filtersets.ContractorFilterSet
 
 
 class ContractViewSet(NetBoxModelViewSet):
-    queryset = models.Contract.objects.select_related("contractor").prefetch_related("tags")
+    queryset = models.Contract.objects.select_related("contractor", "owner__group").prefetch_related("tags")
     serializer_class = ContractSerializer
     filterset_class = filtersets.ContractFilterSet
 
 
 class InvoiceViewSet(NetBoxModelViewSet):
-    queryset = models.Invoice.objects.select_related("contract").prefetch_related("tags")
+    queryset = models.Invoice.objects.select_related("contract", "owner__group").prefetch_related("tags")
     serializer_class = InvoiceSerializer
     filterset_class = filtersets.InvoiceFilterSet
 
 
 class AssetViewSet(NetBoxModelViewSet):
-    queryset = models.Asset.objects.select_related("type", "order_contract").prefetch_related("tags")
+    queryset = models.Asset.objects.select_related("type", "order_contract", "owner__group").prefetch_related("tags")
     serializer_class = AssetSerializer
     filterset_class = filtersets.AssetFilterSet
 
@@ -53,18 +53,18 @@ class AssetTypeViewSet(NetBoxModelViewSet):
 
 
 class AssetServiceViewSet(NetBoxModelViewSet):
-    queryset = models.AssetService.objects.select_related("asset", "contract").prefetch_related("tags")
+    queryset = models.AssetService.objects.select_related("asset", "contract", "owner__group").prefetch_related("tags")
     serializer_class = AssetServiceSerializer
     filterset_class = filtersets.AssetServiceFilterSet
 
 
 class RMAViewSet(NetBoxModelViewSet):
-    queryset = models.RMA.objects.select_related("asset").prefetch_related("tags")
+    queryset = models.RMA.objects.select_related("asset", "owner__group").prefetch_related("tags")
     serializer_class = RMASerializer
     filterset_class = filtersets.RMAFilterSet
 
 
 class ExternalInventoryViewSet(NetBoxModelViewSet):
-    queryset = ExternalInventory.objects.prefetch_related("assets", "tags")
+    queryset = ExternalInventory.objects.select_related("owner__group").prefetch_related("assets", "tags")
     serializer_class = ExternalInventorySerializer
     filterset_class = ExternalInventoryFilterSet

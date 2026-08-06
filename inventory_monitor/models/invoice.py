@@ -2,14 +2,15 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
-from netbox.models import NetBoxModel
+from netbox.models import PrimaryModel
+from netbox.models.features import ContactsMixin
 from taggit.managers import TaggableManager
 from utilities.querysets import RestrictedQuerySet
 
 from inventory_monitor.models.mixins import DateStatusMixin
 
 
-class Invoice(NetBoxModel, DateStatusMixin):
+class Invoice(ContactsMixin, PrimaryModel, DateStatusMixin):
     objects = RestrictedQuerySet.as_manager()
     name = models.CharField(max_length=255, blank=False, null=False)
     name_internal = models.CharField(max_length=255, blank=False, null=False)
@@ -41,8 +42,6 @@ class Invoice(NetBoxModel, DateStatusMixin):
         blank=True,
         null=True,
     )
-    description = models.CharField(max_length=255, blank=True, default="")
-    comments = models.TextField(blank=True)
 
     # Override tags field to avoid reverse accessor clash with other plugins
     tags = TaggableManager(
