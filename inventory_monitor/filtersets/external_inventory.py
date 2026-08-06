@@ -1,15 +1,14 @@
 import django_filters
 from django.db.models import Q
-from netbox.filtersets import NetBoxModelFilterSet
+from netbox.filtersets import PrimaryModelFilterSet
 from tenancy.filtersets import ContactModelFilterSet
-from users.filterset_mixins import OwnerFilterMixin
 from utilities.filtersets import register_filterset
 
 from inventory_monitor.models import Asset, ExternalInventory
 
 
 @register_filterset
-class ExternalInventoryFilterSet(NetBoxModelFilterSet, ContactModelFilterSet, OwnerFilterMixin):
+class ExternalInventoryFilterSet(PrimaryModelFilterSet, ContactModelFilterSet):
     """
     Filterset for External Inventory objects providing comprehensive search and filtering capabilities.
     """

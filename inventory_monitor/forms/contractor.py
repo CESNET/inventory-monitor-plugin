@@ -1,8 +1,6 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
-from netbox.forms.bulk_import import OwnerCSVMixin
-from netbox.forms.mixins import OwnerFilterMixin, OwnerMixin
+from netbox.forms import PrimaryModelBulkEditForm, PrimaryModelFilterSetForm, PrimaryModelForm, PrimaryModelImportForm
 from tenancy.forms import ContactModelFilterForm
 from tenancy.models import Tenant
 from utilities.forms.fields import (
@@ -21,7 +19,7 @@ COMPANY_MAX = Contractor._meta.get_field("company").max_length
 ADDRESS_MAX = Contractor._meta.get_field("address").max_length
 
 
-class ContractorForm(OwnerMixin, NetBoxModelForm):
+class ContractorForm(PrimaryModelForm):
     tenant = DynamicModelChoiceField(queryset=Tenant.objects.all(), selector=True, required=False)
 
     comments = CommentField(label="Comments")
@@ -31,7 +29,7 @@ class ContractorForm(OwnerMixin, NetBoxModelForm):
         fields = ("name", "company", "address", "description", "tenant", "owner", "tags", "comments")
 
 
-class ContractorFilterForm(ContactModelFilterForm, OwnerFilterMixin, NetBoxModelFilterSetForm):
+class ContractorFilterForm(ContactModelFilterForm, PrimaryModelFilterSetForm):
     model = Contractor
     tag = TagFilterField(model)
     name = forms.CharField(required=False)
@@ -49,7 +47,7 @@ class ContractorFilterForm(ContactModelFilterForm, OwnerFilterMixin, NetBoxModel
     )
 
 
-class ContractorBulkEditForm(OwnerMixin, NetBoxModelBulkEditForm):
+class ContractorBulkEditForm(PrimaryModelBulkEditForm):
     company = forms.CharField(max_length=COMPANY_MAX, required=False)
     address = forms.CharField(max_length=ADDRESS_MAX, required=False)
     description = forms.CharField(required=False)
@@ -59,7 +57,7 @@ class ContractorBulkEditForm(OwnerMixin, NetBoxModelBulkEditForm):
     nullable_fields = ("company", "address", "description", "tenant")
 
 
-class ContractorBulkImportForm(OwnerCSVMixin, NetBoxModelImportForm):
+class ContractorBulkImportForm(PrimaryModelImportForm):
     """
     Form for bulk importing Contractors
     """

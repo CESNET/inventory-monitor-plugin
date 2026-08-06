@@ -1,8 +1,6 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
-from netbox.forms.bulk_import import OwnerCSVMixin
-from netbox.forms.mixins import OwnerFilterMixin, OwnerMixin
+from netbox.forms import PrimaryModelBulkEditForm, PrimaryModelFilterSetForm, PrimaryModelForm, PrimaryModelImportForm
 from tenancy.forms import ContactModelFilterForm
 from utilities.forms.fields import (
     CommentField,
@@ -19,7 +17,7 @@ from inventory_monitor.helpers import get_currency_choices
 from inventory_monitor.models import Contract, Contractor, ContractTypeChoices
 
 
-class ContractForm(OwnerMixin, NetBoxModelForm):
+class ContractForm(PrimaryModelForm):
     comments = CommentField(label="Comments")
     contractor = DynamicModelChoiceField(queryset=Contractor.objects.all(), required=True, selector=True)
     parent = DynamicModelChoiceField(
@@ -50,7 +48,6 @@ class ContractForm(OwnerMixin, NetBoxModelForm):
             name=_("Dates"),
         ),
         FieldSet("parent", name=_("Hierarchy")),
-        FieldSet("owner_group", "owner", name=_("Ownership")),
         FieldSet("tags", name=_("Additional Information")),
     )
 
@@ -81,7 +78,7 @@ class ContractForm(OwnerMixin, NetBoxModelForm):
         )
 
 
-class ContractFilterForm(ContactModelFilterForm, OwnerFilterMixin, NetBoxModelFilterSetForm):
+class ContractFilterForm(ContactModelFilterForm, PrimaryModelFilterSetForm):
     model = Contract
 
     fieldsets = (
@@ -165,7 +162,7 @@ class ContractFilterForm(ContactModelFilterForm, OwnerFilterMixin, NetBoxModelFi
     invoicing_end = forms.DateField(required=False, label=("Invoicing End"), widget=DatePicker())
 
 
-class ContractBulkEditForm(OwnerMixin, NetBoxModelBulkEditForm):
+class ContractBulkEditForm(PrimaryModelBulkEditForm):
     name = forms.CharField(max_length=100, required=False)
     name_internal = forms.CharField(max_length=100, required=False)
     description = forms.CharField(required=False)
@@ -196,7 +193,7 @@ class ContractBulkEditForm(OwnerMixin, NetBoxModelBulkEditForm):
     )
 
 
-class ContractBulkImportForm(OwnerCSVMixin, NetBoxModelImportForm):
+class ContractBulkImportForm(PrimaryModelImportForm):
     """
     Form for bulk importing Contracts
     """

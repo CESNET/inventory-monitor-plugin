@@ -1,8 +1,6 @@
 from django import forms
 from django.utils.translation import gettext as _
-from netbox.forms import NetBoxModelBulkEditForm, NetBoxModelFilterSetForm, NetBoxModelForm, NetBoxModelImportForm
-from netbox.forms.bulk_import import OwnerCSVMixin
-from netbox.forms.mixins import OwnerFilterMixin, OwnerMixin
+from netbox.forms import PrimaryModelBulkEditForm, PrimaryModelFilterSetForm, PrimaryModelForm, PrimaryModelImportForm
 from tenancy.forms import ContactModelFilterForm
 from utilities.forms.fields import CommentField, CSVModelChoiceField, DynamicModelChoiceField, TagFilterField
 from utilities.forms.rendering import FieldSet
@@ -13,7 +11,7 @@ from inventory_monitor.models import RMA, Asset
 from inventory_monitor.models.rma import RMAStatusChoices
 
 
-class RMAForm(OwnerMixin, NetBoxModelForm):
+class RMAForm(PrimaryModelForm):
     rma_number = forms.CharField(
         required=False,
         empty_value=None,
@@ -28,11 +26,11 @@ class RMAForm(OwnerMixin, NetBoxModelForm):
             "status",
             "original_serial",
             "replacement_serial",
+            "description",
             name="RMA Information",
         ),
         FieldSet("date_issued", "date_replaced", name="Dates"),
         FieldSet("issue_description", "vendor_response", name="Description"),
-        FieldSet("owner_group", "owner", name="Ownership"),
         FieldSet("tags", name="Tags"),
     )
 
@@ -55,6 +53,7 @@ class RMAForm(OwnerMixin, NetBoxModelForm):
             "date_replaced",
             "issue_description",
             "vendor_response",
+            "description",
             "owner",
             "tags",
             "comments",
@@ -67,7 +66,7 @@ class RMAForm(OwnerMixin, NetBoxModelForm):
         }
 
 
-class RMAFilterForm(ContactModelFilterForm, OwnerFilterMixin, NetBoxModelFilterSetForm):
+class RMAFilterForm(ContactModelFilterForm, PrimaryModelFilterSetForm):
     model = RMA
     fieldsets = (
         FieldSet("q", "filter_id", "tag", name="General"),
@@ -106,7 +105,7 @@ class RMAFilterForm(ContactModelFilterForm, OwnerFilterMixin, NetBoxModelFilterS
     date_replaced = forms.DateField(required=False, widget=DatePicker())
 
 
-class RMABulkEditForm(OwnerMixin, NetBoxModelBulkEditForm):
+class RMABulkEditForm(PrimaryModelBulkEditForm):
     status = forms.ChoiceField(choices=add_blank_choice(RMAStatusChoices), required=False)
     date_issued = forms.DateField(required=False, widget=DatePicker())
     date_replaced = forms.DateField(required=False, widget=DatePicker())
@@ -120,7 +119,7 @@ class RMABulkEditForm(OwnerMixin, NetBoxModelBulkEditForm):
     nullable_fields = ("date_issued", "date_replaced")
 
 
-class RMABulkImportForm(OwnerCSVMixin, NetBoxModelImportForm):
+class RMABulkImportForm(PrimaryModelImportForm):
     """
     Form for bulk importing RMAs
     """
@@ -156,6 +155,7 @@ class RMABulkImportForm(OwnerCSVMixin, NetBoxModelImportForm):
             "date_issued",
             "date_replaced",
             "vendor_response",
+            "description",
             "owner",
             "tags",
         ]

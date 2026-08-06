@@ -1,15 +1,14 @@
 import django_filters
 from django.db.models import Q
-from netbox.filtersets import NetBoxModelFilterSet
+from netbox.filtersets import PrimaryModelFilterSet
 from tenancy.filtersets import ContactModelFilterSet
-from users.filterset_mixins import OwnerFilterMixin
 from utilities.filtersets import register_filterset
 
 from inventory_monitor.models import RMA
 
 
 @register_filterset
-class RMAFilterSet(NetBoxModelFilterSet, ContactModelFilterSet, OwnerFilterMixin):
+class RMAFilterSet(PrimaryModelFilterSet, ContactModelFilterSet):
     q = django_filters.CharFilter(method="search")
     rma_number = django_filters.CharFilter()
     original_serial = django_filters.CharFilter()

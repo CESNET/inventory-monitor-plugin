@@ -5,9 +5,8 @@ from core.models import ObjectType
 from dcim.models import Device, Location, Module, Rack, Site
 from django.db.models import Count, Exists, OuterRef, Q
 from extras.filters import TagFilter
-from netbox.filtersets import NetBoxModelFilterSet
+from netbox.filtersets import PrimaryModelFilterSet
 from tenancy.filtersets import ContactModelFilterSet
-from users.filterset_mixins import OwnerFilterMixin
 from utilities.filtersets import register_filterset
 from utilities.filters import (
     ContentTypeFilter,
@@ -25,7 +24,7 @@ from inventory_monitor.settings import get_warning_days
 
 
 @register_filterset
-class AssetFilterSet(NetBoxModelFilterSet, ContactModelFilterSet, OwnerFilterMixin):
+class AssetFilterSet(PrimaryModelFilterSet, ContactModelFilterSet):
     """
     Filterset for Asset objects providing comprehensive search and filtering capabilities.
     """

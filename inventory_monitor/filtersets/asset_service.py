@@ -1,16 +1,15 @@
 import django_filters
 from django.db.models import Q
 from extras.filters import TagFilter
-from netbox.filtersets import NetBoxModelFilterSet
+from netbox.filtersets import PrimaryModelFilterSet
 from tenancy.filtersets import ContactModelFilterSet
-from users.filterset_mixins import OwnerFilterMixin
 from utilities.filtersets import register_filterset
 
 from inventory_monitor.models import Asset, AssetService, Contract
 
 
 @register_filterset
-class AssetServiceFilterSet(NetBoxModelFilterSet, ContactModelFilterSet, OwnerFilterMixin):
+class AssetServiceFilterSet(PrimaryModelFilterSet, ContactModelFilterSet):
     """
     Filter set for AssetService model.
 
