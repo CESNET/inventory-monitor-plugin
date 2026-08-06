@@ -19,7 +19,7 @@ class ExternalInventoryView(generic.ObjectView):
 
 @register_model_view(ExternalInventory, "list", path="", detail=False)
 class ExternalInventoryListView(generic.ObjectListView):
-    queryset = ExternalInventory.objects.all()
+    queryset = ExternalInventory.objects.prefetch_related("contacts__contact")
     table = ExternalInventoryTable
     filterset = ExternalInventoryFilterSet
     filterset_form = ExternalInventoryFilterForm

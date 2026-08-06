@@ -27,6 +27,9 @@ class AssetListView(generic.ObjectListView):
         .prefetch_related("tags")
         .prefetch_related("external_inventory_items")
         .prefetch_related("rmas")  # Prefetch RMAs to avoid N+1 queries in get_related_probes
+        # BaseTable._set_prefetches stops at the GenericRelation, so the Contacts column would
+        # otherwise issue one query per contact assignment.
+        .prefetch_related("contacts__contact")
         .annotate(services_count=Count("services"))
         .annotate(services_to=ArrayAgg("services__service_end"))
         .annotate(services_contracts=ArrayAgg("services__contract__name"))

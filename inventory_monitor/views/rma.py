@@ -11,7 +11,7 @@ class RMAView(generic.ObjectView):
 
 @register_model_view(models.RMA, "list", path="", detail=False)
 class RMAListView(generic.ObjectListView):
-    queryset = models.RMA.objects.select_related("asset")
+    queryset = models.RMA.objects.select_related("asset").prefetch_related("contacts__contact")
     table = tables.RMATable
     filterset = filtersets.RMAFilterSet
     filterset_form = forms.RMAFilterForm

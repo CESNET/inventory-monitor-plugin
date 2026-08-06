@@ -15,6 +15,7 @@ class ContractorListView(generic.ObjectListView):
     queryset = (
         models.Contractor.objects.select_related("tenant")
         .prefetch_related("tags")
+        .prefetch_related("contacts__contact")
         .annotate(contracts_count=Count("contracts"))
     )
     filterset = filtersets.ContractorFilterSet

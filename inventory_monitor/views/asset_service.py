@@ -11,7 +11,9 @@ class AssetServiceView(generic.ObjectView):
 
 @register_model_view(models.AssetService, "list")
 class AssetServiceListView(generic.ObjectListView):
-    queryset = models.AssetService.objects.select_related("asset", "contract__contractor")
+    queryset = models.AssetService.objects.select_related("asset", "contract__contractor").prefetch_related(
+        "contacts__contact"
+    )
     filterset = filtersets.AssetServiceFilterSet
     filterset_form = forms.AssetServiceFilterForm
     table = tables.AssetServiceTable
