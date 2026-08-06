@@ -30,9 +30,13 @@ class AssetListView(generic.ObjectListView):
         # BaseTable._set_prefetches stops at the GenericRelation, so the Contacts column would
         # otherwise issue one query per contact assignment.
         .prefetch_related("contacts__contact")
-        .annotate(services_count=Count("services"))
-        .annotate(services_to=ArrayAgg("services__service_end"))
-        .annotate(services_contracts=ArrayAgg("services__contract__name"))
+        # distinct=True is mandatory: the tag and contact filters join their own to-many
+        # tables into this query, which would otherwise multiply every service row.
+        # The two arrays are sort keys only -- the columns themselves render from the
+        # services prefetch -- so collapsing equal values costs nothing.
+        .annotate(services_count=Count("services", distinct=True))
+        .annotate(services_to=ArrayAgg("services__service_end", distinct=True))
+        .annotate(services_contracts=ArrayAgg("services__contract__name", distinct=True))
     )
     filterset = filtersets.AssetFilterSet
     filterset_form = forms.AssetFilterForm
