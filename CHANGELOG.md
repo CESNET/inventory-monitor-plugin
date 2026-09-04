@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.0.0] - 2026-09-04
+
+> **Requires NetBox >= 4.7.0.** NetBox 4.6.x is **not supported** by this release. Use 14.0.x on 4.6.
+
+### Breaking Changes
+
+- **Minimum NetBox raised from 4.6.0 to 4.7.0.** NetBox 4.7 removed the automatic reverse
+  relationship of `OwnerMixin` by setting `related_name='+'` on the inherited `owner` field
+  ([netbox #22300](https://github.com/netbox-community/netbox/issues/22300)). Migration `0008`
+  records that change for the seven owned models so that `makemigrations --check` stays clean.
+  The recorded state matches only NetBox 4.7, which is why 4.6 is dropped rather than kept in
+  the supported range. (#23)
+
+### Changed
+
+- Migration `0008_alter_owner_related_name` is state-only: it alters no column and runs no SQL
+  beyond the migration bookkeeping. The plugin never used the removed reverse accessor. (#23)
+- `max_version` is `4.7.99`; the compatibility matrix in the README lists 15.0.0 for
+  NetBox 4.7.0 - 4.7.99. (#23)
+
 ## [14.0.0] - 2026-08-06
 
 > **Requires NetBox >= 4.6.0.** NetBox 4.5.x is **not supported** by this release.
