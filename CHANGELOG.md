@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.0.1] - 2026-10-01
+
+### Fixed
+
+- `?q=` on the asset type list and API was a no-op: the filter form rendered the field, but
+  `AssetTypeFilterSet` had no `search()` method, so every row came back. It now matches `name`,
+  `slug` and `description` case-insensitively, like the other filtersets.
+- The distribution now declares the `netbox.plugins` entry point, so NetBox can discover the
+  plugin from installed package metadata.
+
+### Changed
+
+- Dropped the `django` dependency from `pyproject.toml`. NetBox pins Django itself; a plugin pin
+  could pull a competing version into the venv.
+
 ## [15.0.0] - 2026-09-04
 
 > **Requires NetBox >= 4.7.0.** NetBox 4.6.x is **not supported** by this release. Use 14.0.x on 4.6.
