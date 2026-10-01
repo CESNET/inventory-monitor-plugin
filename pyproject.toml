@@ -23,14 +23,15 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent",
 ]
-dependencies = [
-    "django>=5.0,<7.0",
-]
+dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/CESNET/inventory-monitor-plugin"
 Source = "https://github.com/CESNET/inventory-monitor-plugin"
 Issues = "https://github.com/CESNET/inventory-monitor-plugin/issues"
+
+[project.entry-points."netbox.plugins"]
+inventory_monitor = "inventory_monitor:config"
 
 [tool.setuptools.dynamic]
 version = {attr = "inventory_monitor.version.__version__"}
