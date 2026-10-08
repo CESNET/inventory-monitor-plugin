@@ -122,6 +122,16 @@ class ExternalInventoryBulkEditForm(PrimaryModelBulkEditForm):
     nullable_fields = ("name", "person_name", "location", "status", "comments")
 
 
+def _distinct_choices(field):
+    """Callable choices: Django re-runs it on every render, so new importer values show up without a restart."""
+
+    def choices():
+        qs = ExternalInventory.objects.exclude(**{f"{field}__isnull": True}).exclude(**{field: ""})
+        return [(v, v) for v in qs.order_by(field).values_list(field, flat=True).distinct()]
+
+    return choices
+
+
 class ExternalInventoryFilterForm(ContactModelFilterForm, PrimaryModelFilterSetForm):
     """
     Filter form for External Inventory objects
@@ -170,13 +180,13 @@ class ExternalInventoryFilterForm(ContactModelFilterForm, PrimaryModelFilterSetF
     inventory_number = forms.CharField(required=False)
     name = forms.CharField(required=False)
     serial_number = forms.CharField(required=False)
-    person_id = forms.CharField(required=False)
-    person_name = forms.CharField(required=False)
-    location_code = forms.CharField(required=False)
-    location = forms.CharField(required=False)
-    department_code = forms.CharField(required=False)
-    project_code = forms.CharField(required=False)
-    user_name = forms.CharField(required=False)
+    person_id = forms.MultipleChoiceField(choices=_distinct_choices("person_id"), required=False)
+    person_name = forms.MultipleChoiceField(choices=_distinct_choices("person_name"), required=False)
+    location_code = forms.MultipleChoiceField(choices=_distinct_choices("location_code"), required=False)
+    location = forms.MultipleChoiceField(choices=_distinct_choices("location"), required=False)
+    department_code = forms.MultipleChoiceField(choices=_distinct_choices("department_code"), required=False)
+    project_code = forms.MultipleChoiceField(choices=_distinct_choices("project_code"), required=False)
+    user_name = forms.MultipleChoiceField(choices=_distinct_choices("user_name"), required=False)
     split_asset = forms.CharField(required=False)
     status = forms.CharField(required=False)
     asset_id = DynamicModelMultipleChoiceField(queryset=Asset.objects.all(), required=False, label=_("Assets"))

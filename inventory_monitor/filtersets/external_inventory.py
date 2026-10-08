@@ -2,6 +2,7 @@ import django_filters
 from django.db.models import Q
 from netbox.filtersets import PrimaryModelFilterSet
 from tenancy.filtersets import ContactModelFilterSet
+from utilities.filters import MultiValueCharFilter
 from utilities.filtersets import register_filterset
 
 from inventory_monitor.models import Asset, ExternalInventory
@@ -21,13 +22,13 @@ class ExternalInventoryFilterSet(PrimaryModelFilterSet, ContactModelFilterSet):
     inventory_number = django_filters.CharFilter()
     name = django_filters.CharFilter()
     serial_number = django_filters.CharFilter()
-    person_id = django_filters.CharFilter()
-    person_name = django_filters.CharFilter()
-    location_code = django_filters.CharFilter()
-    location = django_filters.CharFilter()
-    department_code = django_filters.CharFilter()
-    project_code = django_filters.CharFilter()
-    user_name = django_filters.CharFilter()
+    person_id = MultiValueCharFilter()
+    person_name = MultiValueCharFilter()
+    location_code = MultiValueCharFilter()
+    location = MultiValueCharFilter()
+    department_code = MultiValueCharFilter()
+    project_code = MultiValueCharFilter()
+    user_name = MultiValueCharFilter()
     user_note = django_filters.CharFilter()
     split_asset = django_filters.CharFilter()
     status = django_filters.CharFilter()
