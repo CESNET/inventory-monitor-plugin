@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.1.0] - 2026-10-08
+
+### Changed
+
+- External Inventory list filters for `location_code`, `location`, `person_id`, `person_name`,
+  `department_code`, `project_code` and `user_name` are now multi-select pickers populated from
+  the values present in the table. The choices are computed on each page render, so values
+  brought in by the importer appear without a restart. The REST API filters accept the same
+  parameter repeated (`?location=A&location=B`); single-value calls behave as before.
+
 ## [15.0.1] - 2026-10-01
 
 ### Fixed
