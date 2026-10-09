@@ -14,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`Active (1)`) and shown as the raw code otherwise, so the filter uses the same labels as the table.
   The REST API filter accepts the parameter repeated (`?status=1&status=2`); single-value calls
   behave as before.
+- The External Inventory REST serializer declares `brief_fields`, so nested and `?brief=1`
+  representations return `id`, `url`, `display`, `inventory_number`, `name`, `serial_number` and
+  `status` instead of the full record.
+
+### Fixed
+
+- The Probe Diff page now requires `inventory_monitor.view_probe` and respects object-level
+  permissions. Previously any logged-in user could query probes for any device, and a malformed
+  date in the form produced a server error instead of a validation message. The menu entry's
+  permission changed from the non-existent `view_probediff` to `view_probe`.
+
+### Removed
+
+- Hand-written URL patterns for Asset Service views, which duplicated the patterns registered by
+  `@register_model_view`, and the unused `PLUGIN_SETTINGS` constant in `settings.py`.
 
 ## [15.1.0] - 2026-10-08
 

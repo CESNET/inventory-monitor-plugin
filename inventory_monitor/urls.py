@@ -53,32 +53,6 @@ urlpatterns = (
     path("external-inventory/<int:pk>/", include(get_model_urls("inventory_monitor", "externalinventory"))),
     ## AssetService
     path(
-        "asset-services/",
-        views.AssetServiceListView.as_view(),
-        name="assetservice_list",
-    ),
-    path(
-        "asset-services/add/",
-        views.AssetServiceEditView.as_view(),
-        name="assetservice_add",
-    ),
-    path(
-        "asset-services/<int:pk>/",
-        views.AssetServiceView.as_view(),
-        name="assetservice",
-    ),
-    path(
-        "asset-services/<int:pk>/edit/",
-        views.AssetServiceEditView.as_view(),
-        name="assetservice_edit",
-    ),
-    path(
-        "asset-services/<int:pk>/delete/",
-        views.AssetServiceDeleteView.as_view(),
-        name="assetservice_delete",
-    ),
-    # Adds url's like changelog, journal, attachments (from plugin) and etc.
-    path(
         "asset-services/<int:pk>/",
         include(get_model_urls("inventory_monitor", "assetservice")),
     ),

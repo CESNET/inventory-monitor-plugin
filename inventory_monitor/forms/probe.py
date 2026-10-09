@@ -219,7 +219,7 @@ class ProbeDiffForm(NetBoxModelForm):
     )
 
     # Hidden field for tags
-    tags = forms.CharField(widget=forms.HiddenInput())
+    tags = forms.CharField(required=False, widget=forms.HiddenInput())
 
     fieldsets = (
         FieldSet("date_from", "date_to", name=_("Date Range")),

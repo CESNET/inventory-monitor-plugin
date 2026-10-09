@@ -142,7 +142,7 @@ menu = PluginMenu(
                 PluginMenuItem(
                     link="plugins:inventory_monitor:probediff",
                     link_text="Network Changes",
-                    permissions=["inventory_monitor.view_probediff"],
+                    permissions=["inventory_monitor.view_probe"],
                 ),
             ),
         ),

@@ -108,7 +108,3 @@ def get_warning_days(attribute):
         # An explicit value wins, including None which disables indicators.
         return warning_days[attribute]
     return DEFAULT_WARNING_DAYS.get(attribute)
-
-
-# Convenience constants using the settings functions
-PLUGIN_SETTINGS = get_plugin_settings()
