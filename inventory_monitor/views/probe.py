@@ -2,7 +2,7 @@ from django.db.models import Count, OuterRef, Subquery
 from django.shortcuts import render
 from django.views.generic import View
 from netbox.views import generic
-from utilities.views import register_model_view
+from utilities.views import ObjectPermissionRequiredMixin, register_model_view
 
 from inventory_monitor import filtersets, forms, models, tables
 
@@ -56,45 +56,25 @@ class ProbeBulkImportView(generic.BulkImportView):
     model_form = forms.ProbeBulkImportForm
 
 
-class ProbeDiffView(View):
-    def post(self, request):
-        # load from, to and device_id from request
-        date_from = request.POST.get("date_from")
-        date_to = request.POST.get("date_to")
-        device_id = request.POST.get("device")
+class ProbeDiffView(ObjectPermissionRequiredMixin, View):
+    queryset = models.Probe.objects.all()
+    template_name = "inventory_monitor/probe_diff.html"
 
-        probes_added = models.Probe.objects.filter(
-            device_id=device_id,
-            creation_time__gte=date_from,
-            creation_time__lte=date_to,
-        )
-        probes_removed = models.Probe.objects.filter(device_id=device_id, time__gte=date_from, time__lte=date_to)
-
-        form = forms.ProbeDiffForm(
-            initial={
-                "date_from": date_from,
-                "date_to": date_to,
-                "device": device_id,
-            }
-        )
-
-        return render(
-            request,
-            "inventory_monitor/probe_diff.html",
-            {
-                "probes_added": probes_added,
-                "probes_removed": probes_removed,
-                "form": form,
-            },
-        )
+    def get_required_permission(self):
+        return "inventory_monitor.view_probe"
 
     def get(self, request):
-        form = forms.ProbeDiffForm()
+        return render(request, self.template_name, {"form": forms.ProbeDiffForm()})
 
-        return render(
-            request,
-            "./inventory_monitor/probe_diff.html",
-            {
-                "form": form,
-            },
-        )
+    def post(self, request):
+        form = forms.ProbeDiffForm(request.POST)
+        context = {"form": form}
+        if form.is_valid():
+            # self.queryset is restricted to the user's permitted objects by the mixin
+            probes = self.queryset.filter(device=form.cleaned_data["device"])
+            date_from, date_to = form.cleaned_data["date_from"], form.cleaned_data["date_to"]
+            context["probes_added"] = probes.filter(
+                creation_time__date__gte=date_from, creation_time__date__lte=date_to
+            )
+            context["probes_removed"] = probes.filter(time__date__gte=date_from, time__date__lte=date_to)
+        return render(request, self.template_name, context)

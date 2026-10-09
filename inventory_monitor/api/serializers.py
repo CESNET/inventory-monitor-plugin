@@ -432,3 +432,4 @@ class ExternalInventorySerializer(PrimaryModelSerializer):
             "created",
             "last_updated",
         ]
+        brief_fields = ["id", "url", "display", "inventory_number", "name", "serial_number", "status"]

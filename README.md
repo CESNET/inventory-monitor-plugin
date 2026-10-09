@@ -626,7 +626,7 @@ PLUGINS_CONFIG = {
 - Applies to: Asset.price, Contract.price, Invoice.price, AssetService.service_price
 
 #### External Inventory Status Configuration
-- **`external_inventory_status_config`** (optional): Maps status codes to display labels and Bootstrap colors. If not configured, status displays as-is without special formatting.
+- **`external_inventory_status_config`** (optional): Maps status codes to display labels and Bootstrap colors. If not configured, status displays as-is without special formatting. The same labels are used in the External Inventory list's Status filter picker, which offers the codes present in the table.
 - **`external_inventory_tooltip_template`** (optional, default: `"<span class='badge text-bg-{color}'>{code}</span> {label}"`): Template string for formatting status tooltips
 
 #### Date Status Warning Thresholds

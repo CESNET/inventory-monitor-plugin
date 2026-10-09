@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.2.0] - 2026-10-09
+
+### Changed
+
+- The External Inventory list filter for `status` is now a multi-select picker. Choices are the
+  status codes present in the table, labeled from `external_inventory_status_config` when it is set
+  (`Active (1)`) and shown as the raw code otherwise, so the filter uses the same labels as the table.
+  The REST API filter accepts the parameter repeated (`?status=1&status=2`); single-value calls
+  behave as before.
+- The External Inventory REST serializer declares `brief_fields`, so nested and `?brief=1`
+  representations return `id`, `url`, `display`, `inventory_number`, `name`, `serial_number` and
+  `status` instead of the full record.
+
+### Fixed
+
+- The Probe Diff page now requires `inventory_monitor.view_probe` and respects object-level
+  permissions. Previously any logged-in user could query probes for any device, and a malformed
+  date in the form produced a server error instead of a validation message. The menu entry's
+  permission changed from the non-existent `view_probediff` to `view_probe`. The date range now
+  includes the whole end day; before, probes recorded after midnight on the end date were cut off.
+  The default date range is computed per request instead of once at process start.
+- Asset Service list and add views are registered without a `<pk>` prefix, like every other
+  model, so `assetservice_list` and `assetservice_add` resolve from the registered views alone.
+
+### Removed
+
+- Hand-written URL patterns for Asset Service views, now covered by `@register_model_view`, and
+  the unused `PLUGIN_SETTINGS` constant in `settings.py`.
+
 ## [15.1.0] - 2026-10-08
 
 ### Changed

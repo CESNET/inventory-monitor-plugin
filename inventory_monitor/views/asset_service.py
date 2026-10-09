@@ -9,7 +9,7 @@ class AssetServiceView(generic.ObjectView):
     queryset = models.AssetService.objects.all()
 
 
-@register_model_view(models.AssetService, "list")
+@register_model_view(models.AssetService, "list", path="", detail=False)
 class AssetServiceListView(generic.ObjectListView):
     queryset = models.AssetService.objects.select_related("asset", "contract__contractor").prefetch_related(
         "contacts__contact"
@@ -19,7 +19,7 @@ class AssetServiceListView(generic.ObjectListView):
     table = tables.AssetServiceTable
 
 
-@register_model_view(models.AssetService, "add")
+@register_model_view(models.AssetService, "add", detail=False)
 class AssetServiceCreateView(generic.ObjectEditView):
     queryset = models.AssetService.objects.all()
     form = forms.AssetServiceForm
