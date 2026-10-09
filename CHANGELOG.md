@@ -23,12 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Probe Diff page now requires `inventory_monitor.view_probe` and respects object-level
   permissions. Previously any logged-in user could query probes for any device, and a malformed
   date in the form produced a server error instead of a validation message. The menu entry's
-  permission changed from the non-existent `view_probediff` to `view_probe`.
+  permission changed from the non-existent `view_probediff` to `view_probe`. The date range now
+  includes the whole end day; before, probes recorded after midnight on the end date were cut off.
+  The default date range is computed per request instead of once at process start.
+- Asset Service list and add views are registered without a `<pk>` prefix, like every other
+  model, so `assetservice_list` and `assetservice_add` resolve from the registered views alone.
 
 ### Removed
 
-- Hand-written URL patterns for Asset Service views, which duplicated the patterns registered by
-  `@register_model_view`, and the unused `PLUGIN_SETTINGS` constant in `settings.py`.
+- Hand-written URL patterns for Asset Service views, now covered by `@register_model_view`, and
+  the unused `PLUGIN_SETTINGS` constant in `settings.py`.
 
 ## [15.1.0] - 2026-10-08
 

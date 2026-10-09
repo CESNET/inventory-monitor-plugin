@@ -199,14 +199,14 @@ class ProbeDiffForm(NetBoxModelForm):
         label=_("Start Date"),
         help_text=_("Beginning of the date range to analyze"),
         widget=DatePicker(),
-        initial=datetime.date.today() - datetime.timedelta(days=90),
+        initial=lambda: datetime.date.today() - datetime.timedelta(days=90),
     )
     date_to = forms.DateField(
         required=True,
         label=_("End Date"),
         help_text=_("End of the date range to analyze"),
         widget=DatePicker(),
-        initial=datetime.date.today(),
+        initial=datetime.date.today,
     )
 
     # Target device
