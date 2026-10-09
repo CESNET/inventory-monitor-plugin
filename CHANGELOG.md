@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The External Inventory list filter for `status` is now a multi-select picker. Choices are the
   status codes present in the table, labeled from `external_inventory_status_config` when it is set
-  (`Active (1)`) and shown as the raw code otherwise, so the filter matches what the table displays.
+  (`Active (1)`) and shown as the raw code otherwise, so the filter uses the same labels as the table.
   The REST API filter accepts the parameter repeated (`?status=1&status=2`); single-value calls
   behave as before.
 

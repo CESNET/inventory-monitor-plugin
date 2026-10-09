@@ -10,10 +10,7 @@ from utilities.forms.fields import (
 from utilities.forms.rendering import FieldSet
 
 from inventory_monitor.models import Asset, ExternalInventory
-from inventory_monitor.settings import (
-    get_external_inventory_status_config,
-    get_external_inventory_status_config_safe,
-)
+from inventory_monitor.settings import get_external_inventory_status_config_safe
 
 
 class ExternalInventoryForm(PrimaryModelForm):
@@ -125,24 +122,21 @@ class ExternalInventoryBulkEditForm(PrimaryModelBulkEditForm):
     nullable_fields = ("name", "person_name", "location", "status", "comments")
 
 
-def _distinct_choices(field):
+def _distinct_choices(field, label=str):
     """Callable choices: Django re-runs it on every render, so new importer values show up without a restart."""
 
     def choices():
         qs = ExternalInventory.objects.exclude(**{f"{field}__isnull": True}).exclude(**{field: ""})
-        return [(v, v) for v in qs.order_by(field).values_list(field, flat=True).distinct()]
+        return [(v, label(v)) for v in qs.order_by(field).values_list(field, flat=True).distinct()]
 
     return choices
 
 
-def _status_choices():
-    """Codes present in the table, labeled from external_inventory_status_config; raw code when unconfigured."""
-    config = get_external_inventory_status_config()
-    choices = []
-    for code, _raw in _distinct_choices("status")():
-        label = config.get(str(code), {}).get("label")
-        choices.append((code, f"{label} ({code})" if label else code))
-    return choices
+def _status_label(code):
+    """'Active (1)' when external_inventory_status_config knows the code, the raw code otherwise."""
+    config, _configured = get_external_inventory_status_config_safe()
+    label = config.get(code, {}).get("label")
+    return f"{label} ({code})" if label else code
 
 
 class ExternalInventoryFilterForm(ContactModelFilterForm, PrimaryModelFilterSetForm):
@@ -201,7 +195,7 @@ class ExternalInventoryFilterForm(ContactModelFilterForm, PrimaryModelFilterSetF
     project_code = forms.MultipleChoiceField(choices=_distinct_choices("project_code"), required=False)
     user_name = forms.MultipleChoiceField(choices=_distinct_choices("user_name"), required=False)
     split_asset = forms.CharField(required=False)
-    status = forms.MultipleChoiceField(choices=_status_choices, required=False)
+    status = forms.MultipleChoiceField(choices=_distinct_choices("status", label=_status_label), required=False)
     asset_id = DynamicModelMultipleChoiceField(queryset=Asset.objects.all(), required=False, label=_("Assets"))
     has_assets = forms.ChoiceField(
         choices=[
