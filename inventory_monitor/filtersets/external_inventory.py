@@ -31,7 +31,7 @@ class ExternalInventoryFilterSet(PrimaryModelFilterSet, ContactModelFilterSet):
     user_name = MultiValueCharFilter()
     user_note = django_filters.CharFilter()
     split_asset = django_filters.CharFilter()
-    status = django_filters.CharFilter()
+    status = MultiValueCharFilter()
     asset_id = django_filters.ModelMultipleChoiceFilter(
         field_name="assets",
         queryset=Asset.objects.all(),
