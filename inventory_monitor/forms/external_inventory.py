@@ -1,16 +1,23 @@
+from core.models import ObjectType
+from dcim.models import Location, Region, Site
 from django import forms
 from django.utils.translation import gettext as _
 from netbox.forms import PrimaryModelBulkEditForm, PrimaryModelFilterSetForm, PrimaryModelForm, PrimaryModelImportForm
 from tenancy.forms import ContactModelFilterForm
 from utilities.forms.fields import (
     CommentField,
+    CSVModelChoiceField,
+    DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
     TagFilterField,
 )
-from utilities.forms.rendering import FieldSet
+from utilities.forms.rendering import FieldSet, TabbedGroups
 
-from inventory_monitor.models import Asset, ExternalInventory
+from inventory_monitor.models import LOCATION_ASSIGNED_OBJECT_MODELS_QUERY, Asset, ExternalInventory
 from inventory_monitor.settings import get_external_inventory_status_config_safe
+
+# Form field per assignable model; "location" itself is taken by the free-text model field.
+LOCATION_ASSIGNMENT_FIELDS = {"region": "assigned_region", "site": "assigned_site", "location": "assigned_location"}
 
 
 class ExternalInventoryForm(PrimaryModelForm):
@@ -35,6 +42,13 @@ class ExternalInventoryForm(PrimaryModelForm):
         label="Status",
         help_text="",  # Will be set in __init__
     )
+    assigned_region = DynamicModelChoiceField(
+        queryset=Region.objects.all(), required=False, label="Region", selector=True
+    )
+    assigned_site = DynamicModelChoiceField(queryset=Site.objects.all(), required=False, label="Site", selector=True)
+    assigned_location = DynamicModelChoiceField(
+        queryset=Location.objects.all(), required=False, label="Location", selector=True
+    )
 
     fieldsets = (
         FieldSet(
@@ -53,7 +67,16 @@ class ExternalInventoryForm(PrimaryModelForm):
         FieldSet(
             "location_code",
             "location",
+            "external_location_id",
             name=_("Location Information"),
+        ),
+        FieldSet(
+            TabbedGroups(
+                FieldSet("assigned_region", name=_("Region")),
+                FieldSet("assigned_site", name=_("Site")),
+                FieldSet("assigned_location", name=_("Location")),
+            ),
+            name=_("Location Assignment"),
         ),
         FieldSet(
             "department_code",
@@ -72,6 +95,30 @@ class ExternalInventoryForm(PrimaryModelForm):
     )
 
     def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance")
+        initial = dict(kwargs.get("initial") or {})
+        if instance and instance.location_assigned_object is not None:
+            initial[LOCATION_ASSIGNMENT_FIELDS[instance.location_assigned_object._meta.model_name]] = (
+                instance.location_assigned_object
+            )
+        elif initial.get("location_assigned_object_type") and initial.get("location_assigned_object_id"):
+            # Adding from a Region/Site/Location page: ?location_assigned_object_type=<ct pk>&..._id=<pk>
+            try:
+                object_type = (
+                    ObjectType.objects.filter(LOCATION_ASSIGNED_OBJECT_MODELS_QUERY)
+                    .filter(pk=initial["location_assigned_object_type"])
+                    .first()
+                )
+                obj = (
+                    object_type.model_class().objects.filter(pk=initial["location_assigned_object_id"]).first()
+                    if object_type
+                    else None
+                )
+            except (ValueError, TypeError):  # non-numeric ids in the query string
+                obj = None
+            if obj:
+                initial[LOCATION_ASSIGNMENT_FIELDS[object_type.model]] = obj
+        kwargs["initial"] = initial
         super().__init__(*args, **kwargs)
 
         # Build dynamic help text for status field based on configuration
@@ -86,6 +133,13 @@ class ExternalInventoryForm(PrimaryModelForm):
         else:
             self.fields["status"].help_text = "Current status of the item"
 
+    def clean(self):
+        super().clean()
+        selected = [f for f in LOCATION_ASSIGNMENT_FIELDS.values() if self.cleaned_data.get(f)]
+        if len(selected) > 1:
+            raise forms.ValidationError(_("An item can only be placed on a single Region, Site or Location."))
+        self.instance.location_assigned_object = self.cleaned_data[selected[0]] if selected else None
+
     class Meta:
         model = ExternalInventory
         fields = (
@@ -97,6 +151,10 @@ class ExternalInventoryForm(PrimaryModelForm):
             "person_name",
             "location_code",
             "location",
+            "external_location_id",
+            "assigned_region",
+            "assigned_site",
+            "assigned_location",
             "department_code",
             "project_code",
             "user_name",
@@ -163,6 +221,10 @@ class ExternalInventoryFilterForm(ContactModelFilterForm, PrimaryModelFilterSetF
         FieldSet(
             "location_code",
             "location",
+            "external_location_id",
+            "region_id",
+            "site_id",
+            "location_id",
             name=_("Location Information"),
         ),
         FieldSet(
@@ -191,6 +253,16 @@ class ExternalInventoryFilterForm(ContactModelFilterForm, PrimaryModelFilterSetF
     person_name = forms.MultipleChoiceField(choices=_distinct_choices("person_name"), required=False)
     location_code = forms.MultipleChoiceField(choices=_distinct_choices("location_code"), required=False)
     location = forms.MultipleChoiceField(choices=_distinct_choices("location"), required=False)
+    external_location_id = forms.CharField(required=False, label=_("External Location ID"))
+    region_id = DynamicModelMultipleChoiceField(
+        queryset=Region.objects.all(), required=False, label=_("Region (incl. descendants)")
+    )
+    site_id = DynamicModelMultipleChoiceField(
+        queryset=Site.objects.all(), required=False, label=_("Site (incl. locations)")
+    )
+    location_id = DynamicModelMultipleChoiceField(
+        queryset=Location.objects.all(), required=False, label=_("Location (incl. descendants)")
+    )
     department_code = forms.MultipleChoiceField(choices=_distinct_choices("department_code"), required=False)
     project_code = forms.MultipleChoiceField(choices=_distinct_choices("project_code"), required=False)
     user_name = forms.MultipleChoiceField(choices=_distinct_choices("user_name"), required=False)
@@ -222,6 +294,9 @@ class ExternalInventoryBulkImportForm(PrimaryModelImportForm):
     person_name = forms.CharField(required=False, help_text="Name of the responsible person")
     location_code = forms.CharField(required=False, help_text="Location code")
     location = forms.CharField(required=False, help_text="Location name or description")
+    external_location_id = forms.CharField(
+        required=False, help_text="Identifier of the location in the external inventory system"
+    )
     department_code = forms.CharField(required=False, help_text="Department code")
     project_code = forms.CharField(required=False, help_text="Project code")
     user_name = forms.CharField(required=False, help_text="Username associated with this item")
@@ -230,6 +305,21 @@ class ExternalInventoryBulkImportForm(PrimaryModelImportForm):
         required=False, help_text="Split asset identifier (for assets split across multiple entries)"
     )
     status = forms.CharField(required=False, help_text="Status code as configured in plugin settings")
+    assigned_region_id = CSVModelChoiceField(
+        queryset=Region.objects.all(),
+        required=False,
+        label="Assigned region (ID)",
+        help_text="Numeric ID of the region",
+    )
+    assigned_site_id = CSVModelChoiceField(
+        queryset=Site.objects.all(), required=False, label="Assigned site (ID)", help_text="Numeric ID of the site"
+    )
+    assigned_location_id = CSVModelChoiceField(
+        queryset=Location.objects.all(),
+        required=False,
+        label="Assigned location (ID)",
+        help_text="Numeric ID of the location",
+    )
 
     class Meta:
         model = ExternalInventory
@@ -242,6 +332,7 @@ class ExternalInventoryBulkImportForm(PrimaryModelImportForm):
             "person_name",
             "location_code",
             "location",
+            "external_location_id",
             "department_code",
             "project_code",
             "user_name",
@@ -252,3 +343,16 @@ class ExternalInventoryBulkImportForm(PrimaryModelImportForm):
             "owner",
             "tags",
         ]
+
+    _ASSIGNMENT_FIELDS = ("assigned_region_id", "assigned_site_id", "assigned_location_id")
+
+    def clean(self):
+        super().clean()
+        if len([f for f in self._ASSIGNMENT_FIELDS if self.cleaned_data.get(f)]) > 1:
+            raise forms.ValidationError("An item can only be placed on a single Region, Site or Location.")
+
+    def save(self, *args, **kwargs):
+        self.instance.location_assigned_object = next(
+            (self.cleaned_data[f] for f in self._ASSIGNMENT_FIELDS if self.cleaned_data.get(f)), None
+        )
+        return super().save(*args, **kwargs)

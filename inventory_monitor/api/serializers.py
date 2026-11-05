@@ -15,6 +15,7 @@ from utilities.api import get_serializer_for_model
 # Local models
 from inventory_monitor.models import (
     ASSIGNED_OBJECT_MODELS_QUERY,
+    LOCATION_ASSIGNED_OBJECT_MODELS_QUERY,
     RMA,
     Asset,
     AssetService,
@@ -402,6 +403,12 @@ class ExternalInventorySerializer(PrimaryModelSerializer):
         required=False,
         many=True,
     )
+    location_assigned_object_type = ContentTypeField(
+        queryset=ObjectType.objects.filter(LOCATION_ASSIGNED_OBJECT_MODELS_QUERY),
+        required=False,
+        allow_null=True,
+    )
+    location_assigned_object = serializers.SerializerMethodField(read_only=True, allow_null=True)
 
     class Meta:
         model = ExternalInventory
@@ -417,6 +424,10 @@ class ExternalInventorySerializer(PrimaryModelSerializer):
             "person_name",
             "location_code",
             "location",
+            "external_location_id",
+            "location_assigned_object_type",
+            "location_assigned_object_id",
+            "location_assigned_object",
             "department_code",
             "project_code",
             "user_name",
@@ -433,3 +444,11 @@ class ExternalInventorySerializer(PrimaryModelSerializer):
             "last_updated",
         ]
         brief_fields = ["id", "url", "display", "inventory_number", "name", "serial_number", "status"]
+
+    @extend_schema_field(serializers.JSONField(allow_null=True))
+    def get_location_assigned_object(self, obj):
+        if obj.location_assigned_object is None:
+            return None
+        serializer = get_serializer_for_model(obj.location_assigned_object)
+        context = {"request": self.context["request"]}
+        return serializer(obj.location_assigned_object, nested=True, context=context).data

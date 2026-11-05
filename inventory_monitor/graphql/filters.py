@@ -62,6 +62,7 @@ class InventoryMonitorExternalInventoryFilter(ContactFilterMixin, OwnerFilterMix
     person_name: StrFilterLookup | None = strawberry_django.filter_field()
     location_code: StrFilterLookup | None = strawberry_django.filter_field()
     location: StrFilterLookup | None = strawberry_django.filter_field()
+    external_location_id: StrFilterLookup | None = strawberry_django.filter_field()
     department_code: StrFilterLookup | None = strawberry_django.filter_field()
     project_code: StrFilterLookup | None = strawberry_django.filter_field()
     user_name: StrFilterLookup | None = strawberry_django.filter_field()
@@ -77,6 +78,12 @@ class InventoryMonitorExternalInventoryFilter(ContactFilterMixin, OwnerFilterMix
 
     # Custom filter for has_assets (boolean filter)
     has_assets: FilterLookup[bool] | None = strawberry_django.filter_field()
+
+    # Location assignment (GenericForeignKey)
+    location_assigned_object_type: Annotated["ContentTypeFilter", strawberry.lazy("core.graphql.filters")] | None = (
+        strawberry_django.filter_field()
+    )
+    location_assigned_object_id: FilterLookup[int] | None = strawberry_django.filter_field()
 
 
 @strawberry_django.filter_type(Asset, lookups=True)

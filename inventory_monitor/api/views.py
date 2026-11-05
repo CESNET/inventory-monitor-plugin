@@ -65,6 +65,8 @@ class RMAViewSet(NetBoxModelViewSet):
 
 
 class ExternalInventoryViewSet(NetBoxModelViewSet):
-    queryset = ExternalInventory.objects.select_related("owner__group").prefetch_related("assets", "tags")
+    queryset = ExternalInventory.objects.select_related("owner__group").prefetch_related(
+        "assets", "tags", "location_assigned_object"
+    )
     serializer_class = ExternalInventorySerializer
     filterset_class = ExternalInventoryFilterSet

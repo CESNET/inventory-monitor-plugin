@@ -44,12 +44,17 @@ class InventoryMonitorExternalInventoryType(GQLContactsMixin, PrimaryObjectType)
     person_name: str | None
     location_code: str | None
     location: str | None
+    external_location_id: str | None
     department_code: str | None
     project_code: str | None
     user_name: str | None
     user_note: str | None
     split_asset: str | None
     status: str | None
+
+    # Location assignment (GenericForeignKey to dcim Region/Site/Location)
+    location_assigned_object_type: Annotated["ContentType", strawberry.lazy("core.graphql.types")] | None
+    location_assigned_object_id: int | None
 
     # Relationship to assets
     assets: List[Annotated["InventoryMonitorAssetType", strawberry.lazy("inventory_monitor.graphql.types")]]
