@@ -29,6 +29,7 @@ from inventory_monitor.models.contractor import (
 
 # External Inventory models
 from inventory_monitor.models.external_inventory import (
+    LOCATION_ASSIGNED_OBJECT_MODELS_QUERY,
     ExternalInventory,
 )
 
@@ -70,6 +71,7 @@ __all__ = [
     # Contractor models
     "Contractor",
     # External Inventory models
+    "LOCATION_ASSIGNED_OBJECT_MODELS_QUERY",
     "ExternalInventory",
     # Invoice models
     "Invoice",

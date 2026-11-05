@@ -24,6 +24,13 @@ def copy_to_assigned_object(apps, schema_editor):
     Asset = apps.get_model("inventory_monitor", "Asset")
     ContentType = apps.get_model("contenttypes", "ContentType")
 
+    if not Asset.objects.filter(
+        models.Q(site__isnull=False) | models.Q(location__isnull=False) | models.Q(device__isnull=False)
+    ).exists():
+        # Fresh database (first install, test runner): nothing to copy, and the dcim
+        # content types are only created by post_migrate, so looking them up would fail.
+        return
+
     site_ct = ContentType.objects.get(app_label="dcim", model="site")
     device_ct = ContentType.objects.get(app_label="dcim", model="device")
     location_ct = ContentType.objects.get(app_label="dcim", model="location")
@@ -53,6 +60,9 @@ def reverse_migration(apps, schema_editor):
     """
     Asset = apps.get_model("inventory_monitor", "Asset")
     ContentType = apps.get_model("contenttypes", "ContentType")
+
+    if not Asset.objects.filter(assigned_object_type__isnull=False).exists():
+        return  # nothing to restore (see copy_to_assigned_object)
 
     # Get content types for the models
     site_ct = ContentType.objects.get(app_label="dcim", model="site")

@@ -80,6 +80,14 @@
                             <th scope="row">Location</th>
                             <td>{{ object.location|placeholder }}</td>
                         </tr>
+                        <tr>
+                            <th scope="row">External Location ID</th>
+                            <td>{{ object.external_location_id|placeholder }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Assigned Location</th>
+                            <td>{{ object.location_assigned_object|linkify|placeholder }}</td>
+                        </tr>
                     </table>
                 </div>
             </div>

@@ -1,4 +1,6 @@
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
+from django.db.models import Q
 from django.db.models.deletion import ProtectedError
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -8,6 +10,10 @@ from taggit.managers import TaggableManager
 
 from inventory_monitor.models.asset import Asset
 from inventory_monitor.settings import get_external_inventory_status_config_safe
+
+# Where the external system says the item physically is. Region/Site/Location only:
+# device-level placement is already covered by the linked Asset.assigned_object.
+LOCATION_ASSIGNED_OBJECT_MODELS_QUERY = Q(app_label="dcim", model__in=("region", "site", "location"))
 
 
 class ExternalInventory(ContactsMixin, PrimaryModel):
@@ -68,6 +74,13 @@ class ExternalInventory(ContactsMixin, PrimaryModel):
         verbose_name="Location",
         help_text="Description of item location",
     )
+    external_location_id = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        verbose_name="External Location ID",
+        help_text="Identifier of the location in the external inventory system",
+    )
     department_code = models.CharField(
         max_length=64,
         blank=True,
@@ -110,6 +123,20 @@ class ExternalInventory(ContactsMixin, PrimaryModel):
         help_text="Current status of the item",
     )
 
+    # NetBox Region/Site/Location the external location maps to (set by the importer or by hand)
+    location_assigned_object_type = models.ForeignKey(
+        to="contenttypes.ContentType",
+        limit_choices_to=LOCATION_ASSIGNED_OBJECT_MODELS_QUERY,
+        on_delete=models.PROTECT,
+        related_name="+",
+        blank=True,
+        null=True,
+    )
+    location_assigned_object_id = models.PositiveBigIntegerField(blank=True, null=True)
+    location_assigned_object = GenericForeignKey(
+        ct_field="location_assigned_object_type", fk_field="location_assigned_object_id"
+    )
+
     ############## EXTRA FIELDS
     assets = models.ManyToManyField(
         to=Asset,
@@ -135,9 +162,14 @@ class ExternalInventory(ContactsMixin, PrimaryModel):
             models.Index(fields=["serial_number"], name="ext_inv_serial_idx"),
             models.Index(fields=["person_id"], name="ext_inv_personid_idx"),
             models.Index(fields=["location_code"], name="ext_inv_loccode_idx"),
+            models.Index(fields=["external_location_id"], name="ext_inv_extlocid_idx"),
             models.Index(fields=["department_code"], name="ext_inv_deptcode_idx"),
             models.Index(fields=["project_code"], name="ext_inv_projcode_idx"),
             models.Index(fields=["status"], name="ext_inv_status_idx"),
+            models.Index(
+                fields=["location_assigned_object_type", "location_assigned_object_id"],
+                name="ext_inv_loc_assigned_idx",
+            ),
         ]
         # unique_together = [["inventory_number"]]
 

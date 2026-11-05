@@ -39,6 +39,7 @@ class ExternalInventoryTable(ContactsColumnMixin, PrimaryModelTable):
     serial_number = tables.Column()
     person_name = tables.Column()
     location = tables.Column()
+    location_assigned_object = tables.Column(verbose_name="Assigned Location", orderable=False, linkify=True)
     status = tables.TemplateColumn(
         template_code="""
         {% if record.status %}
@@ -67,6 +68,8 @@ class ExternalInventoryTable(ContactsColumnMixin, PrimaryModelTable):
             "person_name",
             "location_code",
             "location",
+            "external_location_id",
+            "location_assigned_object",
             "department_code",
             "project_code",
             "user_name",
@@ -87,6 +90,7 @@ class ExternalInventoryTable(ContactsColumnMixin, PrimaryModelTable):
             "serial_number",
             "person_name",
             "location",
+            "location_assigned_object",
             "status",
             "tags",
             "assets",

@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.3.0] - 2026-11-05
+
+### Added
+
+- External Inventory items can be placed on a NetBox Region, Site or Location through the new
+  `location_assigned_object` generic relation (`location_assigned_object_type` /
+  `location_assigned_object_id`), mirroring `Asset.assigned_object`. The free-text `location` and
+  `location_code` fields are unchanged and keep the raw value from the external system. The edit
+  form offers the target under "Location Assignment", the CSV import accepts
+  `assigned_region_id` / `assigned_site_id` / `assigned_location_id`, and the REST API and GraphQL
+  expose the two columns plus a nested `location_assigned_object` (REST).
+- Region, Site and Location pages gain an "External Inventory" tab listing the items placed on the
+  object or anything below it (sub-regions, sites, locations and their descendants).
+- The External Inventory list, REST API and filter form accept `region_id`, `site_id` and
+  `location_id`, with the same roll-up as the tabs, so "everything under this site" is one query.
+  Exact matches remain available through `location_assigned_object_type` and
+  `location_assigned_object_id`.
+- `external_location_id` on External Inventory: the identifier of the item's location in the
+  external system, next to the free-text `location_code` / `location`. Available in the REST API,
+  GraphQL, the edit and CSV import forms, the list filter and the global search.
+
+### Fixed
+
+- Migrating a fresh database no longer fails in `0001_initial_squashed`: the data migration that
+  copied legacy `site`/`location`/`device` columns into `Asset.assigned_object` looked up dcim
+  content types that do not exist yet on a first install, which broke `manage.py test` and any new
+  deployment. It now returns early when there is nothing to copy.
+
 ## [15.2.0] - 2026-10-09
 
 ### Changed

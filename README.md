@@ -155,12 +155,14 @@ classDiagram
         +CharField person_name
         +CharField location_code
         +CharField location
+        +CharField external_location_id
         +CharField department_code
         +CharField project_code
         +CharField user_name
         +TextField user_note
         +CharField split_asset
         +CharField status
+        +GenericForeignKey location_assigned_object
         +ManyToManyField assets
         +get_status_color()
         +get_status_display()
@@ -183,6 +185,10 @@ classDiagram
     Asset --> Rack : "assigned_object"
     Asset --> Device : "assigned_object"
     Asset --> Module : "assigned_object"
+
+    ExternalInventory --> Region : "location_assigned_object"
+    ExternalInventory --> Site : "location_assigned_object"
+    ExternalInventory --> Location : "location_assigned_object"
 ```
 
 ---
@@ -415,7 +421,9 @@ Integration with external inventory management systems.
 - `name`: Item name or description
 - `serial_number`: Serial or production number
 - `person_id/person_name`: Responsible person information
-- `location_code/location`: Location information
+- `location_code/location`: Location information as free text from the external system
+- `external_location_id`: Identifier of the item's location in the external system
+- `location_assigned_object`: NetBox Region, Site or Location the item is placed on (generic relation, optional)
 - `department_code`: Department code
 - `project_code`: Project code
 - `user_name/user_note`: User information and notes
@@ -425,6 +433,9 @@ Integration with external inventory management systems.
 
 **Features:**
 - Many-to-many relationship with Assets (one external record can map to multiple internal assets for splits)
+- Placement on a Region, Site or Location; Region/Site/Location pages show an "External Inventory" tab with
+  everything placed on the object or below it, and the list/API filters `region_id`, `site_id`, `location_id`
+  roll up the same way (`location_assigned_object_type` / `location_assigned_object_id` match exactly)
 - Configurable status display with labels and colors (via plugin settings)
 - Dynamic status tooltips with customizable templates
 - Project code tracking for accounting/billing
