@@ -66,6 +66,46 @@ def get_currency_symbol(currency_code):
     return currency_code
 
 
+def location_assignment_q(model, ids):
+    """Q selecting ExternalInventory items placed on any of the given dcim Region/Site/Location
+    objects or anything below them (Region → sub-regions → Sites → Locations; Site → Locations;
+    Location → descendant Locations). Used by both the dcim tabs and the list filters so the two
+    never disagree about what "under this site" means."""
+    from dcim.models import Location, Region, Site
+    from django.contrib.contenttypes.models import ContentType
+    from django.db.models import Q
+
+    ids = list(ids)
+    scope = {}
+    if model is Region:
+        region_ids = set()
+        for region in Region.objects.filter(pk__in=ids):
+            region_ids.update(region.get_descendants(include_self=True).values_list("id", flat=True))
+        scope[Region] = region_ids
+        scope[Site] = set(Site.objects.filter(region_id__in=region_ids).values_list("id", flat=True))
+        scope[Location] = set(Location.objects.filter(site_id__in=scope[Site]).values_list("id", flat=True))
+    elif model is Site:
+        scope[Site] = set(ids)
+        scope[Location] = set(Location.objects.filter(site_id__in=ids).values_list("id", flat=True))
+    elif model is Location:
+        location_ids = set()
+        for location in Location.objects.filter(pk__in=ids):
+            location_ids.update(location.get_descendants(include_self=True).values_list("id", flat=True))
+        scope[Location] = location_ids
+    else:
+        return Q(pk__in=[])
+
+    q = Q(pk__in=[])
+    for scoped_model, scoped_ids in scope.items():
+        if scoped_ids:
+            # Same manager (and cache) the GenericForeignKey itself resolves the type through.
+            q |= Q(
+                location_assigned_object_type_id=ContentType.objects.get_for_model(scoped_model).pk,
+                location_assigned_object_id__in=scoped_ids,
+            )
+    return q
+
+
 def get_object_type_or_none(app_label, model):
     try:
         object_type = ObjectType.objects.get(app_label=app_label, model=model)

@@ -12,7 +12,7 @@ from datetime import date
 from typing import Any, Dict, List, Set, Type
 
 from core.models import ObjectType
-from dcim.models import Device, Location, Module, Rack, Site
+from dcim.models import Device, Location, Module, Rack, Region, Site
 from django.conf import settings
 from django.db.models import Q, QuerySet
 from django.http import HttpRequest
@@ -20,9 +20,21 @@ from netbox.plugins import PluginTemplateExtension
 from netbox.views import generic
 from utilities.views import ViewTab, register_model_view
 
-from inventory_monitor.filtersets import AssetFilterSet, AssetServiceFilterSet, ProbeFilterSet
-from inventory_monitor.models import Asset, AssetService, Contract, Contractor, Probe
-from inventory_monitor.tables import AssetServiceTable, AssetTable, EnhancedAssetTable, EnhancedProbeTable
+from inventory_monitor.filtersets import (
+    AssetFilterSet,
+    AssetServiceFilterSet,
+    ExternalInventoryFilterSet,
+    ProbeFilterSet,
+)
+from inventory_monitor.helpers import location_assignment_q
+from inventory_monitor.models import Asset, AssetService, Contract, Contractor, ExternalInventory, Probe
+from inventory_monitor.tables import (
+    AssetServiceTable,
+    AssetTable,
+    EnhancedAssetTable,
+    EnhancedProbeTable,
+    ExternalInventoryTable,
+)
 
 # Load plugin configuration settings
 plugin_settings = settings.PLUGINS_CONFIG.get("inventory_monitor", {})
@@ -655,6 +667,47 @@ class DeviceAssetsView(ObjectInstanceTableMixin, AssignedAssetsView):
         badge=lambda obj: AssignedAssetsView.count_hierarchical_assets(obj),
         permission="inventory_monitor.view_asset",
     )
+
+
+class LocationExternalInventoryView(generic.ObjectChildrenView):
+    """External Inventory items placed on a Region/Site/Location or anything below it."""
+
+    child_model = ExternalInventory
+    table = ExternalInventoryTable
+    filterset = ExternalInventoryFilterSet
+    template_name = "generic/object_children.html"
+    hide_if_empty = False
+
+    @staticmethod
+    def items_for(parent: Any) -> QuerySet[ExternalInventory]:
+        return ExternalInventory.objects.filter(location_assignment_q(type(parent), [parent.pk]))
+
+    def get_children(self, request: HttpRequest, parent: Any) -> QuerySet[ExternalInventory]:
+        # ObjectChildrenView only checks the parent's view permission; restrict the children ourselves.
+        return (
+            ExternalInventory.objects.restrict(request.user, "view")
+            .filter(location_assignment_q(type(parent), [parent.pk]))
+            .prefetch_related("location_assigned_object")
+        )
+
+
+def external_inventory_view_for_model(model: Type) -> Type:
+    view_class = type(
+        f"{model.__name__}ExternalInventoryView",
+        (LocationExternalInventoryView,),
+        {
+            "queryset": model.objects.all(),
+            "tab": ViewTab(
+                label="External Inventory",
+                badge=lambda obj: LocationExternalInventoryView.items_for(obj).count(),
+                permission="inventory_monitor.view_externalinventory",
+            ),
+        },
+    )
+    return register_model_view(model, name="external_inventory", path="external-inventory")(view_class)
+
+
+external_inventory_views = [external_inventory_view_for_model(model) for model in (Region, Site, Location)]
 
 
 # Template extensions to be registered by the plugin
