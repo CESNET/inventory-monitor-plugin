@@ -20,11 +20,13 @@ class AssetBulkEditAssignmentTest(TestCase):
 
     def setUp(self):
         super().setUp()
-        self.add_permissions("inventory_monitor.view_asset", "inventory_monitor.change_asset")
+        # view_device: the object selector only offers objects the user is allowed to see
+        self.add_permissions("inventory_monitor.view_asset", "inventory_monitor.change_asset", "dcim.view_device")
 
     def _post(self, **data):
         response = self.client.post(URL, {"pk": [a.pk for a in self.assets], "_apply": True, **data})
-        self.assertEqual(response.status_code, 302, getattr(response, "content", b"")[:2000])
+        errors = response.context["form"].errors if response.context else None
+        self.assertEqual(response.status_code, 302, errors)
 
     def test_assign_and_unassign(self):
         self._post(
