@@ -11,11 +11,13 @@ from netbox.forms import (
     PrimaryModelImportForm,
 )
 from tenancy.forms import ContactModelFilterForm
+from utilities.forms import GenericObjectFormMixin
 from utilities.forms.fields import (
     CommentField,
     CSVModelChoiceField,
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
+    GenericObjectChoiceField,
     TagFilterField,
 )
 from utilities.forms.rendering import FieldSet, InlineFields, TabbedGroups
@@ -449,13 +451,22 @@ class AssetFilterForm(ContactModelFilterForm, PrimaryModelFilterSetForm):
     )
 
 
-class AssetBulkEditForm(PrimaryModelBulkEditForm):
+class AssetBulkEditForm(GenericObjectFormMixin, PrimaryModelBulkEditForm):
     description = forms.CharField(
         required=False,
         label="Description",
         widget=forms.TextInput(attrs={"placeholder": "Description"}),
     )
     type = DynamicModelChoiceField(queryset=AssetType.objects.all(), required=False)
+
+    # Named after the model's GenericForeignKey, so BulkEditView assigns and nullifies it natively
+    assigned_object = GenericObjectChoiceField(
+        label=_("Assigned object"),
+        content_type_queryset=ObjectType.objects.filter(ASSIGNED_OBJECT_MODELS_QUERY),
+        required=False,
+        selector=True,
+        hx_method="post",
+    )
 
     assignment_status = forms.ChoiceField(choices=add_blank_choice(AssignmentStatusChoices), required=False)
 
@@ -481,6 +492,7 @@ class AssetBulkEditForm(PrimaryModelBulkEditForm):
     nullable_fields = (
         "description",
         "type",
+        "assigned_object",
         "assignment_status",
         "lifecycle_status",
         "project",
@@ -495,6 +507,7 @@ class AssetBulkEditForm(PrimaryModelBulkEditForm):
 
     fieldsets = (
         FieldSet("description", "type", name=_("Asset")),
+        FieldSet("assigned_object", name=_("Component Assignment")),
         FieldSet("assignment_status", "lifecycle_status", name=_("Status")),
         FieldSet("project", "vendor", "order_contract", name=_("Details")),
         FieldSet("price", "currency", name=_("Financial")),
